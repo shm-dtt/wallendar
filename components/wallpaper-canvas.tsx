@@ -245,7 +245,8 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(function Wallpa
         }
       }
       if (!canceled) {
-        drawWallpaper(canvas, {
+        // TypeScript assertion since we know canvas is not null from the outer scope check
+        drawWallpaper(canvas!, {
           month,
           year,
           weekStart,
