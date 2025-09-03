@@ -21,8 +21,8 @@ export default function Page() {
             </div>
 
             <div className="space-y-4 sm:space-y-6">
-              <h1 className="text-balance text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-semibold leading-tight">
-                Transform your images into stunning calendar wallpapers
+              <h1 className="text-balance text-2xl sm:text-2xl lg:text-3xl xl:text-4xl font-semibold leading-tight">
+                Transform your images into calendar wallpapers.
               </h1>
               <p className="text-pretty sm:text-lg lg:text-xl text-gray-600 max-w-xl">
                 Personalize any photo with a clean, legible monthly calendar.
