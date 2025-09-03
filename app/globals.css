@@ -121,7 +121,7 @@
   }
 }
 
-@keyframes v0-scrollY {
+@keyframes verticalScroll {
   0% {
     transform: translateY(0);
   }
@@ -129,7 +129,15 @@
     transform: translateY(-50%);
   }
 }
-.scroll-vert {
-  animation: v0-scrollY var(--duration, 30000ms) linear infinite;
-  will-change: transform;
+
+@media (max-width: 1023px) {
+  [style*="verticalScroll"] {
+    animation-duration: 20s !important;
+  }
+}
+
+@media (max-width: 767px) {
+  [style*="verticalScroll"] {
+    animation-duration: 15s !important;
+  }
 }
