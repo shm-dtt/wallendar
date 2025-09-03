@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { Button } from "@/components/ui/button";
-import { Sparkles } from "lucide-react";
+import { WandSparkles} from "lucide-react";
 import { gallery } from "@/lib/calendar-utils";
 import { Header } from "@/components/landing-header";
 import { Footer } from "@/components/landing-footer";
@@ -16,7 +16,7 @@ export default function Page() {
 
           <div className="flex-1 flex flex-col justify-center space-y-6 sm:space-y-8 max-w-2xl mx-auto lg:mx-0 lg:max-w-none min-h-0">
             <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-700 shadow-sm self-start">
-              <Sparkles className="h-4 w-4" aria-hidden="true" />
+              <WandSparkles className="h-4 w-4" aria-hidden="true" />
               <span className="text-pretty">Upload. Overlay. Download.</span>
             </div>
 
@@ -24,7 +24,7 @@ export default function Page() {
               <h1 className="text-balance text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-semibold leading-tight">
                 Transform your images into stunning calendar wallpapers
               </h1>
-              <p className="text-pretty text-base sm:text-lg lg:text-xl text-gray-600 max-w-xl">
+              <p className="text-pretty sm:text-lg lg:text-xl text-gray-600 max-w-xl">
                 Personalize any photo with a clean, legible monthly calendar.
               </p>
             </div>
