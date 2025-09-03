@@ -23,6 +23,7 @@ export function CalendarWallpaperClient({ initialData }: { initialData: InitialD
   const [imageSrc, setImageSrc] = useState<string | undefined>(undefined)
   const [fontFamily, setFontFamily] = useState("Montserrat")
   const [customFontName, setCustomFontName] = useState<string | null>(null)
+  const [applyFontToAll, setApplyFontToAll] = useState<boolean>(false)
 
   const handleSampleImage = () => {
     setImageSrc(initialData.sampleImagePath)
@@ -49,6 +50,8 @@ export function CalendarWallpaperClient({ initialData }: { initialData: InitialD
         setFontFamily={setFontFamily}
         customFontName={customFontName}
         setCustomFontName={setCustomFontName}
+        applyFontToAll={applyFontToAll}
+        setApplyFontToAll={setApplyFontToAll}
         monthNames={initialData.monthNames}
         onSampleImage={handleSampleImage}
         onDownload={handleDownload}
@@ -60,6 +63,7 @@ export function CalendarWallpaperClient({ initialData }: { initialData: InitialD
         weekStart={weekStart}
         textColor={textColor}
         fontFamily={fontFamily}
+        applyFontToAll={applyFontToAll}
         customFontName={customFontName}
         imageSrc={imageSrc}
         monthNames={initialData.monthNames}

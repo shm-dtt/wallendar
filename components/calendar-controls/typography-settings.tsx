@@ -1,11 +1,11 @@
 "use client"
 
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Type, X } from "lucide-react"
+import { Divide, Type, X } from "lucide-react"
 
 interface TypographySettingsProps {
   textColor: string
@@ -14,13 +14,43 @@ interface TypographySettingsProps {
   setFontFamily: (family: string) => void
   customFontName: string | null
   setCustomFontName: (name: string | null) => void
+  applyFontToAll: boolean
+  setApplyFontToAll: (apply: boolean) => void
 }
 
 export function TypographySettings({
   textColor, setTextColor, fontFamily, setFontFamily, 
-  customFontName, setCustomFontName
+  customFontName, setCustomFontName, applyFontToAll, setApplyFontToAll
 }: TypographySettingsProps) {
   const fontInputRef = useRef<HTMLInputElement | null>(null)
+  const [localColor, setLocalColor] = useState(textColor)
+  const commitTimerRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    setLocalColor(textColor)
+  }, [textColor])
+
+  const commitColor = () => {
+    setTextColor(localColor)
+  }
+
+  const scheduleCommit = (next: string) => {
+    setLocalColor(next)
+    if (commitTimerRef.current !== null) {
+      window.clearTimeout(commitTimerRef.current)
+    }
+    commitTimerRef.current = window.setTimeout(() => {
+      setTextColor(next)
+    }, 400)
+  }
+
+  useEffect(() => {
+    return () => {
+      if (commitTimerRef.current !== null) {
+        window.clearTimeout(commitTimerRef.current)
+      }
+    }
+  }, [])
 
   const handleFontUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -60,31 +90,41 @@ export function TypographySettings({
             <Input
               id="textColor"
               type="color"
-              value={textColor}
-              onChange={(e) => setTextColor(e.target.value)}
+              value={localColor}
+              onInput={(e) => scheduleCommit((e.target as HTMLInputElement).value)}
+              onChange={(e) => scheduleCommit(e.target.value)}
               className="w-16 h-9 p-1 cursor-pointer"
             />
-            <Input
-              value={textColor}
-              onChange={(e) => setTextColor(e.target.value)}
-              placeholder="#ffffff"
-              className="flex-1"
-            />
+            <div>
+              <Select value={fontFamily} onValueChange={setFontFamily}>
+                <SelectTrigger id="fontSelect" className="w-52">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Montserrat">Montserrat (Default)</SelectItem>
+                  <SelectItem value="Serif">Serif</SelectItem>
+                  <SelectItem value="Mono">Monospace</SelectItem>
+                  <SelectItem value="Playwrite CA">Playwrite CA</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
 
+        
+
         <div className="space-y-2">
-          <Label htmlFor="fontSelect">Font Family</Label>
-          <Select value={fontFamily} onValueChange={setFontFamily}>
-            <SelectTrigger id="fontSelect">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Montserrat">Montserrat (Default)</SelectItem>
-              <SelectItem value="Serif">Serif</SelectItem>
-              <SelectItem value="Mono">Monospace</SelectItem>
-            </SelectContent>
-          </Select>
+          <Label htmlFor="applyAll" className="flex items-center gap-2">
+            <input
+              id="applyAll"
+              type="checkbox"
+              checked={applyFontToAll}
+              onChange={(e) => setApplyFontToAll(e.target.checked)}
+              className="h-4 w-4 accent-primary"
+            />
+            <span>Apply selected font to all text</span>
+          </Label>
+          <p className="text-xs text-muted-foreground">If unchecked, only the month name changes; days and dates use Montserrat.</p>
         </div>
 
         {customFontName && (
@@ -109,7 +149,7 @@ export function TypographySettings({
             type="file"
             accept=".ttf,.otf,.woff,.woff2"
             onChange={handleFontUpload}
-            className="file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+            className="file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:bg-secondary file:text-secondary-foreground hover:file:bg-secondary/90"
           />
           <p className="text-xs text-muted-foreground">Supports TTF, OTF, WOFF files</p>
         </div>

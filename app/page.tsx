@@ -2,7 +2,7 @@ import { CalendarHeader } from '@/components/calendar-header'
 import { CalendarWallpaperClient } from '@/components/calendar-wallpaper-client'
 import { getInitialData } from '@/lib/calendar-utils'
 
-export default async function Page() {
+export default async function Create() {
   // Server-side data preparation
   const initialData = await getInitialData()
   

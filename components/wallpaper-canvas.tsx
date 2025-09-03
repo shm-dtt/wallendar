@@ -126,7 +126,7 @@ function drawWallpaper(
   context.textBaseline = "alphabetic"
   context.fillStyle = opts.textColor
 
-  context.shadowColor = "rgba(0,0,0,0.25)"
+  // context.shadowColor = "rgba(0,0,0,0.25)"
   context.shadowBlur = Math.max(1, Math.round(height * 0.004))
   context.shadowOffsetX = 0
   context.shadowOffsetY = 0
@@ -135,31 +135,46 @@ function drawWallpaper(
   const monthName = new Date(opts.year, opts.month, 1).toLocaleString("en-US", { month: "long" }).toLowerCase()
 
   const incoming = (opts.fontFamily || "").trim()
-  const resolved =
-    !incoming ||
-    incoming.toLowerCase() === "default" ||
-    incoming.toLowerCase() === "default (montserrat)" ||
-    incoming === "__default__"
-      ? "Montserrat, ui-sans-serif, system-ui"
-      : incoming
-  const safeFamily = resolved.replace(/var$$[^)]+$$\s*,?/g, "").trim()
+  const MONTH_ONLY_DELIM = "|||MONTH_ONLY|||"
+  let monthFamily = incoming
+  let bodyFamily = incoming || "Montserrat, ui-sans-serif, system-ui"
+  if (incoming.includes(MONTH_ONLY_DELIM)) {
+    const parts = incoming.split(MONTH_ONLY_DELIM)
+    monthFamily = (parts[0] || "Montserrat, ui-sans-serif, system-ui").trim()
+    bodyFamily = (parts[1] || "Montserrat, ui-sans-serif, system-ui").trim()
+  }
+
+  function sanitizeFamily(fam: string) {
+    if (
+      !fam ||
+      fam.toLowerCase() === "default" ||
+      fam.toLowerCase() === "default (montserrat)" ||
+      fam === "__default__"
+    ) {
+      return "Montserrat, ui-sans-serif, system-ui"
+    }
+    return fam.replace(/var\([^)]*\)\s*,?/g, "").trim()
+  }
+
+  const safeMonthFamily = sanitizeFamily(monthFamily)
+  const safeBodyFamily = sanitizeFamily(bodyFamily)
 
   // Ensure month width never exceeds calendar width (with a little margin)
   let tracking = monthSize * 0.055
-  context.font = `700 ${monthSize}px ${safeFamily}`
+  context.font = `700 ${monthSize}px ${safeMonthFamily}`
   let measured = measureTrackedWidth(monthName, tracking)
   const maxMonthWidth = gridWidth * 0.96
   while (measured > maxMonthWidth && monthSize > Math.round(height * 0.06)) {
     monthSize -= 2
     tracking = monthSize * 0.055
-    context.font = `700 ${monthSize}px ${safeFamily}`
+    context.font = `700 ${monthSize}px ${safeMonthFamily}`
     measured = measureTrackedWidth(monthName, tracking)
   }
   drawTrackedCentered(monthName, width / 2, baseY, tracking)
 
   // Day-of-week labels (same size as dates, slightly faint)
   const labels = opts.weekStart === "sunday" ? DOW_SUN : DOW_MON
-  context.font = `500 ${labelDaySize}px ${safeFamily}`
+  context.font = `500 ${labelDaySize}px ${safeBodyFamily}`
   const dowY = baseY + Math.round(height * 0.08)
   labels.forEach((label, i) => {
     const x = startX + i * colW + colW / 2
@@ -168,7 +183,7 @@ function drawWallpaper(
   })
 
   // Dates (same size as weekday labels)
-  context.font = `500 ${labelDaySize}px ${safeFamily}`
+  context.font = `500 ${labelDaySize}px ${safeBodyFamily}`
   const totalDays = daysInMonth(opts.year, opts.month)
   const offset = firstDayOffset(opts.year, opts.month, opts.weekStart)
   const rowsTop = dowY + Math.round(height * 0.055)
@@ -186,7 +201,7 @@ function drawWallpaper(
 
   // Optional credit line kept blank intentionally, but spacing preserved
   context.globalAlpha = 0.8
-  context.font = `500 ${Math.round(height * 0.018)}px ${safeFamily}`
+  context.font = `500 ${Math.round(height * 0.018)}px ${safeBodyFamily}`
   context.fillText("", width / 2, rowsTop + rowH * 6.1)
 }
 
@@ -223,6 +238,38 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(function Wallpa
     [month, year, weekStart, textColor, fontFamily],
   )
 
+  function parseFamilies(input: string) {
+    const str = (input || "").trim()
+    const DELIM = "|||MONTH_ONLY|||"
+    let monthFam = str
+    let bodyFam = "Montserrat, ui-sans-serif, system-ui"
+    if (str.includes(DELIM)) {
+      const parts = str.split(DELIM)
+      monthFam = (parts[0] || bodyFam).trim()
+      bodyFam = (parts[1] || bodyFam).trim()
+    }
+    return { monthFam, bodyFam }
+  }
+
+  async function ensureFontsLoaded(familyString: string) {
+    try {
+      // Try to load the first family token (before comma)
+      const firstToken = (familyString.split(",")[0] || "").trim()
+      const cleaned = firstToken.replace(/^\"|\"$/g, "")
+      if (!cleaned) return
+      // Load common weights used
+      const promises: Promise<unknown>[] = [
+        (document as any).fonts?.load?.(`400 24px ${JSON.stringify(cleaned)}`) || Promise.resolve(),
+        (document as any).fonts?.load?.(`500 24px ${JSON.stringify(cleaned)}`) || Promise.resolve(),
+        (document as any).fonts?.load?.(`700 24px ${JSON.stringify(cleaned)}`) || Promise.resolve(),
+      ]
+      await Promise.allSettled(promises)
+      await ((document as any).fonts?.ready || Promise.resolve())
+    } catch {
+      // noop
+    }
+  }
+
   // Render preview
   useEffect(() => {
     let canceled = false
@@ -244,6 +291,9 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(function Wallpa
           console.error("[v0] image load failed", e)
         }
       }
+      // Ensure selected fonts are loaded before drawing to avoid flicker/fallback
+      const { monthFam, bodyFam } = parseFamilies(fontFamily)
+      await Promise.allSettled([ensureFontsLoaded(monthFam), ensureFontsLoaded(bodyFam)])
       if (!canceled) {
         // TypeScript assertion since we know canvas is not null from the outer scope check
         drawWallpaper(canvas!, {

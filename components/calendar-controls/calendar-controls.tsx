@@ -20,6 +20,8 @@ interface CalendarControlsProps {
   setFontFamily: (family: string) => void
   customFontName: string | null
   setCustomFontName: (name: string | null) => void
+  applyFontToAll: boolean
+  setApplyFontToAll: (apply: boolean) => void
   monthNames: string[]
   onSampleImage: () => void
   onDownload: () => void

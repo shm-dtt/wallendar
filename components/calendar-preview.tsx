@@ -10,6 +10,7 @@ interface CalendarPreviewProps {
   weekStart: "sunday" | "monday"
   textColor: string
   fontFamily: string
+  applyFontToAll: boolean
   customFontName: string | null
   imageSrc?: string
   monthNames: string[]
@@ -17,7 +18,7 @@ interface CalendarPreviewProps {
 
 export const CalendarPreview = forwardRef<WallpaperCanvasHandle, CalendarPreviewProps>(
   function CalendarPreview({ 
-    month, year, weekStart, textColor, fontFamily, 
+    month, year, weekStart, textColor, fontFamily, applyFontToAll,
     customFontName, imageSrc, monthNames 
   }, ref) {
     
@@ -25,11 +26,19 @@ export const CalendarPreview = forwardRef<WallpaperCanvasHandle, CalendarPreview
       Montserrat: 'Montserrat, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans"',
       Serif: 'Georgia, Cambria, "Times New Roman", Times, serif',
       Mono: 'ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+      "Playwrite CA": '"Playwrite CA", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans"',
     }
 
     const effectiveFont = useMemo(() => {
       const baseFont = fontFamilyMap[fontFamily as keyof typeof fontFamilyMap] || fontFamilyMap.Montserrat
       return customFontName ? `"${customFontName}", ${baseFont}` : baseFont
+    }, [customFontName, fontFamily])
+
+    const monthOnlyFont = useMemo(() => {
+      const selected = fontFamilyMap[fontFamily as keyof typeof fontFamilyMap] || fontFamilyMap.Montserrat
+      const withCustom = customFontName ? `"${customFontName}", ${selected}` : selected
+      const montserratOnly = fontFamilyMap.Montserrat
+      return { monthFont: withCustom, bodyFont: montserratOnly }
     }, [customFontName, fontFamily])
 
     return (
@@ -50,7 +59,7 @@ export const CalendarPreview = forwardRef<WallpaperCanvasHandle, CalendarPreview
                 year={year}
                 weekStart={weekStart}
                 textColor={textColor}
-                fontFamily={effectiveFont}
+                fontFamily={applyFontToAll ? effectiveFont : `${monthOnlyFont.monthFont} |||MONTH_ONLY||| ${monthOnlyFont.bodyFont}`}
                 imageSrc={imageSrc}
               />
             </div>
