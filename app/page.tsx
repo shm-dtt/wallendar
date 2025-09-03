@@ -23,7 +23,7 @@ export default function Page() {
               <h1 className="text-balance text-3xl font-semibold leading-tight md:text-5xl">
                 Transform your images into stunning calendar wallpapers
               </h1>
-              <p className="max-w-xl text-pretty text-gray-600 md:text-lg">
+              <p className="max-w-xl text-pretty text-lg text-gray-600">
                 Personalize any photo with a clean, legible monthly calendar.
               </p>
             </div>
