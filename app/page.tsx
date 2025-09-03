@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
 import { gallery } from "@/lib/calendar-utils";
@@ -43,7 +45,7 @@ export default function Page() {
           <div className="relative h-[80dvh] overflow-hidden md:h-dvh">
             <div
               className="scroll-vert flex w-full flex-col"
-              style={{ ["--duration" as any]: "25000ms" }} // adjust speed here
+              style={{ ["--duration" as any]: "25000ms" }} // @typescript-eslint/no-explicit-any
             >
               {[...gallery, ...gallery].map((item, idx) => (
                 <figure key={idx} className="relative w-full flex-shrink-0">

@@ -1,4 +1,5 @@
 "use client"
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react"
 

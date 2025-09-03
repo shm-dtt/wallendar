@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Divide, Type, X } from "lucide-react"
+import { Type, X } from "lucide-react"
 
 interface TypographySettingsProps {
   textColor: string
@@ -29,10 +29,6 @@ export function TypographySettings({
   useEffect(() => {
     setLocalColor(textColor)
   }, [textColor])
-
-  const commitColor = () => {
-    setTextColor(localColor)
-  }
 
   const scheduleCommit = (next: string) => {
     setLocalColor(next)
