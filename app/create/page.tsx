@@ -1,5 +1,5 @@
-import { CalendarHeader } from '@/components/calendar-header'
 import { CalendarWallpaperClient } from '@/components/calendar-wallpaper-client'
+import { Header } from '@/components/landing-header'
 import { getInitialData } from '@/lib/calendar-utils'
 
 export default async function Create() {
@@ -7,9 +7,9 @@ export default async function Create() {
   const initialData = await getInitialData()
   
   return (
-    <main className="min-h-dvh bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
+    <main className="font-sans min-h-dvh">
       <div className="container mx-auto p-4 md:p-6">
-        <CalendarHeader />
+        <Header/>
         <CalendarWallpaperClient initialData={initialData} />
       </div>
     </main>

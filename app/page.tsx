@@ -5,6 +5,7 @@ import { Sparkles } from "lucide-react";
 import { gallery } from "@/lib/calendar-utils";
 import { Header } from "@/components/landing-header";
 import { Footer } from "@/components/landing-footer";
+import Link from "next/link";
 
 export default function Page() {
   return (
@@ -29,12 +30,14 @@ export default function Page() {
             </div>
 
             <div className="pt-4 sm:pt-6 pb-8 sm:pb-12">
+              <Link href="/create">
               <Button
                 className="rounded-full bg-black px-6 py-3 sm:px-8 sm:py-4 text-sm sm:text-base text-white shadow-sm hover:bg-black/90 hover:cursor-pointer transition-colors duration-200"
                 size="lg"
-              >
-                Get Started
-              </Button>
+                >
+                  Get Started
+                </Button>
+              </Link>
             </div>
           </div>
 
