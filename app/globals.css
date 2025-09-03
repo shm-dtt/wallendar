@@ -120,3 +120,16 @@
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes v0-scrollY {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+.scroll-vert {
+  animation: v0-scrollY var(--duration, 30000ms) linear infinite;
+  will-change: transform;
+}
