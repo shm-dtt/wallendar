@@ -6,6 +6,7 @@ import { gallery } from "@/lib/calendar-utils";
 import { Header } from "@/components/landing-header";
 import { Footer } from "@/components/landing-footer";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Page() {
   return (
@@ -56,8 +57,10 @@ export default function Page() {
             >
               {[...gallery, ...gallery].map((item, idx) => (
                 <figure key={idx} className="relative w-full flex-shrink-0">
-                  <img
+                  <Image
                     src={item}
+                    width={1600}
+                    height={900}
                     alt={`Calendar wallpaper example ${
                       (idx % gallery.length) + 1
                     }`}
