@@ -3,37 +3,13 @@
 import { CalendarSettings } from './calendar-settings'
 import { TypographySettings } from './typography-settings'
 import { BackgroundSettings } from './background-settings'
-import { ExportSettings } from './export-settings'
 
-interface CalendarControlsProps {
-  month: number
-  setMonth: (month: number) => void
-  year: number
-  setYear: (year: number) => void
-  weekStart: "sunday" | "monday"
-  setWeekStart: (weekStart: "sunday" | "monday") => void
-  textColor: string
-  setTextColor: (color: string) => void
-  imageSrc?: string
-  setImageSrc: (src?: string) => void
-  fontFamily: string
-  setFontFamily: (family: string) => void
-  customFontName: string | null
-  setCustomFontName: (name: string | null) => void
-  applyFontToAll: boolean
-  setApplyFontToAll: (apply: boolean) => void
-  monthNames: string[]
-  onSampleImage: () => void
-  onDownload: () => void
-}
-
-export function CalendarControls(props: CalendarControlsProps) {
+export function CalendarControls() {
   return (
-    <div className="space-y-6">
-      <CalendarSettings {...props} />
-      <TypographySettings {...props} />
-      <BackgroundSettings {...props} />
-      <ExportSettings onDownload={props.onDownload} />
+    <div className="space-y-4">
+      <CalendarSettings />
+      <TypographySettings />
+      <BackgroundSettings />
     </div>
   )
 }

@@ -5,14 +5,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Palette, X } from "lucide-react"
+import { useCalendarStore } from "@/lib/calendar-store"
 
-interface BackgroundSettingsProps {
-  imageSrc?: string
-  setImageSrc: (src?: string) => void
-  onSampleImage: () => void
-}
-
-export function BackgroundSettings({ imageSrc, setImageSrc, onSampleImage }: BackgroundSettingsProps) {
+export function BackgroundSettings() {
+  const imageSrc = useCalendarStore((state) => state.imageSrc)
+  const setImageSrc = useCalendarStore((state) => state.setImageSrc)
+  const handleSampleImage = useCalendarStore((state) => state.handleSampleImage)
   const imageInputRef = useRef<HTMLInputElement | null>(null)
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -35,43 +33,43 @@ export function BackgroundSettings({ imageSrc, setImageSrc, onSampleImage }: Bac
   }
 
   return (
-    <div className="bg-card border rounded-xl p-6 shadow-sm">
-      <div className="flex items-center gap-2 mb-4">
+    <div className="py-1">
+      <div className="flex items-center gap-2 mb-3">
         <Palette className="w-4 h-4 text-primary" />
-        <h2 className="font-semibold">Background</h2>
+        <h2 className="font-semibold text-sm">Background</h2>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         {imageSrc && (
-          <div className="bg-primary/5 border border-primary/20 rounded-lg p-3">
+          <div className="bg-primary/5 border border-primary/20 rounded-lg p-2">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-primary rounded-full" />
-                <span className="text-sm font-medium">Background image active</span>
+                <span className="text-xs font-medium">Background image active</span>
               </div>
-              <Button variant="ghost" size="sm" onClick={removeImage} className="h-6 w-6 p-0">
+              <Button variant="ghost" size="sm" onClick={removeImage} className="h-5 w-5 p-0">
                 <X className="w-3 h-3" />
               </Button>
             </div>
           </div>
         )}
 
-        <div className="space-y-2">
-          <Label htmlFor="imageUpload">Upload Image</Label>
+        <div className="space-y-1">
+          <Label htmlFor="imageUpload" className="text-sm">Upload Image</Label>
           <Input
             id="imageUpload"
             ref={imageInputRef}
             type="file"
             accept="image/*"
             onChange={handleImageUpload}
-            className="file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+            className="h-8 file:mr-2 file:py-0.5 file:px-2 file:rounded file:border-0 file:text-xs file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
           />
           <p className="text-xs text-muted-foreground">
             Images are automatically scaled to fit 16:9 aspect ratio
           </p>
         </div>
 
-        <Button variant="outline" size="sm" onClick={onSampleImage} className="w-full">
+        <Button variant="outline" size="sm" onClick={handleSampleImage} className="w-full h-8 text-xs">
           Try Sample Background
         </Button>
       </div>

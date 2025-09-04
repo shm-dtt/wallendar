@@ -1,9 +1,10 @@
 "use client"
 
-import { useState, useRef } from 'react'
+import { useRef, useEffect } from 'react'
 import { CalendarControls } from './calendar-controls/calendar-controls'
 import { CalendarPreview } from './calendar-preview'
 import type { WallpaperCanvasHandle } from './wallpaper-canvas'
+import { useCalendarStore } from '@/lib/calendar-store'
 
 interface InitialData {
   currentMonth: number
@@ -12,62 +13,27 @@ interface InitialData {
   sampleImagePath: string
 }
 
-export function CalendarWallpaperClient({ initialData }: { initialData: InitialData }) {
+interface CalendarWallpaperClientProps {
+  initialData: InitialData
+}
+
+export function CalendarWallpaperClient({ initialData }: CalendarWallpaperClientProps) {
   const canvasRef = useRef<WallpaperCanvasHandle>(null)
   
-  // State management
-  const [month, setMonth] = useState(initialData.currentMonth)
-  const [year, setYear] = useState(initialData.currentYear)
-  const [weekStart, setWeekStart] = useState<"sunday" | "monday">("sunday")
-  const [textColor, setTextColor] = useState("#ffffff")
-  const [imageSrc, setImageSrc] = useState<string | undefined>(undefined)
-  const [fontFamily, setFontFamily] = useState("Montserrat")
-  const [customFontName, setCustomFontName] = useState<string | null>(null)
-  const [applyFontToAll, setApplyFontToAll] = useState<boolean>(false)
-
-  const handleSampleImage = () => {
-    setImageSrc(initialData.sampleImagePath)
-  }
+  // Initialize store with initial data
+  const setInitialData = useCalendarStore((state) => state.setInitialData)
+  useEffect(() => {
+    setInitialData(initialData)
+  }, [initialData, setInitialData])
 
   const handleDownload = () => {
     canvasRef.current?.downloadPNG(3840, 2160)
   }
 
   return (
-    <div className="grid lg:grid-cols-[380px_1fr] gap-8">
-      <CalendarControls
-        month={month}
-        setMonth={setMonth}
-        year={year}
-        setYear={setYear}
-        weekStart={weekStart}
-        setWeekStart={setWeekStart}
-        textColor={textColor}
-        setTextColor={setTextColor}
-        imageSrc={imageSrc}
-        setImageSrc={setImageSrc}
-        fontFamily={fontFamily}
-        setFontFamily={setFontFamily}
-        customFontName={customFontName}
-        setCustomFontName={setCustomFontName}
-        applyFontToAll={applyFontToAll}
-        setApplyFontToAll={setApplyFontToAll}
-        monthNames={initialData.monthNames}
-        onSampleImage={handleSampleImage}
-        onDownload={handleDownload}
-      />
-      <CalendarPreview
-        ref={canvasRef}
-        month={month}
-        year={year}
-        weekStart={weekStart}
-        textColor={textColor}
-        fontFamily={fontFamily}
-        applyFontToAll={applyFontToAll}
-        customFontName={customFontName}
-        imageSrc={imageSrc}
-        monthNames={initialData.monthNames}
-      />
+    <div className="grid lg:grid-cols-2 gap-8">
+      <CalendarControls />
+      <CalendarPreview ref={canvasRef} onDownload={handleDownload} />
     </div>
   )
 }

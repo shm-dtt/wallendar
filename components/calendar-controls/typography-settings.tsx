@@ -6,22 +6,17 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Type, X } from "lucide-react"
+import { useCalendarStore } from "@/lib/calendar-store"
 
-interface TypographySettingsProps {
-  textColor: string
-  setTextColor: (color: string) => void
-  fontFamily: string
-  setFontFamily: (family: string) => void
-  customFontName: string | null
-  setCustomFontName: (name: string | null) => void
-  applyFontToAll: boolean
-  setApplyFontToAll: (apply: boolean) => void
-}
-
-export function TypographySettings({
-  textColor, setTextColor, fontFamily, setFontFamily, 
-  customFontName, setCustomFontName, applyFontToAll, setApplyFontToAll
-}: TypographySettingsProps) {
+export function TypographySettings() {
+  const textColor = useCalendarStore((state) => state.textColor)
+  const setTextColor = useCalendarStore((state) => state.setTextColor)
+  const fontFamily = useCalendarStore((state) => state.fontFamily)
+  const setFontFamily = useCalendarStore((state) => state.setFontFamily)
+  const customFontName = useCalendarStore((state) => state.customFontName)
+  const setCustomFontName = useCalendarStore((state) => state.setCustomFontName)
+  const applyFontToAll = useCalendarStore((state) => state.applyFontToAll)
+  const setApplyFontToAll = useCalendarStore((state) => state.setApplyFontToAll)
   const fontInputRef = useRef<HTMLInputElement | null>(null)
   const [localColor, setLocalColor] = useState(textColor)
   const commitTimerRef = useRef<number | null>(null)
@@ -73,15 +68,15 @@ export function TypographySettings({
   }
 
   return (
-    <div className="bg-card border rounded-xl p-6 shadow-sm">
-      <div className="flex items-center gap-2 mb-4">
+    <div className="py-1">
+      <div className="flex items-center gap-2 mb-3">
         <Type className="w-4 h-4 text-primary" />
-        <h2 className="font-semibold">Typography</h2>
+        <h2 className="font-semibold text-sm">Typography</h2>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         <div className="space-y-2">
-          <Label htmlFor="textColor">Text Color</Label>
+          <Label htmlFor="textColor" className="text-sm">Text Color</Label>
           <div className="flex gap-2">
             <Input
               id="textColor"
@@ -89,11 +84,11 @@ export function TypographySettings({
               value={localColor}
               onInput={(e) => scheduleCommit((e.target as HTMLInputElement).value)}
               onChange={(e) => scheduleCommit(e.target.value)}
-              className="w-16 h-9 p-1 cursor-pointer"
+              className="w-12 h-8 p-1 cursor-pointer"
             />
-            <div>
+            <div className="flex-1">
               <Select value={fontFamily} onValueChange={setFontFamily}>
-                <SelectTrigger id="fontSelect" className="w-52">
+                <SelectTrigger id="fontSelect" className="h-8">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -109,14 +104,14 @@ export function TypographySettings({
 
         
 
-        <div className="space-y-2">
-          <Label htmlFor="applyAll" className="flex items-center gap-2">
+        <div className="space-y-1">
+          <Label htmlFor="applyAll" className="flex items-center gap-2 text-sm">
             <input
               id="applyAll"
               type="checkbox"
               checked={applyFontToAll}
               onChange={(e) => setApplyFontToAll(e.target.checked)}
-              className="h-4 w-4 accent-primary"
+              className="h-3 w-3 accent-primary"
             />
             <span>Apply selected font to all text</span>
           </Label>
@@ -124,28 +119,28 @@ export function TypographySettings({
         </div>
 
         {customFontName && (
-          <div className="bg-primary/5 border border-primary/20 rounded-lg p-3">
+          <div className="bg-primary/5 border border-primary/20 rounded-lg p-2">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-primary rounded-full" />
-                <span className="text-sm font-medium">Custom: {customFontName}</span>
+                <span className="text-xs font-medium">Custom: {customFontName}</span>
               </div>
-              <Button variant="ghost" size="sm" onClick={removeCustomFont} className="h-6 w-6 p-0">
+              <Button variant="ghost" size="sm" onClick={removeCustomFont} className="h-5 w-5 p-0">
                 <X className="w-3 h-3" />
               </Button>
             </div>
           </div>
         )}
 
-        <div className="space-y-2">
-          <Label htmlFor="fontUpload">Upload Custom Font</Label>
+        <div className="space-y-1">
+          <Label htmlFor="fontUpload" className="text-sm">Upload Custom Font</Label>
           <Input
             id="fontUpload"
             ref={fontInputRef}
             type="file"
             accept=".ttf,.otf,.woff,.woff2"
             onChange={handleFontUpload}
-            className="file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:bg-secondary file:text-secondary-foreground hover:file:bg-secondary/90"
+            className="h-8 file:mr-2 file:py-0.5 file:px-2 file:rounded file:border-0 file:text-xs file:bg-secondary file:text-secondary-foreground hover:file:bg-secondary/90"
           />
           <p className="text-xs text-muted-foreground">Supports TTF, OTF, WOFF files</p>
         </div>
