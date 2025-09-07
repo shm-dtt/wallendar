@@ -30,7 +30,7 @@ export function CalendarSettings() {
         <h2 className="font-semibold text-sm">Calendar Settings</h2>
       </div>
 
-      <div className="flex gap-4">
+      <div className="flex gap-4 flex-wrap">
         <div className="space-y-1">
           <Label htmlFor="month" className="text-sm">
             Month
