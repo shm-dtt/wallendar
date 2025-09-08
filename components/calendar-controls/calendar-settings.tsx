@@ -39,7 +39,7 @@ export function CalendarSettings() {
             value={String(month)}
             onValueChange={(v) => setMonth(Number(v))}
           >
-            <SelectTrigger id="month" className="">
+            <SelectTrigger id="month" className="w-[180px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

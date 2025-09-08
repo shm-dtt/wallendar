@@ -84,11 +84,11 @@ export function TypographySettings() {
               value={localColor}
               onInput={(e) => scheduleCommit((e.target as HTMLInputElement).value)}
               onChange={(e) => scheduleCommit(e.target.value)}
-              className="w-12 h-8 p-1 cursor-pointer"
+              className="w-12 p-1 cursor-pointer"
             />
             <div className="flex-1">
               <Select value={fontFamily} onValueChange={setFontFamily}>
-                <SelectTrigger id="fontSelect" className="h-8">
+                <SelectTrigger id="fontSelect" className="w-[280px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
