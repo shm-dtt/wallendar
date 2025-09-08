@@ -6,7 +6,7 @@ import { BackgroundSettings } from "./background-settings";
 
 export function CalendarControls() {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 flex-2">
       <CalendarSettings />
       <hr className="border-gray-200" />
       <BackgroundSettings />

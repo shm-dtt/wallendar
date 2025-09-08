@@ -1,41 +1,41 @@
-import { create } from 'zustand'
+import { create } from "zustand";
 
 interface InitialData {
-  currentMonth: number
-  currentYear: number
-  monthNames: string[]
-  sampleImagePath: string
+  currentMonth: number;
+  currentYear: number;
+  monthNames: string[];
+  sampleImagePath: string;
 }
 
 interface CalendarState {
   // Calendar settings
-  month: number
-  year: number
-  weekStart: "sunday" | "monday"
-  
+  month: number;
+  year: number;
+  weekStart: "sunday" | "monday";
+
   // Typography settings
-  textColor: string
-  fontFamily: string
-  customFontName: string | null
-  applyFontToAll: boolean
-  
+  textColor: string;
+  fontFamily: string;
+  customFontName: string | null;
+  applyFontToAll: boolean;
+
   // Background settings
-  imageSrc?: string
-  
+  imageSrc?: string;
+
   // Initial data
-  initialData: InitialData | null
-  
+  initialData: InitialData | null;
+
   // Actions
-  setMonth: (month: number) => void
-  setYear: (year: number) => void
-  setWeekStart: (weekStart: "sunday" | "monday") => void
-  setTextColor: (color: string) => void
-  setFontFamily: (family: string) => void
-  setCustomFontName: (name: string | null) => void
-  setApplyFontToAll: (apply: boolean) => void
-  setImageSrc: (src?: string) => void
-  setInitialData: (data: InitialData) => void
-  handleSampleImage: () => void
+  setMonth: (month: number) => void;
+  setYear: (year: number) => void;
+  setWeekStart: (weekStart: "sunday" | "monday") => void;
+  setTextColor: (color: string) => void;
+  setFontFamily: (family: string) => void;
+  setCustomFontName: (name: string | null) => void;
+  setApplyFontToAll: (apply: boolean) => void;
+  setImageSrc: (src?: string) => void;
+  setInitialData: (data: InitialData) => void;
+  handleSampleImage: () => void;
 }
 
 export const useCalendarStore = create<CalendarState>((set, get) => ({
@@ -59,15 +59,16 @@ export const useCalendarStore = create<CalendarState>((set, get) => ({
   setCustomFontName: (customFontName) => set({ customFontName }),
   setApplyFontToAll: (applyFontToAll) => set({ applyFontToAll }),
   setImageSrc: (imageSrc) => set({ imageSrc }),
-  setInitialData: (initialData) => set({ 
-    initialData,
-    month: initialData.currentMonth,
-    year: initialData.currentYear
-  }),
+  setInitialData: (initialData) =>
+    set({
+      initialData,
+      month: initialData.currentMonth,
+      year: initialData.currentYear,
+    }),
   handleSampleImage: () => {
-    const { initialData } = get()
+    const { initialData } = get();
     if (initialData) {
-      set({ imageSrc: initialData.sampleImagePath })
+      set({ imageSrc: initialData.sampleImagePath });
     }
-  }
-}))
+  },
+}));
