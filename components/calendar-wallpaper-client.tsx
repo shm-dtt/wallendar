@@ -31,7 +31,7 @@ export function CalendarWallpaperClient({ initialData }: CalendarWallpaperClient
   }
 
   return (
-    <div className="grid lg:grid-cols-2 gap-8">
+    <div className="grid lg:grid-cols-2 gap-4">
       <CalendarControls />
       <CalendarPreview ref={canvasRef} onDownload={handleDownload} />
     </div>

@@ -140,7 +140,6 @@ export function TypographySettings() {
             type="file"
             accept=".ttf,.otf,.woff,.woff2"
             onChange={handleFontUpload}
-            className="h-8 file:mr-2 file:py-0.5 file:px-2 file:rounded file:border-0 file:text-xs file:bg-secondary file:text-secondary-foreground hover:file:bg-secondary/90"
           />
           <p className="text-xs text-muted-foreground">Supports TTF, OTF, WOFF files</p>
         </div>

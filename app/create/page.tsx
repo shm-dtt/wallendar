@@ -8,11 +8,10 @@ export default async function Create() {
 
   return (
     <main className="font-sans min-h-dvh">
-      <div className="container mx-auto p-4 md:p-6">
-        <div className="grid lg:grid-cols-2 gap-8">
-          <Header />
-        </div>
-        <div className="mt-8">
+      <div className="p-4 md:p-6">
+        <Header />
+
+        <div className="mt-4">
           <CalendarWallpaperClient initialData={initialData} />
         </div>
       </div>
