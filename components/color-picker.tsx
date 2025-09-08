@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Check, Palette } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -268,13 +270,6 @@ const ColorInput: React.FC<ColorInputProps> = ({ value, onChange, onCommit }) =>
   );
 };
 
-// Preset colors
-const PRESET_COLORS = [
-  "#000000", "#ffffff", "#f87171", "#fb923c", "#fbbf24", "#a3e635",
-  "#34d399", "#22d3ee", "#60a5fa", "#a78bfa", "#f472b6", "#fb7185",
-  "#374151", "#6b7280", "#9ca3af", "#d1d5db", "#ef4444", "#f97316",
-  "#eab308", "#84cc16", "#10b981", "#06b6d4", "#3b82f6", "#8b5cf6"
-];
 
 interface ModernColorPickerProps {
   value: string;
@@ -363,11 +358,11 @@ export const ModernColorPicker: React.FC<ModernColorPickerProps> = ({
     updateColor({ hex });
   }, [updateColor]);
 
-  const handlePresetClick = useCallback((hex: string) => {
-    const cleanHex = sanitizeHex(hex.replace('#', ''));
-    updateColor({ hex: cleanHex });
-    commitColor();
-  }, [updateColor, commitColor]);
+  // const handlePresetClick = useCallback((hex: string) => {
+  //   const cleanHex = sanitizeHex(hex.replace('#', ''));
+  //   updateColor({ hex: cleanHex });
+  //   commitColor();
+  // }, [updateColor, commitColor]);
 
   const defaultTrigger = (
     <button

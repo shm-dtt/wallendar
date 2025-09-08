@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Image } from "lucide-react";
+import { ImageIcon } from "lucide-react";
 import { useCalendarStore } from "@/lib/calendar-store";
 
 export function BackgroundSettings() {
@@ -29,7 +29,7 @@ export function BackgroundSettings() {
   return (
     <div className="py-1">
       <div className="flex items-center gap-2 mb-3">
-        <Image className="w-4 h-4 text-primary" />
+        <ImageIcon className="w-4 h-4 text-primary" />
         <h2 className="font-semibold text-sm">Background</h2>
       </div>
 

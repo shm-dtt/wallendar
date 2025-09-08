@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { Button } from "@/components/ui/button";
 import { WandSparkles } from "lucide-react";
 import { gallery } from "@/lib/calendar-utils";
