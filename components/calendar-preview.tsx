@@ -8,6 +8,7 @@ import WallpaperCanvas, {
 import { Button } from "@/components/ui/button";
 import { Download, ScanEye } from "lucide-react";
 import { useCalendarStore } from "@/lib/calendar-store";
+import { monthNames } from "@/lib/calendar-utils";
 
 interface CalendarPreviewProps {
   onDownload: () => void;
@@ -25,9 +26,6 @@ export const CalendarPreview = forwardRef<
   const applyFontToAll = useCalendarStore((state) => state.applyFontToAll);
   const customFontName = useCalendarStore((state) => state.customFontName);
   const imageSrc = useCalendarStore((state) => state.imageSrc);
-  const initialData = useCalendarStore((state) => state.initialData);
-
-  const monthNames = initialData?.monthNames || [];
 
   const fontFamilyMap = {
     Montserrat:

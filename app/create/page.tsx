@@ -10,7 +10,6 @@ export default async function Create() {
     <main className="font-sans min-h-dvh">
       <div className="p-4 md:p-6">
         <Header />
-
         <div className="mt-4">
           <CalendarWallpaperClient initialData={initialData} />
         </div>

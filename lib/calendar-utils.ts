@@ -3,21 +3,6 @@ export async function getInitialData() {
   return {
     currentMonth: current.getMonth(),
     currentYear: current.getFullYear(),
-    monthNames: [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ],
-    sampleImagePath: "/sample-bg.png", // Your sample image in public folder
   };
 }
 
@@ -42,3 +27,20 @@ export const gallery: string[] = [
   "/images/wallpaper4.png",
   "/images/wallpaper5.jpg",
 ];
+
+export const monthNames: string[] = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
+export const sampleImagePath = "/sample-bg.png";

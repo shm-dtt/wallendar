@@ -1,10 +1,9 @@
 import { create } from "zustand";
+import { sampleImagePath } from "@/lib/calendar-utils";
 
 interface InitialData {
   currentMonth: number;
   currentYear: number;
-  monthNames: string[];
-  sampleImagePath: string;
 }
 
 interface CalendarState {
@@ -68,7 +67,7 @@ export const useCalendarStore = create<CalendarState>((set, get) => ({
   handleSampleImage: () => {
     const { initialData } = get();
     if (initialData) {
-      set({ imageSrc: initialData.sampleImagePath });
+      set({ imageSrc: sampleImagePath });
     }
   },
 }));

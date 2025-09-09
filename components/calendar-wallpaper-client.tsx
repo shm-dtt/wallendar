@@ -9,8 +9,6 @@ import { useCalendarStore } from '@/lib/calendar-store'
 interface InitialData {
   currentMonth: number
   currentYear: number
-  monthNames: string[]
-  sampleImagePath: string
 }
 
 interface CalendarWallpaperClientProps {

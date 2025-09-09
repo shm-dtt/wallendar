@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Calendar } from "lucide-react";
 import { useCalendarStore } from "@/lib/calendar-store";
+import { monthNames } from "@/lib/calendar-utils";
 
 export function CalendarSettings() {
   const month = useCalendarStore((state) => state.month);
@@ -20,9 +21,7 @@ export function CalendarSettings() {
   const setYear = useCalendarStore((state) => state.setYear);
   const weekStart = useCalendarStore((state) => state.weekStart);
   const setWeekStart = useCalendarStore((state) => state.setWeekStart);
-  const initialData = useCalendarStore((state) => state.initialData);
 
-  const monthNames = initialData?.monthNames || [];
   return (
     <div className="py-1">
       <div className="flex items-center gap-2 mb-3">
