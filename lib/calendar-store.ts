@@ -1,14 +1,9 @@
 import { create } from "zustand";
 import { sampleImagePath } from "@/lib/calendar-utils";
 
-interface InitialData {
-  currentMonth: number;
-  currentYear: number;
-}
-
 interface CalendarState {
   // Calendar settings
-  month: number;
+  month: number | null; // null means no month selected (placeholder)
   year: number;
   weekStart: "sunday" | "monday";
 
@@ -21,9 +16,6 @@ interface CalendarState {
   // Background settings
   imageSrc?: string;
 
-  // Initial data
-  initialData: InitialData | null;
-
   // Actions
   setMonth: (month: number) => void;
   setYear: (year: number) => void;
@@ -33,13 +25,12 @@ interface CalendarState {
   setCustomFontName: (name: string | null) => void;
   setApplyFontToAll: (apply: boolean) => void;
   setImageSrc: (src?: string) => void;
-  setInitialData: (data: InitialData) => void;
   handleSampleImage: () => void;
 }
 
-export const useCalendarStore = create<CalendarState>((set, get) => ({
-  // Initial state
-  month: 0,
+export const useCalendarStore = create<CalendarState>((set) => ({
+  // Initial state - month is null (placeholder), year is current year
+  month: null,
   year: new Date().getFullYear(),
   weekStart: "sunday",
   textColor: "#ffffff",
@@ -47,7 +38,6 @@ export const useCalendarStore = create<CalendarState>((set, get) => ({
   customFontName: null,
   applyFontToAll: false,
   imageSrc: undefined,
-  initialData: null,
 
   // Actions
   setMonth: (month) => set({ month }),
@@ -58,16 +48,5 @@ export const useCalendarStore = create<CalendarState>((set, get) => ({
   setCustomFontName: (customFontName) => set({ customFontName }),
   setApplyFontToAll: (applyFontToAll) => set({ applyFontToAll }),
   setImageSrc: (imageSrc) => set({ imageSrc }),
-  setInitialData: (initialData) =>
-    set({
-      initialData,
-      month: initialData.currentMonth,
-      year: initialData.currentYear,
-    }),
-  handleSampleImage: () => {
-    const { initialData } = get();
-    if (initialData) {
-      set({ imageSrc: sampleImagePath });
-    }
-  },
+  handleSampleImage: () => set({ imageSrc: sampleImagePath }),
 }));

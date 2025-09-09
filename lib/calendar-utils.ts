@@ -1,11 +1,3 @@
-export async function getInitialData() {
-  const current = new Date();
-  return {
-    currentMonth: current.getMonth(),
-    currentYear: current.getFullYear(),
-  };
-}
-
 export function daysInMonth(year: number, monthIndex: number) {
   return new Date(year, monthIndex + 1, 0).getDate();
 }

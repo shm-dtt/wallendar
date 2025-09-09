@@ -54,6 +54,9 @@ export const CalendarPreview = forwardRef<
     return { monthFont: withCustom, bodyFont: montserratOnly };
   }, [customFontName, fontFamily]);
 
+  // Only show preview if month is selected
+  const showPreview = month !== null;
+
   return (
     <div className="flex-3 space-y-4">
       <div className="flex items-center justify-between mb-4">
@@ -62,34 +65,45 @@ export const CalendarPreview = forwardRef<
           <h2 className="font-semibold text-sm">Preview</h2>
         </div>
         <div className="text-sm text-muted-foreground">
-          {monthNames[month]} {year}
+          {showPreview ? `${monthNames[month]} ${year}` : "Select a month"}
         </div>
       </div>
 
       <div className="w-full aspect-video rounded-lg overflow-hidden bg-black">
-        <WallpaperCanvas
-          ref={ref}
-          month={month}
-          year={year}
-          weekStart={weekStart}
-          textColor={textColor}
-          fontFamily={
-            applyFontToAll
-              ? effectiveFont
-              : `${monthOnlyFont.monthFont} |||MONTH_ONLY||| ${monthOnlyFont.bodyFont}`
-          }
-          imageSrc={imageSrc}
-        />
+        {showPreview ? (
+          <WallpaperCanvas
+            ref={ref}
+            month={month}
+            year={year}
+            weekStart={weekStart}
+            textColor={textColor}
+            fontFamily={
+              applyFontToAll
+                ? effectiveFont
+                : `${monthOnlyFont.monthFont} |||MONTH_ONLY||| ${monthOnlyFont.bodyFont}`
+            }
+            imageSrc={imageSrc}
+          />
+        ) : (
+          <div className="h-full w-full flex items-center justify-center text-muted-foreground">
+            <div className="text-center">
+              <ScanEye className="w-12 h-12 mx-auto mb-2 opacity-50" />
+              <p className="text-sm">Select a month to see preview</p>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex-col items-center space-y-2">
-        <Button onClick={onDownload} size="lg" className="w-full">
+        <Button 
+          onClick={onDownload} 
+          size="lg" 
+          className="w-full"
+          disabled={!showPreview}
+        >
           <Download className="w-4 h-4 mr-2" />
           Download 4K Wallpaper
         </Button>
-        {/* <p className="text-xs text-center text-muted-foreground">
-          Exports at 3840×2160 resolution
-        </p> */}
       </div>
     </div>
   );

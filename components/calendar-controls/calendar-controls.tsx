@@ -1,5 +1,3 @@
-"use client";
-
 import { CalendarSettings } from "./calendar-settings";
 import { TypographySettings } from "./typography-settings";
 import { BackgroundSettings } from "./background-settings";
