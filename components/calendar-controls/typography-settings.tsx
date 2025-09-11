@@ -38,7 +38,7 @@ export function TypographySettings() {
           // Use specific weights for certain fonts
           let weight = "400"
           if (f.name === "Montserrat") weight = "500"
-          else if (f.name === "Doto") weight = "600"
+          else if (f.name === "Doto") weight = "700"
           
           const face = new FontFace(f.name, `url(${f.path})`, { weight })
           const loaded = await face.load()

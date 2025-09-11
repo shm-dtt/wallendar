@@ -27,7 +27,7 @@ export const gallery: string[] = [
   "/images/wallpaper2.png",
   "/images/wallpaper3.png",
   "/images/wallpaper4.png",
-  "/images/wallpaper5.jpg",
+  "/images/wallpaper5.png",
 ];
 
 export const monthNames: string[] = [

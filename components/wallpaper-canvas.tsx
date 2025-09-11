@@ -160,7 +160,7 @@ function drawWallpaper(
   function getFontWeight(fontFamily: string) {
     // Use specific weights for certain fonts
     if (fontFamily.includes("Montserrat")) return "500"
-    if (fontFamily.includes("Doto")) return "600"
+    if (fontFamily.includes("Doto")) return "700"
     return "400"
   }
 
