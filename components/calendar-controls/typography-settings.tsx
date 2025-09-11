@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Type, X } from "lucide-react"
 import { useCalendarStore } from "@/lib/calendar-store"
-import { ModernColorPicker } from "@/components/color-picker" // Adjust path as needed
+import { ModernColorPicker } from "@/components/color-picker"
+import { localFonts } from '@/lib/calendar-utils'
 
 export function TypographySettings() {
   const textColor = useCalendarStore((state) => state.textColor)
@@ -24,26 +25,20 @@ export function TypographySettings() {
   const [uploadedFonts, setUploadedFonts] = useState<{name: string, displayName: string}[]>([])
   const [installedFonts, setInstalledFonts] = useState<{name: string, displayName: string}[]>([])
   const [isUploading, setIsUploading] = useState(false)
-  const [fontWeight, setFontWeight] = useState("700")
+
 
   // Preinstalled fonts shipped in public/fonts
   useEffect(() => {
-    const fonts = [
-      { name: "Montserrat", displayName: "Montserrat (Default)", path: "/fonts/Montserrat.ttf" },
-      { name: "Doto", displayName: "Doto", path: "/fonts/Doto.ttf" },
-      { name: "Crafty Girls", displayName: "Crafty Girls", path: "/fonts/CraftyGirls.ttf" },
-      { name: "Freckle Face", displayName: "Freckle Face", path: "/fonts/FreckleFace.ttf" },
-      { name: "Playwrite CA", displayName: "Playwrite CA", path: "/fonts/PlaywriteCA.ttf" },
-      { name: "Product Sans", displayName: "Product Sans", path: "/fonts/ProductSans.ttf" },
-      { name: "Segoe Script", displayName: "Segoe Script", path: "/fonts/SegoeScript.TTF" },
-    ]
+    const fonts = localFonts
 
     let canceled = false
     async function registerAll() {
       for (const f of fonts) {
         try {
-          // Use medium weight (500) for Montserrat as default
-          const weight = f.name === "Montserrat" ? "500" : "400"
+          // Use specific weights for certain fonts
+          let weight = "400"
+          if (f.name === "Montserrat") weight = "500"
+          else if (f.name === "Doto") weight = "600"
           
           const face = new FontFace(f.name, `url(${f.path})`, { weight })
           const loaded = await face.load()
@@ -211,7 +206,7 @@ export function TypographySettings() {
             />
             
             <div className="flex-1 w-full">
-              <Select value={fontFamily} onValueChange={(value) => {
+              <Select value={fontFamily === "Montserrat" ? undefined : fontFamily} onValueChange={(value) => {
                 setFontFamily(value)
                 if (uploadedFonts.some(font => font.name === value)) {
                   setCustomFontName(value)
@@ -220,7 +215,7 @@ export function TypographySettings() {
                 }
               }}>
                 <SelectTrigger className="w-full">
-                  <SelectValue />
+                  <SelectValue placeholder="Select font" />
                 </SelectTrigger>
                 <SelectContent>
                   {allFontOptions.map((font) => (

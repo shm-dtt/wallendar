@@ -158,8 +158,9 @@ function drawWallpaper(
   }
 
   function getFontWeight(fontFamily: string) {
-    // Use medium weight (500) for Montserrat as default
+    // Use specific weights for certain fonts
     if (fontFamily.includes("Montserrat")) return "500"
+    if (fontFamily.includes("Doto")) return "600"
     return "400"
   }
 
