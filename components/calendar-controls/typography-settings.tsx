@@ -22,14 +22,47 @@ export function TypographySettings() {
   
   const fontInputRef = useRef<HTMLInputElement | null>(null)
   const [uploadedFonts, setUploadedFonts] = useState<{name: string, displayName: string}[]>([])
+  const [installedFonts, setInstalledFonts] = useState<{name: string, displayName: string}[]>([])
   const [isUploading, setIsUploading] = useState(false)
+  const [fontWeight, setFontWeight] = useState("700")
 
-  const baseFonts = [
-    { value: "Montserrat", label: "Montserrat (Default)" },
-    { value: "Serif", label: "Serif" },
-    { value: "Mono", label: "Monospace" },
-    { value: "Playwrite CA", label: "Playwrite CA" }
-  ]
+  // Preinstalled fonts shipped in public/fonts
+  useEffect(() => {
+    const fonts = [
+      { name: "Montserrat", displayName: "Montserrat (Default)", path: "/fonts/Montserrat.ttf" },
+      { name: "Doto", displayName: "Doto", path: "/fonts/Doto.ttf" },
+      { name: "Crafty Girls", displayName: "Crafty Girls", path: "/fonts/CraftyGirls.ttf" },
+      { name: "Freckle Face", displayName: "Freckle Face", path: "/fonts/FreckleFace.ttf" },
+      { name: "Playwrite CA", displayName: "Playwrite CA", path: "/fonts/PlaywriteCA.ttf" },
+      { name: "Product Sans", displayName: "Product Sans", path: "/fonts/ProductSans.ttf" },
+      { name: "Segoe Script", displayName: "Segoe Script", path: "/fonts/SegoeScript.TTF" },
+    ]
+
+    let canceled = false
+    async function registerAll() {
+      for (const f of fonts) {
+        try {
+          // Use medium weight (500) for Montserrat as default
+          const weight = f.name === "Montserrat" ? "500" : "400"
+          
+          const face = new FontFace(f.name, `url(${f.path})`, { weight })
+          const loaded = await face.load()
+          if (!canceled) {
+            document.fonts.add(loaded)
+          }
+        } catch {
+          // ignore failures; font will just not be selectable if it can't load
+        }
+      }
+      if (!canceled) {
+        setInstalledFonts(fonts.map(({ name, displayName }) => ({ name, displayName })))
+      }
+    }
+    registerAll()
+    return () => {
+      canceled = true
+    }
+  }, [])
 
   // Load custom fonts from localStorage on mount
   useEffect(() => {
@@ -64,6 +97,19 @@ export function TypographySettings() {
     try {
       const arrayBuffer = await file.arrayBuffer()
       const fileName = file.name.replace(/\.(ttf|otf|woff2?)$/i, "") || "CustomFont"
+      
+      // Check if a font with the same display name already exists
+      const existingFont = uploadedFonts.find(font => font.displayName === fileName)
+      if (existingFont) {
+        // If font already exists, just select it instead of adding a duplicate
+        setCustomFontName(existingFont.name)
+        setFontFamily(existingFont.name)
+        if (fontInputRef.current) {
+          fontInputRef.current.value = ""
+        }
+        setIsUploading(false)
+        return
+      }
       
       // Create unique name to avoid conflicts
       const timestamp = Date.now()
@@ -125,8 +171,8 @@ export function TypographySettings() {
   }
 
   const allFontOptions = [
-    ...baseFonts,
-    ...uploadedFonts.map(font => ({ value: font.name, label: font.displayName }))
+    ...installedFonts.map(font => ({ value: font.name, label: font.displayName })),
+    ...uploadedFonts.map(font => ({ value: font.name, label: font.displayName })),
   ]
 
   const handleColorChange = (color: string) => {

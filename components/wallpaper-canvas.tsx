@@ -157,25 +157,33 @@ function drawWallpaper(
     return fam.replace(/var\([^)]*\)\s*,?/g, "").trim()
   }
 
+  function getFontWeight(fontFamily: string) {
+    // Use medium weight (500) for Montserrat as default
+    if (fontFamily.includes("Montserrat")) return "500"
+    return "400"
+  }
+
   const safeMonthFamily = sanitizeFamily(monthFamily)
   const safeBodyFamily = sanitizeFamily(bodyFamily)
 
   // Ensure month width never exceeds calendar width (with a little margin)
   let tracking = monthSize * 0.055
-  context.font = `700 ${monthSize}px ${safeMonthFamily}`
+  const monthWeight = getFontWeight(monthFamily)
+  context.font = `${monthWeight} ${monthSize}px ${safeMonthFamily}`
   let measured = measureTrackedWidth(monthName, tracking)
   const maxMonthWidth = gridWidth * 0.96
   while (measured > maxMonthWidth && monthSize > Math.round(height * 0.06)) {
     monthSize -= 2
     tracking = monthSize * 0.055
-    context.font = `700 ${monthSize}px ${safeMonthFamily}`
+    context.font = `${monthWeight} ${monthSize}px ${safeMonthFamily}`
     measured = measureTrackedWidth(monthName, tracking)
   }
   drawTrackedCentered(monthName, width / 2, baseY, tracking)
 
   // Day-of-week labels (same size as dates, slightly faint)
   const labels = opts.weekStart === "sunday" ? DOW_SUN : DOW_MON
-  context.font = `500 ${labelDaySize}px ${safeBodyFamily}`
+  const bodyWeight = getFontWeight(bodyFamily)
+  context.font = `${bodyWeight} ${labelDaySize}px ${safeBodyFamily}`
   const dowY = baseY + Math.round(height * 0.08)
   labels.forEach((label, i) => {
     const x = startX + i * colW + colW / 2
@@ -184,7 +192,7 @@ function drawWallpaper(
   })
 
   // Dates (same size as weekday labels)
-  context.font = `500 ${labelDaySize}px ${safeBodyFamily}`
+  context.font = `${bodyWeight} ${labelDaySize}px ${safeBodyFamily}`
   const totalDays = daysInMonth(opts.year, opts.month)
   const offset = firstDayOffset(opts.year, opts.month, opts.weekStart)
   const rowsTop = dowY + Math.round(height * 0.055)
@@ -202,7 +210,7 @@ function drawWallpaper(
 
   // Optional credit line kept blank intentionally, but spacing preserved
   context.globalAlpha = 0.8
-  context.font = `500 ${Math.round(height * 0.018)}px ${safeBodyFamily}`
+  context.font = `${bodyWeight} ${Math.round(height * 0.018)}px ${safeBodyFamily}`
   context.fillText("", width / 2, rowsTop + rowH * 6.1)
 }
 
