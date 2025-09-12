@@ -23,11 +23,11 @@ export const localFonts = [
 ]
 
 export const gallery: string[] = [
-  "/images/wallpaper1.png",
-  "/images/wallpaper2.png",
-  "/images/wallpaper3.png",
-  "/images/wallpaper4.png",
-  "/images/wallpaper5.png",
+  "/images/wallpaper1.webp",
+  "/images/wallpaper2.webp",
+  "/images/wallpaper3.webp",
+  "/images/wallpaper4.webp",
+  "/images/wallpaper5.webp",
 ];
 
 export const monthNames: string[] = [

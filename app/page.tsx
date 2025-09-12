@@ -57,6 +57,11 @@ export default function Page() {
                       (idx % gallery.length) + 1
                     }`}
                     className="w-full object-cover"
+                    priority={idx < 2}
+                    loading={idx < 2 ? "eager" : "lazy"}
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    placeholder="blur"
+                    blurDataURL="data:image/webp;base64,UklGRjIAAABXRUJQVlA4IC4AAACyAgCdASoBAAEALmk0mk0iIiIiIgBoSygABc6WWgAA/veff/0PP8bA//LwYAAA"
                   />
                 </figure>
               ))}
