@@ -16,7 +16,5 @@ A simple website to add overlay of a calendar only your wallpaper.
 - with a LIVE preview of the wallpaper
 
 ---
-Made with Next.js, shadcn/ui, and Zustand.
-
-
-Made by [shm-dtt](https://sohamdutta.in) with [v0.dev](https://v0.dev)
+Made with Next.js, shadcn/ui, and Zustand by [shm-dtt](https://sohamdutta.in) with [v0.dev](https://v0.dev).<br/>
+Credits for the color picker: [Ryan Mogk](https://modall.ca/lab/tailwindcss-react-color-picker)
