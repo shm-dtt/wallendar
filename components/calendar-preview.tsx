@@ -26,6 +26,8 @@ export const CalendarPreview = forwardRef<
   const applyFontToAll = useCalendarStore((state) => state.applyFontToAll);
   const customFontName = useCalendarStore((state) => state.customFontName);
   const imageSrc = useCalendarStore((state) => state.imageSrc);
+  const offsetX = useCalendarStore((state) => state.offsetX);
+  const offsetY = useCalendarStore((state) => state.offsetY);
 
   const fontFamilyMap = {
     Montserrat:
@@ -93,6 +95,8 @@ export const CalendarPreview = forwardRef<
                 : `${monthOnlyFont.monthFont} |||MONTH_ONLY||| ${monthOnlyFont.bodyFont}`
             }
             imageSrc={imageSrc}
+            offsetX={offsetX}
+            offsetY={offsetY}
           />
         ) : (
           <div className="h-full w-full flex items-center justify-center text-muted-foreground">

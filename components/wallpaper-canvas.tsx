@@ -14,6 +14,9 @@ type Props = {
   textColor: string
   fontFamily: string
   imageSrc?: string
+  // Normalized offsets (-1..1) where (0,0) is centered
+  offsetX?: number
+  offsetY?: number
 }
 
 // Day labels
@@ -122,6 +125,16 @@ function drawWallpaper(
   const colW = gridWidth / 7
   const baseY = height * 0.34
 
+  // Apply normalized offset to calendar block and month title
+  const normX = Math.max(-1, Math.min(1, opts.offsetX ?? 0))
+  const normY = Math.max(-1, Math.min(1, opts.offsetY ?? 0))
+  // Allow shifting the grid all the way until its left/right edges touch the canvas edges.
+  // Since the grid is centered, the left margin equals the right margin = startX.
+  const maxShiftX = startX
+  const maxShiftY = height * 0.30 // allow up to 30% height shift
+  const shiftX = normX * maxShiftX
+  const shiftY = normY * maxShiftY
+
   // Common text styles
   context.textAlign = "center"
   context.textBaseline = "alphabetic"
@@ -179,15 +192,15 @@ function drawWallpaper(
     context.font = `${monthWeight} ${monthSize}px ${safeMonthFamily}`
     measured = measureTrackedWidth(monthName, tracking)
   }
-  drawTrackedCentered(monthName, width / 2, baseY, tracking)
+  drawTrackedCentered(monthName, width / 2 + shiftX, baseY + shiftY, tracking)
 
   // Day-of-week labels (same size as dates, slightly faint)
   const labels = opts.weekStart === "sunday" ? DOW_SUN : DOW_MON
   const bodyWeight = getFontWeight(bodyFamily)
   context.font = `${bodyWeight} ${labelDaySize}px ${safeBodyFamily}`
-  const dowY = baseY + Math.round(height * 0.08)
+  const dowY = baseY + Math.round(height * 0.08) + shiftY
   labels.forEach((label, i) => {
-    const x = startX + i * colW + colW / 2
+    const x = startX + i * colW + colW / 2 + shiftX
     context.globalAlpha = 0.8
     context.fillText(label, x, dowY)
   })
@@ -204,7 +217,7 @@ function drawWallpaper(
     const idx = offset + (d - 1)
     const col = idx % 7
     const row = Math.floor(idx / 7)
-    const x = startX + col * colW + colW / 2
+    const x = startX + col * colW + colW / 2 + shiftX
     const y = rowsTop + row * rowH
     context.fillText(String(d), x, y)
   }
@@ -212,15 +225,17 @@ function drawWallpaper(
   // Optional credit line kept blank intentionally, but spacing preserved
   context.globalAlpha = 0.8
   context.font = `${bodyWeight} ${Math.round(height * 0.018)}px ${safeBodyFamily}`
-  context.fillText("", width / 2, rowsTop + rowH * 6.1)
+  context.fillText("", width / 2 + shiftX, rowsTop + rowH * 6.1)
 }
 
 const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(function WallpaperCanvas(
-  { month, year, weekStart, textColor, fontFamily, imageSrc },
+  { month, year, weekStart, textColor, fontFamily, imageSrc, offsetX = 0, offsetY = 0 },
   ref,
 ) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const imgRef = useRef<HTMLImageElement | null>(null)
+  const prevImageSrcRef = useRef<string | undefined>(undefined)
+  const prevFontKeyRef = useRef<string | undefined>(undefined)
 
   useImperativeHandle(
     ref,
@@ -237,6 +252,8 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(function Wallpa
           fontFamily,
           image: imgRef.current || undefined,
           scaleForExport: true,
+          offsetX,
+          offsetY,
         })
         const link = document.createElement("a")
         link.download = `calendar-${year}-${String(month + 1).padStart(2, "0")}.png`
@@ -245,7 +262,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(function Wallpa
         exportCanvas.remove()
       },
     }),
-    [month, year, weekStart, textColor, fontFamily],
+    [month, year, weekStart, textColor, fontFamily, offsetX, offsetY],
   )
 
   function parseFamilies(input: string) {
@@ -292,27 +309,57 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(function Wallpa
     canvas.height = Math.max(180, Math.floor(rect.height * dpr))
 
     async function render() {
-      let img: HTMLImageElement | undefined = undefined
-      if (imageSrc) {
+      const needImageLoad = !!imageSrc && imageSrc !== prevImageSrcRef.current
+      const fontKey = fontFamily
+      const needFontLoad = fontKey !== prevFontKeyRef.current
+
+      // Fast path: no resource loads, draw immediately (e.g., offsets change)
+      if (!needImageLoad && !needFontLoad) {
+        if (!canceled) {
+          drawWallpaper(canvas!, {
+            month,
+            year,
+            weekStart,
+            textColor,
+            fontFamily,
+            image: imgRef.current || undefined,
+            offsetX,
+            offsetY,
+          })
+        }
+        return
+      }
+
+      // Load resources that changed
+      let loadedImg: HTMLImageElement | undefined = undefined
+      if (needImageLoad && imageSrc) {
         try {
-          img = await loadImage(imageSrc)
-          if (!canceled) imgRef.current = img
+          loadedImg = await loadImage(imageSrc)
+          if (!canceled) {
+            imgRef.current = loadedImg
+            prevImageSrcRef.current = imageSrc
+          }
         } catch (e) {
           console.error("[v0] image load failed", e)
         }
       }
-      // Ensure selected fonts are loaded before drawing to avoid flicker/fallback
-      const { monthFam, bodyFam } = parseFamilies(fontFamily)
-      await Promise.allSettled([ensureFontsLoaded(monthFam), ensureFontsLoaded(bodyFam)])
+
+      if (needFontLoad) {
+        const { monthFam, bodyFam } = parseFamilies(fontFamily)
+        await Promise.allSettled([ensureFontsLoaded(monthFam), ensureFontsLoaded(bodyFam)])
+        if (!canceled) prevFontKeyRef.current = fontKey
+      }
+
       if (!canceled) {
-        // TypeScript assertion since we know canvas is not null from the outer scope check
         drawWallpaper(canvas!, {
           month,
           year,
           weekStart,
           textColor,
           fontFamily,
-          image: imgRef.current || img,
+          image: imgRef.current || loadedImg,
+          offsetX,
+          offsetY,
         })
       }
     }
@@ -321,7 +368,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(function Wallpa
     return () => {
       canceled = true
     }
-  }, [month, year, weekStart, textColor, fontFamily, imageSrc])
+  }, [month, year, weekStart, textColor, fontFamily, imageSrc, offsetX, offsetY])
 
   return <canvas ref={canvasRef} aria-label="Wallpaper preview canvas" className="h-full w-full block" />
 })
