@@ -1,5 +1,5 @@
 import { CalendarWallpaperClient } from "@/components/calendar-wallpaper-client";
-import { Header } from "@/components/landing-header";
+import { Header } from "@/components/layout/header";
 
 export default function Create() {
   return (

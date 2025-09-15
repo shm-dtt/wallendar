@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { WandSparkles } from "lucide-react";
 import { gallery } from "@/lib/calendar-utils";
-import { Header } from "@/components/landing-header";
-import { Footer } from "@/components/landing-footer";
+import { Header } from "@/components/layout/header";
+import { Footer } from "@/components/layout/footer";
 import Link from "next/link";
 import Image from "next/image";
 
