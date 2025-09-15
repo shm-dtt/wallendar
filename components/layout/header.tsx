@@ -54,13 +54,13 @@ export function Header() {
               Support the project if you like it :)
             </p>
             <Link href={SUPPORT_CONFIG.PAYPAL_URL} target="_blank">
-              <Button className="w-full bg-blue-500 hover:bg-blue-700 text-white hover:text-white">
+              <Button className="w-full bg-blue-500 hover:bg-blue-700 text-white hover:text-white cursor-pointer">
                 <DollarSign aria-hidden="true" />
                 Paypal
               </Button>
             </Link>
             <Link href={SUPPORT_CONFIG.BUY_ME_COFFEE_URL} target="_blank">
-              <Button className="w-full bg-amber-300 hover:bg-amber-400 text-brown-500 ">
+              <Button className="w-full bg-amber-300 hover:bg-amber-400 text-brown-500 cursor-pointer">
                 <Coffee aria-hidden="true" className="text-brown-500 " />
                 Buy me a coffee
               </Button>
@@ -72,7 +72,7 @@ export function Header() {
               <QRCode value={upiUrl} size={120} bgColor="#fff" fgColor="#222" />
 
               <p className="text-sm text-gray-500 mb-2">or</p>
-              <Button onClick={handleCopyUpiId} className="w-full bg-green-500 hover:bg-green-700 text-white hover:text-white">
+              <Button onClick={handleCopyUpiId} className="w-full bg-green-500 hover:bg-green-700 text-white hover:text-white cursor-pointer">
                 <Copy aria-hidden="true" />
                 {copied ? "Copied!" : "Copy UPI ID"}
               </Button>
