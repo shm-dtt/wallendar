@@ -16,6 +16,10 @@ interface CalendarState {
   // Background settings
   imageSrc?: string;
 
+  // Position offsets (normalized -1..1)
+  offsetX: number;
+  offsetY: number;
+
   // Actions
   setMonth: (month: number) => void;
   setYear: (year: number) => void;
@@ -26,6 +30,9 @@ interface CalendarState {
   setApplyFontToAll: (apply: boolean) => void;
   setImageSrc: (src?: string) => void;
   handleSampleImage: () => void;
+  setOffset: (x: number, y: number) => void;
+  setOffsetX: (x: number) => void;
+  setOffsetY: (y: number) => void;
 }
 
 export const useCalendarStore = create<CalendarState>((set) => ({
@@ -38,6 +45,8 @@ export const useCalendarStore = create<CalendarState>((set) => ({
   customFontName: null,
   applyFontToAll: false,
   imageSrc: undefined,
+  offsetX: 0,
+  offsetY: 0,
 
   // Actions
   setMonth: (month) => set({ month }),
@@ -49,4 +58,7 @@ export const useCalendarStore = create<CalendarState>((set) => ({
   setApplyFontToAll: (applyFontToAll) => set({ applyFontToAll }),
   setImageSrc: (imageSrc) => set({ imageSrc }),
   handleSampleImage: () => set({ imageSrc: sampleImagePath }),
+  setOffset: (x, y) => set({ offsetX: Math.max(-1, Math.min(1, x)), offsetY: Math.max(-1, Math.min(1, y)) }),
+  setOffsetX: (x) => set({ offsetX: Math.max(-1, Math.min(1, x)) }),
+  setOffsetY: (y) => set({ offsetY: Math.max(-1, Math.min(1, y)) }),
 }));
