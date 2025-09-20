@@ -9,8 +9,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Calendar } from "lucide-react";
-import { useCalendarStore } from "@/lib/calendar-store";
-import { monthNames } from "@/lib/calendar-utils";
+import { HeaderFormat, useCalendarStore } from "@/lib/calendar-store";
+import { monthNames, headerFormatOptions } from "@/lib/calendar-utils";
 
 export function CalendarSettings() {
   const month = useCalendarStore((state) => state.month);
@@ -19,6 +19,8 @@ export function CalendarSettings() {
   const setYear = useCalendarStore((state) => state.setYear);
   const weekStart = useCalendarStore((state) => state.weekStart);
   const setWeekStart = useCalendarStore((state) => state.setWeekStart);
+  const headerFormat = useCalendarStore((state) => state.headerFormat);
+  const setHeaderFormat = useCalendarStore((state) => state.setHeaderFormat);
 
   return (
     <div className="py-1">
@@ -84,6 +86,27 @@ export function CalendarSettings() {
               Mon
             </Button>
           </div>
+        </div>
+
+        <div className="space-y-1">
+          <Label htmlFor="headerFormat" className="text-sm">
+            Month formatting
+          </Label>
+          <Select
+            value={headerFormat || ""}
+            onValueChange={(v) => setHeaderFormat(v as HeaderFormat)}
+          >
+            <SelectTrigger id="headerFormat" className="w-[280px]">
+              <SelectValue placeholder="Select a format" />
+            </SelectTrigger>
+            <SelectContent>
+              {headerFormatOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
     </div>

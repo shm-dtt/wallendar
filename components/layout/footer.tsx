@@ -13,11 +13,11 @@ export function Footer() {
       </Link>{" "}
       with{" "}
       <Link
-        href="https://v0.dev"
+        href="https://v0.app"
         target="_blank"
         className="text-gray-600 hover:text-gray-900"
       >
-        [v0.dev]
+        [v0.app]
       </Link>
     </footer>
   );
