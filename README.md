@@ -3,18 +3,20 @@
 </div>
 
 # Wallendar
+
 Transform your images into calendar desktop wallpapers.
 
 A simple website to add overlay of a calendar only your wallpaper.
 
 ## Features
 
-- Provides you to change the month (obviously)
-- the starting day of the week,
-- and a funky collections of fonts, with option to upload custom font
-- let's you download the 4K wallpaper
-- with a LIVE preview of the wallpaper
+- Choose between the 12 months (obviously).
+- Change the formatting of the month, be it short, long or numeric.
+- Switch the starting day of the week (Sun/Mon).
+- Funky collections of fonts, with option to upload custom font.
+- Move around the calendar block according to your wallpaper.
+- Get a LIVE preview of the changes and download the 4K wallpaper!!!
 
 ---
-Made with Next.js, shadcn/ui, and Zustand by [shm-dtt](https://sohamdutta.in) with [v0.dev](https://v0.dev).<br/>
+Made with Next.js, shadcn/ui, and Zustand by [shm-dtt](https://sohamdutta.in) with [v0.app](https://v0.app).`<br/>`
 Credits for the color picker: [Ryan Mogk](https://modall.ca/lab/tailwindcss-react-color-picker)
