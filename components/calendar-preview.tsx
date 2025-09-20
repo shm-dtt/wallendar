@@ -4,10 +4,10 @@ import { forwardRef } from "react";
 import { useMemo } from "react";
 import WallpaperCanvas, {
   type WallpaperCanvasHandle,
-} from "./wallpaper-canvas";
+} from "@/components/wallpaper-canvas";
 import { Button } from "@/components/ui/button";
 import { Download, ScanEye } from "lucide-react";
-import { useCalendarStore } from "@/lib/calendar-store";
+import { HeaderFormat, useCalendarStore } from "@/lib/calendar-store";
 import { monthNames } from "@/lib/calendar-utils";
 
 interface CalendarPreviewProps {
@@ -21,6 +21,7 @@ export const CalendarPreview = forwardRef<
   const month = useCalendarStore((state) => state.month);
   const year = useCalendarStore((state) => state.year);
   const weekStart = useCalendarStore((state) => state.weekStart);
+  const headerFormat = useCalendarStore((state) => state.headerFormat);
   const textColor = useCalendarStore((state) => state.textColor);
   const fontFamily = useCalendarStore((state) => state.fontFamily);
   const applyFontToAll = useCalendarStore((state) => state.applyFontToAll);
@@ -88,6 +89,7 @@ export const CalendarPreview = forwardRef<
             month={month}
             year={year}
             weekStart={weekStart}
+            headerFormat={headerFormat as HeaderFormat}
             textColor={textColor}
             fontFamily={
               applyFontToAll

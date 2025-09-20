@@ -1,3 +1,5 @@
+import { HeaderFormat } from "@/lib/calendar-store";
+
 export function daysInMonth(year: number, monthIndex: number) {
   return new Date(year, monthIndex + 1, 0).getDate();
 }
@@ -11,6 +13,46 @@ export function firstDayOffset(
   if (weekStart === "sunday") return jsDay;
   return (jsDay - 1 + 7) % 7;
 }
+
+export function formatMonthHeader(month: number, year: number, format: HeaderFormat): string {
+  const date = new Date(year, month, 1);
+  
+  switch (format) {
+    case "full":
+      return date.toLocaleString("en-US", { month: "long" }).toLowerCase();
+    
+    case "short":
+      return date.toLocaleString("en-US", { month: "short" }).toLowerCase();
+    
+    case "numeric":
+      return String(month + 1).padStart(2, "0");
+    
+    case "numeric-full-year":
+      return `${String(month + 1).padStart(2, "0")}-${year}`;
+    
+    case "numeric-short-year":
+      return `${String(month + 1).padStart(2, "0")}-${String(year).slice(-2)}`;
+    
+    case "short-short-year":
+      return `${date.toLocaleString("en-US", { month: "short" }).toLowerCase()} ${String(year).slice(-2)}`;
+    
+    case "short-full-year":
+      return `${date.toLocaleString("en-US", { month: "short" }).toLowerCase()} ${year}`;
+    
+    default:
+      return date.toLocaleString("en-US", { month: "long" }).toLowerCase();
+  }
+}
+
+export const headerFormatOptions = [
+  { value: "full", label: "Month (full)" },
+  { value: "short", label: "Month (short)" },
+  { value: "numeric", label: "Month (numeric)" },
+  { value: "numeric-full-year", label: "mm/YYYY" },
+  { value: "numeric-short-year", label: "mm/YY" },
+  { value: "short-full-year", label: "MMM/YYYY" },
+  { value: "short-short-year", label: "MMM/YY" },
+] as const;
 
 export const localFonts = [
   { name: "Montserrat", displayName: "Montserrat (Default)", path: "/fonts/Montserrat.ttf" },

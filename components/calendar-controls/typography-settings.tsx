@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+
 "use client"
 
 import { useEffect, useRef, useState } from 'react'
@@ -220,9 +220,7 @@ export function TypographySettings() {
                 <SelectContent>
                   {allFontOptions.map((font) => (
                     <SelectItem key={font.value} value={font.value}>
-                      <div className="flex items-center w-full">
-                        <span>{font.label}</span>
-                      </div>
+                      {font.label}
                     </SelectItem>
                   ))}
                 </SelectContent>

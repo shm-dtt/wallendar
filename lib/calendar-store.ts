@@ -1,11 +1,21 @@
 import { create } from "zustand";
 import { sampleImagePath } from "@/lib/calendar-utils";
 
+export type HeaderFormat = 
+  | "full" 
+  | "short" 
+  | "numeric" 
+  | "numeric-full-year" 
+  | "numeric-short-year" 
+  | "short-short-year" 
+  | "short-full-year";
+
 interface CalendarState {
   // Calendar settings
   month: number | null; // null means no month selected (placeholder)
   year: number;
   weekStart: "sunday" | "monday";
+  headerFormat: HeaderFormat | null;
 
   // Typography settings
   textColor: string;
@@ -24,6 +34,7 @@ interface CalendarState {
   setMonth: (month: number) => void;
   setYear: (year: number) => void;
   setWeekStart: (weekStart: "sunday" | "monday") => void;
+  setHeaderFormat: (headerFormat: HeaderFormat) => void;
   setTextColor: (color: string) => void;
   setFontFamily: (family: string) => void;
   setCustomFontName: (name: string | null) => void;
@@ -40,6 +51,7 @@ export const useCalendarStore = create<CalendarState>((set) => ({
   month: null,
   year: new Date().getFullYear(),
   weekStart: "sunday",
+  headerFormat: null,
   textColor: "#ffffff",
   fontFamily: "Montserrat",
   customFontName: null,
@@ -52,6 +64,7 @@ export const useCalendarStore = create<CalendarState>((set) => ({
   setMonth: (month) => set({ month }),
   setYear: (year) => set({ year }),
   setWeekStart: (weekStart) => set({ weekStart }),
+  setHeaderFormat: (headerFormat) => set({ headerFormat }),
   setTextColor: (textColor) => set({ textColor }),
   setFontFamily: (fontFamily) => set({ fontFamily }),
   setCustomFontName: (customFontName) => set({ customFontName }),

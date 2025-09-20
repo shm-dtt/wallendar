@@ -2,6 +2,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react"
+import { HeaderFormat } from "@/lib/calendar-store"
+import { formatMonthHeader } from "@/lib/calendar-utils"
 
 export type WallpaperCanvasHandle = {
   downloadPNG: (width: number, height: number) => void
@@ -11,6 +13,7 @@ type Props = {
   month: number // 0-11
   year: number
   weekStart: "sunday" | "monday"
+  headerFormat: HeaderFormat
   textColor: string
   fontFamily: string
   imageSrc?: string
@@ -146,7 +149,7 @@ function drawWallpaper(
   context.shadowOffsetY = 0
 
   // Default to Montserrat and sanitize CSS vars (canvas can't resolve them)
-  const monthName = new Date(opts.year, opts.month, 1).toLocaleString("en-US", { month: "long" }).toLowerCase()
+  const monthName = formatMonthHeader(opts.month, opts.year, opts.headerFormat)
 
   const incoming = (opts.fontFamily || "").trim()
   const MONTH_ONLY_DELIM = "|||MONTH_ONLY|||"
@@ -229,7 +232,7 @@ function drawWallpaper(
 }
 
 const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(function WallpaperCanvas(
-  { month, year, weekStart, textColor, fontFamily, imageSrc, offsetX = 0, offsetY = 0 },
+  { month, year, weekStart, headerFormat, textColor, fontFamily, imageSrc, offsetX = 0, offsetY = 0 },
   ref,
 ) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
@@ -248,6 +251,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(function Wallpa
           month,
           year,
           weekStart,
+          headerFormat,
           textColor,
           fontFamily,
           image: imgRef.current || undefined,
@@ -262,7 +266,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(function Wallpa
         exportCanvas.remove()
       },
     }),
-    [month, year, weekStart, textColor, fontFamily, offsetX, offsetY],
+    [month, year, weekStart, headerFormat, textColor, fontFamily, offsetX, offsetY],
   )
 
   function parseFamilies(input: string) {
@@ -320,6 +324,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(function Wallpa
             month,
             year,
             weekStart,
+            headerFormat,
             textColor,
             fontFamily,
             image: imgRef.current || undefined,
@@ -355,6 +360,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(function Wallpa
           month,
           year,
           weekStart,
+          headerFormat,
           textColor,
           fontFamily,
           image: imgRef.current || loadedImg,
@@ -368,7 +374,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(function Wallpa
     return () => {
       canceled = true
     }
-  }, [month, year, weekStart, textColor, fontFamily, imageSrc, offsetX, offsetY])
+  }, [month, year, weekStart, headerFormat, textColor, fontFamily, imageSrc, offsetX, offsetY])
 
   return <canvas ref={canvasRef} aria-label="Wallpaper preview canvas" className="h-full w-full block" />
 })
