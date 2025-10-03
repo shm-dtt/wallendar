@@ -97,7 +97,7 @@ export function CalendarSettings() {
             onValueChange={(v) => setHeaderFormat(v as HeaderFormat)}
           >
             <SelectTrigger id="headerFormat" className="w-[280px]">
-              <SelectValue placeholder="Select a format" />
+              <SelectValue placeholder="Default: Month (full)" />
             </SelectTrigger>
             <SelectContent>
               {headerFormatOptions.map((option) => (
