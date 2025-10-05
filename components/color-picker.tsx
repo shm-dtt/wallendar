@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Check, Palette } from "lucide-react";
@@ -13,7 +13,7 @@ type ClassValue =
   | null
   | boolean
   | undefined;
-type ClassDictionary = Record<string, any>;
+type ClassDictionary = Record<string, boolean | number | string | null | undefined>;
 type ClassArray = ClassValue[];
 
 function clsx(...inputs: ClassValue[]): string {
