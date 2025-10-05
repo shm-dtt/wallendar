@@ -1,5 +1,5 @@
 "use client"
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react"
 import { HeaderFormat } from "@/lib/calendar-store"
@@ -284,18 +284,21 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(function Wallpa
 
   async function ensureFontsLoaded(familyString: string) {
     try {
-      // Try to load the first family token (before comma)
       const firstToken = (familyString.split(",")[0] || "").trim()
       const cleaned = firstToken.replace(/^\"|\"$/g, "")
       if (!cleaned) return
-      // Load common weights used
-      const promises: Promise<unknown>[] = [
-        (document as any).fonts?.load?.(`400 24px ${JSON.stringify(cleaned)}`) || Promise.resolve(),
-        (document as any).fonts?.load?.(`500 24px ${JSON.stringify(cleaned)}`) || Promise.resolve(),
-        (document as any).fonts?.load?.(`700 24px ${JSON.stringify(cleaned)}`) || Promise.resolve(),
+
+      // Narrowly type the Font Loading API to avoid `any`
+      const fonts = (document as unknown as { fonts?: { load?: (font: string) => Promise<unknown>; ready?: Promise<unknown> } }).fonts
+
+      const loads: Promise<unknown>[] = [
+        fonts?.load?.(`400 24px ${JSON.stringify(cleaned)}`) ?? Promise.resolve(),
+        fonts?.load?.(`500 24px ${JSON.stringify(cleaned)}`) ?? Promise.resolve(),
+        fonts?.load?.(`700 24px ${JSON.stringify(cleaned)}`) ?? Promise.resolve(),
       ]
-      await Promise.allSettled(promises)
-      await ((document as any).fonts?.ready || Promise.resolve())
+
+      await Promise.allSettled(loads)
+      await (fonts?.ready ?? Promise.resolve())
     } catch {
       // noop
     }

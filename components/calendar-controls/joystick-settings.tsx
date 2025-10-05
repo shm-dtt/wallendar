@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useCalendarStore } from "@/lib/calendar-store";
 import { Label } from "@/components/ui/label";
 import { Crosshair } from "lucide-react";
@@ -10,8 +10,7 @@ export function JoystickSettings() {
   const offsetX = useCalendarStore((s) => s.offsetX);
   const offsetY = useCalendarStore((s) => s.offsetY);
   const setOffset = useCalendarStore((s) => s.setOffset);
-  const setOffsetX = useCalendarStore((s) => s.setOffsetX);
-  const setOffsetY = useCalendarStore((s) => s.setOffsetY);
+  // setOffsetX and setOffsetY are not used here; we use the combined setter
 
   const areaRef = useRef<HTMLDivElement | null>(null);
   const [dragging, setDragging] = useState(false);
@@ -91,7 +90,7 @@ export function JoystickSettings() {
   };
 
   // Animation loop integrating velocity into position while joystick is deflected
-  const step = (ts: number) => {
+  const step = useCallback((ts: number) => {
     if (lastTsRef.current == null) lastTsRef.current = ts;
     const dt = Math.max(0, Math.min(0.05, (ts - lastTsRef.current) / 1000));
     lastTsRef.current = ts;
@@ -115,7 +114,7 @@ export function JoystickSettings() {
     }
 
     rafRef.current = requestAnimationFrame(step);
-  };
+  }, [setOffset]);
 
   // Ensure RAF runs when component is mounted and stops on unmount
   useEffect(() => {
@@ -125,7 +124,7 @@ export function JoystickSettings() {
       rafRef.current = null;
       lastTsRef.current = null;
     };
-  }, []);
+  }, [step]);
 
   return (
     <div className="py-1">
