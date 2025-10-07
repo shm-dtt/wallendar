@@ -15,10 +15,22 @@ export default function Page() {
           <Header />
 
           <div className="flex-1 flex flex-col justify-center space-y-6 sm:space-y-8 max-w-none min-h-0">
-            <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-700 shadow-sm self-start">
-              <WandSparkles className="h-4 w-4" aria-hidden="true" />
-              <span>Upload. Overlay. Download.</span>
-            </div>
+            {/* <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-700 shadow-sm self-start"> */}
+            <a
+              className="self-start inline-block"
+              href="https://peerlist.io/shmdtt/project/wallendar"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <img
+                src="https://peerlist.io/api/v1/projects/embed/PRJHEOGLOEB99ME7DHBDG6OKLBMO9A?showUpvote=false&theme=light"
+                alt="Wallendar"
+                style={{height: "56px", width: "auto"}}
+              />
+            </a>
+            {/* <WandSparkles className="h-4 w-4" aria-hidden="true" />
+              <span>Upload. Overlay. Download.</span> */}
+            {/* </div> */}
 
             <div className="space-y-4 sm:space-y-6">
               <h1 className="text-2xl lg:text-3xl xl:text-4xl font-semibold leading-tight">
