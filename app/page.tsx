@@ -36,7 +36,7 @@ export default function Page() {
               <h1 className="text-2xl lg:text-3xl xl:text-4xl font-semibold leading-tight">
                 Transform your images into calendar desktop wallpapers.
               </h1>
-              <p className="sm:text-lg lg:text-xl text-gray-600 max-w-xl">
+              <p className="sm:text-lg lg:text-xl text-secondary-foreground/60 max-w-xl">
                 Personalize any photo with a clean, legible monthly calendar.
               </p>
             </div>
@@ -44,7 +44,7 @@ export default function Page() {
             <div className="pt-4 sm:pt-6 pb-8 sm:pb-12">
               <Link href="/create">
                 <Button
-                  className="rounded-full bg-black px-6 py-3 sm:px-8 sm:py-4 text-sm sm:text-base text-white shadow-sm hover:bg-black/90 transition-colors cursor-pointer"
+                  className="rounded-full px-6 py-3 sm:px-8 sm:py-4 text-sm sm:text-base shadow-sm cursor-pointer"
                   size="lg"
                 >
                   Get Started
