@@ -11,6 +11,7 @@ import {
 import { SUPPORT_CONFIG } from "@/lib/support";
 import QRCode from "react-qr-code";
 import { useState } from "react";
+import { ModeToggle } from "../ui/mode-toggle";
 
 export function Header() {
   const [copied, setCopied] = useState(false);
@@ -35,8 +36,8 @@ export function Header() {
       </Link>
       <div className="flex items-center gap-2">
         <Link href="https://github.com/shm-dtt/wallendar" target="_blank">
-          <Button variant="outline" size="icon" className="cursor-pointer">
-            <Github aria-hidden="true" />
+          <Button variant="outline" className="cursor-pointer">
+            <Github aria-hidden="true" />4
           </Button>
         </Link>
         <Popover>
@@ -50,35 +51,38 @@ export function Header() {
             </Button>
           </PopoverTrigger>
           <PopoverContent className="flex flex-col gap-2">
-            <p className="text-sm text-gray-500 mb-2">
-              Support the project if you like it :)
+            <p className="text-sm mb-2">
+              Support the project :)
             </p>
             <Link href={SUPPORT_CONFIG.PAYPAL_URL} target="_blank">
-              <Button className="w-full bg-blue-500 hover:bg-blue-700 text-white hover:text-white cursor-pointer">
+              <Button className="w-full cursor-pointer">
                 <DollarSign aria-hidden="true" />
                 Paypal
               </Button>
             </Link>
             <Link href={SUPPORT_CONFIG.BUY_ME_COFFEE_URL} target="_blank">
-              <Button className="w-full bg-amber-300 hover:bg-amber-400 text-brown-500 cursor-pointer">
+              <Button className="w-full cursor-pointer" >
                 <Coffee aria-hidden="true" className="text-brown-500 " />
                 Buy me a coffee
               </Button>
             </Link>
             <div className="flex justify-center items-center flex-col">
-              <p className="text-sm text-gray-500 mb-2">
+              <p className="text-sm mb-2">
                 Scan to pay with any UPI app
               </p>
-              <QRCode value={upiUrl} size={120} bgColor="#fff" fgColor="#222" />
+              <div className="flex justify-center items-center bg-white p-1">
+                <QRCode value={upiUrl} size={120} bgColor="#fff" fgColor="#222" />
+              </div>
 
-              <p className="text-sm text-gray-500 mb-2">or</p>
-              <Button onClick={handleCopyUpiId} className="w-full bg-green-500 hover:bg-green-700 text-white hover:text-white cursor-pointer">
+              <p className="text-sm mb-2">or</p>
+              <Button onClick={handleCopyUpiId} className="w-full cursor-pointer">
                 <Copy aria-hidden="true" />
                 {copied ? "Copied!" : "Copy UPI ID"}
               </Button>
             </div>
           </PopoverContent>
         </Popover>
+        <ModeToggle />
       </div>
     </header>
   );

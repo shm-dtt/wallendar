@@ -140,22 +140,22 @@ export function JoystickSettings() {
         <div className="flex items-center gap-3">
           <div
             ref={areaRef}
-            className="relative w-24 h-24 rounded-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden select-none touch-none cursor-pointer hover:shadow-md transition-shadow"
+            className="relative w-24 h-24 rounded-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm overflow-hidden select-none touch-none cursor-pointer hover:shadow-md transition-shadow"
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
           >
             {/* Center dot */}
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-gray-400 dark:bg-gray-500" />
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-neutral-400 dark:bg-neutral-500" />
 
             {/* Direction indicators */}
-            <div className="absolute left-1/2 top-3 -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-b-3 border-l-transparent border-r-transparent border-b-gray-400 dark:border-b-gray-500" />
-            <div className="absolute left-1/2 bottom-3 -translate-x-1/2 rotate-180 w-0 h-0 border-l-2 border-r-2 border-b-3 border-l-transparent border-r-transparent border-b-gray-400 dark:border-b-gray-500" />
-            <div className="absolute top-1/2 left-3 -translate-y-1/2 -rotate-90 w-0 h-0 border-l-2 border-r-2 border-b-3 border-l-transparent border-r-transparent border-b-gray-400 dark:border-b-gray-500" />
-            <div className="absolute top-1/2 right-3 -translate-y-1/2 rotate-90 w-0 h-0 border-l-2 border-r-2 border-b-3 border-l-transparent border-r-transparent border-b-gray-400 dark:border-b-gray-500" />
+            <div className="absolute left-1/2 top-3 -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-b-3 border-l-transparent border-r-transparent border-b-neutral-400 dark:border-b-neutral-500" />
+            <div className="absolute left-1/2 bottom-3 -translate-x-1/2 rotate-180 w-0 h-0 border-l-2 border-r-2 border-b-3 border-l-transparent border-r-transparent border-b-neutral-400 dark:border-b-neutral-500" />
+            <div className="absolute top-1/2 left-3 -translate-y-1/2 -rotate-90 w-0 h-0 border-l-2 border-r-2 border-b-3 border-l-transparent border-r-transparent border-b-neutral-400 dark:border-b-neutral-500" />
+            <div className="absolute top-1/2 right-3 -translate-y-1/2 rotate-90 w-0 h-0 border-l-2 border-r-2 border-b-3 border-l-transparent border-r-transparent border-b-neutral-400 dark:border-b-neutral-500" />
 
             <div
-              className="absolute w-6 h-6 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 shadow-md flex items-center justify-center cursor-grab active:cursor-grabbing transition-transform hover:scale-105"
+              className="absolute w-6 h-6 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white dark:bg-neutral-700 border border-neutral-300 dark:border-neutral-600 shadow-md flex items-center justify-center cursor-grab active:cursor-grabbing transition-transform hover:scale-105"
               style={knobStyle}
             >
               <div className="w-2 h-2 rounded-full bg-primary" />
