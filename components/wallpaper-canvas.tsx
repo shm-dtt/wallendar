@@ -348,7 +348,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(function Wallpa
             prevImageSrcRef.current = imageSrc
           }
         } catch (e) {
-          console.error("[v0] image load failed", e)
+          console.error("image load failed", e)
         }
       }
 

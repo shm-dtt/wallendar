@@ -4,8 +4,9 @@ import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ImageIcon } from "lucide-react";
+import { ImageIcon, RefreshCcw } from "lucide-react";
 import { useCalendarStore } from "@/lib/calendar-store";
+import { ButtonGroup } from "../ui/button-group";
 
 export function BackgroundSettings() {
   // const imageSrc = useCalendarStore((state) => state.imageSrc);
@@ -22,9 +23,9 @@ export function BackgroundSettings() {
     const reader = new FileReader();
     reader.onload = () => {
       setImageSrc(reader.result as string);
-    }
-    reader.readAsDataURL(file)
-  }
+    };
+    reader.readAsDataURL(file);
+  };
 
   return (
     <div className="py-1">
@@ -38,17 +39,20 @@ export function BackgroundSettings() {
           Upload Image
         </Label>
         <div className="flex items-center gap-2">
-          <Input
-            id="imageUpload"
-            ref={imageInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleImageUpload}
-            className="text-sm file:text-muted-foreground"
-          />
-          <Button variant="outline" onClick={handleSampleImage}>
-            Try Sample
-          </Button>
+          <ButtonGroup className="w-full">
+            <Input
+              id="imageUpload"
+              ref={imageInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="text-sm file:text-muted-foreground"
+            />
+            <Button variant="outline" onClick={handleSampleImage}>
+              <RefreshCcw className="w-4 h-4" />
+              Try Sample
+            </Button>
+          </ButtonGroup>
         </div>
       </div>
 

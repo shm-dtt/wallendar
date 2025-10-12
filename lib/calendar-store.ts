@@ -25,6 +25,7 @@ interface CalendarState {
 
   // Background settings
   imageSrc?: string;
+  currentImageIndex: number;
 
   // Position offsets (normalized -1..1)
   offsetX: number;
@@ -57,6 +58,7 @@ export const useCalendarStore = create<CalendarState>((set) => ({
   customFontName: null,
   applyFontToAll: false,
   imageSrc: undefined,
+  currentImageIndex: 0,
   offsetX: 0,
   offsetY: 0,
 
@@ -70,7 +72,13 @@ export const useCalendarStore = create<CalendarState>((set) => ({
   setCustomFontName: (customFontName) => set({ customFontName }),
   setApplyFontToAll: (applyFontToAll) => set({ applyFontToAll }),
   setImageSrc: (imageSrc) => set({ imageSrc }),
-  handleSampleImage: () => set({ imageSrc: sampleImagePath }),
+  handleSampleImage: () => set((state) => {
+    const nextIndex = (state.currentImageIndex + 1) % sampleImagePath.length;
+    return { 
+      imageSrc: sampleImagePath[nextIndex],
+      currentImageIndex: nextIndex
+    };
+  }),
   setOffset: (x, y) => set({ offsetX: Math.max(-1, Math.min(1, x)), offsetY: Math.max(-1, Math.min(1, y)) }),
   setOffsetX: (x) => set({ offsetX: Math.max(-1, Math.min(1, x)) }),
   setOffsetY: (y) => set({ offsetY: Math.max(-1, Math.min(1, y)) }),

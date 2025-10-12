@@ -87,4 +87,12 @@ export const monthNames: string[] = [
   "December",
 ];
 
-export const sampleImagePath = "/sample-bg.png";
+export const sampleImagePath : string[] = [
+  "/samples/sample-bg1.jpg",
+  "/samples/sample-bg2.jpg",
+  "/samples/sample-bg3.jpg",
+  "/samples/sample-bg4.jpg",
+  "/samples/sample-bg5.jpg",
+  "/samples/sample-bg6.jpg",
+  "/samples/sample-bg7.jpg",
+];
