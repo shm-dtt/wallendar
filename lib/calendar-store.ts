@@ -54,7 +54,7 @@ export const useCalendarStore = create<CalendarState>((set) => ({
   weekStart: "sunday",
   headerFormat: null,
   textColor: "#ffffff",
-  fontFamily: "Montserrat",
+  fontFamily: "Product Sans",
   customFontName: null,
   applyFontToAll: false,
   imageSrc: undefined,

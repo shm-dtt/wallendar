@@ -148,27 +148,27 @@ function drawWallpaper(
   context.shadowOffsetX = 0
   context.shadowOffsetY = 0
 
-  // Default to Montserrat and sanitize CSS vars (canvas can't resolve them)
+  // Default to Product Sans and sanitize CSS vars (canvas can't resolve them)
   const monthName = formatMonthHeader(opts.month, opts.year, opts.headerFormat)
 
   const incoming = (opts.fontFamily || "").trim()
   const MONTH_ONLY_DELIM = "|||MONTH_ONLY|||"
   let monthFamily = incoming
-  let bodyFamily = incoming || "Montserrat, ui-sans-serif, system-ui"
+  let bodyFamily = incoming || "Product Sans, ui-sans-serif, system-ui"
   if (incoming.includes(MONTH_ONLY_DELIM)) {
     const parts = incoming.split(MONTH_ONLY_DELIM)
-    monthFamily = (parts[0] || "Montserrat, ui-sans-serif, system-ui").trim()
-    bodyFamily = (parts[1] || "Montserrat, ui-sans-serif, system-ui").trim()
+    monthFamily = (parts[0] || "Product Sans, ui-sans-serif, system-ui").trim()
+    bodyFamily = (parts[1] || "Product Sans, ui-sans-serif, system-ui").trim()
   }
 
   function sanitizeFamily(fam: string) {
     if (
       !fam ||
       fam.toLowerCase() === "default" ||
-      fam.toLowerCase() === "default (montserrat)" ||
+      fam.toLowerCase() === "default (product sans)" ||
       fam === "__default__"
     ) {
-      return "Montserrat, ui-sans-serif, system-ui"
+      return "Product Sans, ui-sans-serif, system-ui"
     }
     return fam.replace(/var\([^)]*\)\s*,?/g, "").trim()
   }
@@ -273,7 +273,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(function Wallpa
     const str = (input || "").trim()
     const DELIM = "|||MONTH_ONLY|||"
     let monthFam = str
-    let bodyFam = "Montserrat, ui-sans-serif, system-ui"
+    let bodyFam = "Product Sans, ui-sans-serif, system-ui"
     if (str.includes(DELIM)) {
       const parts = str.split(DELIM)
       monthFam = (parts[0] || bodyFam).trim()

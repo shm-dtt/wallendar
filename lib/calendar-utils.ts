@@ -55,12 +55,12 @@ export const headerFormatOptions = [
 ] as const;
 
 export const localFonts = [
-  { name: "Montserrat", displayName: "Montserrat (Default)", path: "/fonts/Montserrat.ttf" },
+  { name: "Product Sans", displayName: "Product Sans (Default)", path: "/fonts/ProductSans.ttf" },
+  { name: "Montserrat", displayName: "Montserrat", path: "/fonts/Montserrat.ttf" },
   { name: "Doto", displayName: "Doto", path: "/fonts/Doto.ttf" },
   { name: "Crafty Girls", displayName: "Crafty Girls", path: "/fonts/CraftyGirls.ttf" },
   { name: "Freckle Face", displayName: "Freckle Face", path: "/fonts/FreckleFace.ttf" },
   { name: "Playwrite CA", displayName: "Playwrite CA", path: "/fonts/PlaywriteCA.ttf" },
-  { name: "Product Sans", displayName: "Product Sans", path: "/fonts/ProductSans.ttf" },
   { name: "Segoe Script", displayName: "Segoe Script", path: "/fonts/SegoeScript.TTF" },
 ]
 

@@ -52,19 +52,19 @@ export const CalendarPreview = forwardRef<
   const effectiveFont = useMemo(() => {
     const baseFont =
       fontFamilyMap[fontFamily as keyof typeof fontFamilyMap] ||
-      fontFamilyMap.Montserrat;
+      fontFamilyMap["Product Sans"];
     return customFontName ? `"${customFontName}", ${baseFont}` : baseFont;
   }, [customFontName, fontFamily]);
 
   const monthOnlyFont = useMemo(() => {
     const selected =
       fontFamilyMap[fontFamily as keyof typeof fontFamilyMap] ||
-      fontFamilyMap.Montserrat;
+      fontFamilyMap["Product Sans"];
     const withCustom = customFontName
       ? `"${customFontName}", ${selected}`
       : selected;
-    const montserratOnly = fontFamilyMap.Montserrat;
-    return { monthFont: withCustom, bodyFont: montserratOnly };
+    const productSansOnly = fontFamilyMap["Product Sans"];
+    return { monthFont: withCustom, bodyFont: productSansOnly };
   }, [customFontName, fontFamily]);
 
   // Only show preview if month is selected

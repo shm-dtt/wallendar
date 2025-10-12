@@ -153,7 +153,7 @@ export function TypographySettings() {
     
     // Reset font if it was selected
     if (fontFamily === fontName) {
-      setFontFamily("Montserrat")
+      setFontFamily("Product Sans")
       setCustomFontName(null)
     }
     
@@ -206,7 +206,7 @@ export function TypographySettings() {
             />
             
             <div className="flex-1 w-full">
-              <Select value={fontFamily === "Montserrat" ? undefined : fontFamily} onValueChange={(value) => {
+              <Select value={fontFamily === "Product Sans" ? undefined : fontFamily} onValueChange={(value) => {
                 setFontFamily(value)
                 if (uploadedFonts.some(font => font.name === value)) {
                   setCustomFontName(value)
