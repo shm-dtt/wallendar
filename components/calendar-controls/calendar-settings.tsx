@@ -11,6 +11,7 @@ import {
 import { Calendar } from "lucide-react";
 import { HeaderFormat, useCalendarStore } from "@/lib/calendar-store";
 import { monthNames, headerFormatOptions } from "@/lib/calendar-utils";
+import { ButtonGroup } from "@/components/ui/button-group";
 
 export function CalendarSettings() {
   const month = useCalendarStore((state) => state.month);
@@ -71,20 +72,20 @@ export function CalendarSettings() {
         <div className="space-y-1">
           <Label className="text-sm">Start week on</Label>
           <div className="flex gap-2">
+            <ButtonGroup>
             <Button
               variant={weekStart === "sunday" ? "default" : "outline"}
               onClick={() => setWeekStart("sunday")}
-              className="rounded-full"
             >
               Sun
             </Button>
             <Button
               variant={weekStart === "monday" ? "default" : "outline"}
               onClick={() => setWeekStart("monday")}
-              className="rounded-full"
             >
               Mon
             </Button>
+            </ButtonGroup>
           </div>
         </div>
 
