@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useCalendarStore } from "@/lib/calendar-store";
 import { Label } from "@/components/ui/label";
 import { Crosshair } from "lucide-react";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 
 export function JoystickSettings() {
   const offsetX = useCalendarStore((s) => s.offsetX);

@@ -82,7 +82,7 @@ export const CalendarPreview = forwardRef<
         </div>
       </div>
 
-      <div className="w-full aspect-video rounded-lg overflow-hidden bg-black">
+      <div className="w-full aspect-video rounded-lg overflow-hidden bg-black border-2">
         {showPreview ? (
           <WallpaperCanvas
             ref={ref}

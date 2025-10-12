@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ImageIcon, RefreshCcw } from "lucide-react";
 import { useCalendarStore } from "@/lib/calendar-store";
-import { ButtonGroup } from "../ui/button-group";
+import { ButtonGroup } from "@/components/ui/button-group";
 
 export function BackgroundSettings() {
   // const imageSrc = useCalendarStore((state) => state.imageSrc);
