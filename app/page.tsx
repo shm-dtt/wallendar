@@ -1,42 +1,33 @@
 import { Button } from "@/components/ui/button";
-import { WandSparkles } from "lucide-react";
+import { Instrument_Serif } from "next/font/google";
 import { gallery } from "@/lib/calendar-utils";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import Link from "next/link";
 import Image from "next/image";
 
+const instrumentSerif = Instrument_Serif({
+  subsets: ["latin"],
+  weight: ["400"],
+});
+
 export default function Page() {
   return (
     <main className="min-h-screen font-sans">
       <div className="flex flex-col lg:flex-row min-h-screen">
         {/* Left Section */}
-        <section className="flex-1 flex flex-col px-4 py-8 sm:px-6 sm:py-12 lg:px-12 lg:py-20">
+        <section className="flex-1 flex flex-col px-4 py-4 sm:px-6 sm:py-8 lg:px-12 lg:py-12">
           <Header />
 
-          <div className="flex-1 flex flex-col justify-center space-y-6 sm:space-y-8 max-w-none min-h-0">
-            {/* <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-700 shadow-sm self-start"> */}
-            <a
-              className="self-start inline-block"
-              href="https://peerlist.io/shmdtt/project/wallendar"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <img
-                src="https://peerlist.io/api/v1/projects/embed/PRJHEOGLOEB99ME7DHBDG6OKLBMO9A?showUpvote=false&theme=light"
-                alt="Wallendar"
-                style={{height: "56px", width: "auto"}}
-              />
-            </a>
-            {/* <WandSparkles className="h-4 w-4" aria-hidden="true" />
-              <span>Upload. Overlay. Download.</span> */}
-            {/* </div> */}
-
+          <div className="flex-1 flex flex-col justify-center items-center space-y-6 sm:space-y-8 max-w-none min-h-0">
             <div className="space-y-4 sm:space-y-6">
-              <h1 className="text-2xl lg:text-3xl xl:text-4xl font-semibold leading-tight">
-                Transform your images into calendar desktop wallpapers.
+              <h1
+                className={` text-center text-3xl lg:text-4xl xl:text-5xl font-semibold leading-tight ${instrumentSerif.className}`}
+              >
+                Wallpapers with calendar, but{" "}
+                <span className="italic">aesthetic</span>.
               </h1>
-              <p className="sm:text-lg lg:text-xl text-secondary-foreground/60 max-w-xl">
+              <p className=" text-center sm:text-lg lg:text-xl text-secondary-foreground/60">
                 Personalize any photo with a clean, legible monthly calendar.
               </p>
             </div>
@@ -44,7 +35,7 @@ export default function Page() {
             <div className="pt-4 sm:pt-6 pb-8 sm:pb-12">
               <Link href="/create">
                 <Button
-                  className="rounded-full px-6 py-3 sm:px-8 sm:py-4 text-sm sm:text-base shadow-sm cursor-pointer"
+                  className=" px-6 py-3 sm:px-8 sm:py-4 text-sm sm:text-base shadow-sm cursor-pointer"
                   size="lg"
                 >
                   Get Started

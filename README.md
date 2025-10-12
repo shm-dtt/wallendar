@@ -18,5 +18,6 @@ A simple website to add overlay of a calendar only your wallpaper.
 - Get a LIVE preview of the changes and download the 4K wallpaper!!!
 
 ---
-Made with Next.js, shadcn/ui, and Zustand by [shm-dtt](https://sohamdutta.in) with [v0.app](https://v0.app).  
+
+Made with Next.js, shadcn/ui, and Zustand by [shm-dtt](https://sohamdutta.in)
 Credits for the color picker: [Ryan Mogk](https://modall.ca/lab/tailwindcss-react-color-picker)
