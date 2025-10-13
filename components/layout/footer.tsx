@@ -9,7 +9,7 @@ export function Footer() {
         target="_blank"
         className="hover:text-secondary-foreground"
       >
-        [@shm-dtt]
+        [soham]
       </Link>
     </footer>
   );
