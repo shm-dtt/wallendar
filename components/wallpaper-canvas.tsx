@@ -5,7 +5,7 @@ import { formatMonthHeader } from "@/lib/calendar-utils";
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 
 export type WallpaperCanvasHandle = {
-  downloadPNG: (width: number, height: number) => void;
+  downloadPNG: (width: number, height: number, mobile:boolean) => void;
 };
 
 type Props = {
@@ -267,11 +267,12 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
     useImperativeHandle(
       ref,
       () => ({
-        downloadPNG: (w: number, h: number) => {
+        downloadPNG: (w: number, h: number, mobile: boolean) => {
           const exportCanvas = document.createElement("canvas");
           exportCanvas.width = w;
           exportCanvas.height = h;
 
+  //mobile=format;
           drawWallpaper(exportCanvas, {
             month,
             year,
@@ -289,7 +290,32 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
             2,
             "0"
           )}.png`;
+          const cropCanvas = document.createElement("canvas");
+    cropCanvas.width = 1080;
+    cropCanvas.height = 1920;
+
+    const sourceX=(w - 1080) / 2;
+    const sourceY=(h - 1920) / 2;
+    const ctx=cropCanvas.getContext("2d");
+    if (ctx) {
+      ctx.drawImage(
+        exportCanvas,
+        sourceX,
+        sourceY,
+        1080,
+        1920,
+        0,
+        0,
+        1080,
+        1920
+      );
+    }
+
+    if (mobile) {
+          link.href = cropCanvas.toDataURL("image/png");
+    } else {
           link.href = exportCanvas.toDataURL("image/png");
+    }
           link.click();
           exportCanvas.remove();
         },

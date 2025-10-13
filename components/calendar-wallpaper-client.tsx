@@ -9,13 +9,17 @@ export function CalendarWallpaperClient() {
   const canvasRef = useRef<WallpaperCanvasHandle>(null)
 
   const handleDownload = () => {
-    canvasRef.current?.downloadPNG(3840, 2160)
+    canvasRef.current?.downloadPNG(3840, 2160, false)
   }
 
+  
+  const handleDownloadMobile = () => {
+    canvasRef.current?.downloadPNG(3840, 2160, true)
+  }
   return (
     <div className="flex flex-col lg:flex-row gap-6">
       <CalendarControls/>
-      <CalendarPreview ref={canvasRef} onDownload={handleDownload} />
+      <CalendarPreview ref={canvasRef} onDownload={handleDownload} onDownloadMobile={handleDownloadMobile}/>
     </div>
   )
 }

@@ -12,12 +12,13 @@ import { monthNames } from "@/lib/calendar-utils";
 
 interface CalendarPreviewProps {
   onDownload: () => void;
+  onDownloadMobile: () => void;
 }
 
 export const CalendarPreview = forwardRef<
   WallpaperCanvasHandle,
   CalendarPreviewProps
->(function CalendarPreview({ onDownload }, ref) {
+>(function CalendarPreview({ onDownload, onDownloadMobile }, ref) {
   const month = useCalendarStore((state) => state.month);
   const year = useCalendarStore((state) => state.year);
   const weekStart = useCalendarStore((state) => state.weekStart);
@@ -119,6 +120,16 @@ export const CalendarPreview = forwardRef<
         >
           <Download className="w-4 h-4 mr-2" />
           Download 4K Wallpaper
+        </Button>
+        <Button
+          onClick={onDownloadMobile}
+          size="lg"
+          className="w-full"
+          disabled={!showPreview}
+          
+        >
+          <Download className="w-4 h-4 mr-2" />
+          Download Mobile Wallpaper
         </Button>
       </div>
     </div>
