@@ -15,7 +15,7 @@ function GithubButton() {
 
   return (
     <Link href="https://github.com/shm-dtt/wallendar" target="_blank">
-      <Button variant="outline" className="cursor-pointer">
+      <Button variant="ghost" className="cursor-pointer">
         <Github aria-hidden="true" /> 
         <span className="text-muted-foreground text-xs">
           {StarsCount()}

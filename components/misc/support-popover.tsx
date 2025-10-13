@@ -31,7 +31,7 @@ export function SupportPopover() {
     <Popover>
       <PopoverTrigger asChild>
         <Button
-          variant="outline"
+          variant="ghost"
           size="icon"
           className="cursor-pointer text-red-500 hover:text-red-500"
         >
