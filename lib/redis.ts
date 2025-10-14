@@ -1,4 +1,5 @@
 import { Redis } from "@upstash/redis";
+import { unstable_cache } from "next/cache";
 
 let redis: Redis | null = null;
 
@@ -53,3 +54,12 @@ export async function getDownloadCount() {
     return 0;
   }
 }
+
+// Cache the download count on the server for 4 hours to avoid hitting Redis on every request and to keep the landing page fast. The count may be stale within the revalidate window, which is acceptable for this use case.
+export const getCachedDownloadCount = unstable_cache(
+  async () => {
+    return await getDownloadCount();
+  },
+  ["wallendar:download_count"],
+  { revalidate: 60 * 60 * 4 }
+);
