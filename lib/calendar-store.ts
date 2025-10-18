@@ -10,6 +10,8 @@ export type HeaderFormat =
   | "short-short-year" 
   | "short-full-year";
 
+export type ViewMode = "desktop" | "mobile";
+
 interface CalendarState {
   // Calendar settings
   month: number | null; // null means no month selected (placeholder)
@@ -31,6 +33,9 @@ interface CalendarState {
   offsetX: number;
   offsetY: number;
 
+  // View mode
+  viewMode: ViewMode;
+
   // Actions
   setMonth: (month: number) => void;
   setYear: (year: number) => void;
@@ -45,6 +50,7 @@ interface CalendarState {
   setOffset: (x: number, y: number) => void;
   setOffsetX: (x: number) => void;
   setOffsetY: (y: number) => void;
+  setViewMode: (viewMode: ViewMode) => void;
 }
 
 export const useCalendarStore = create<CalendarState>((set) => ({
@@ -61,6 +67,7 @@ export const useCalendarStore = create<CalendarState>((set) => ({
   currentImageIndex: 0,
   offsetX: 0,
   offsetY: 0,
+  viewMode: "desktop",
 
   // Actions
   setMonth: (month) => set({ month }),
@@ -82,4 +89,5 @@ export const useCalendarStore = create<CalendarState>((set) => ({
   setOffset: (x, y) => set({ offsetX: Math.max(-1, Math.min(1, x)), offsetY: Math.max(-1, Math.min(1, y)) }),
   setOffsetX: (x) => set({ offsetX: Math.max(-1, Math.min(1, x)) }),
   setOffsetY: (y) => set({ offsetY: Math.max(-1, Math.min(1, y)) }),
+  setViewMode: (viewMode) => set({ viewMode }),
 }));

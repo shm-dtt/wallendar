@@ -96,3 +96,22 @@ export const sampleImagePath : string[] = [
   "/samples/sample-bg6.jpg",
   "/samples/sample-bg7.jpg",
 ];
+
+export const fontFamilyMap = {
+  Montserrat:
+    'Montserrat, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans"',
+  Serif: 'Georgia, Cambria, "Times New Roman", Times, serif',
+  Mono: 'ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+  "Playwrite CA":
+    '"Playwrite CA", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans"',
+  Doto:
+    'Doto, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans"',
+  "Crafty Girls":
+    '"Crafty Girls", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans"',
+  "Freckle Face":
+    '"Freckle Face", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans"',
+  "Product Sans":
+    '"Product Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans"',
+  "Segoe Script":
+    '"Segoe Script", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans"',
+};

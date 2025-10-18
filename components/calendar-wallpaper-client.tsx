@@ -1,15 +1,21 @@
 "use client"
 
 import { useRef } from 'react'
-import { CalendarControls } from './calendar-controls/calendar-controls'
-import { CalendarPreview } from './calendar-preview'
-import type { WallpaperCanvasHandle } from './wallpaper-canvas'
+import { CalendarControls } from '@/components/calendar-controls/calendar-controls'
+import { CalendarPreview } from '@/components/calendar-preview'
+import type { WallpaperCanvasHandle } from '@/components/wallpaper-canvas'
+import { useCalendarStore } from '@/lib/calendar-store'
 
 export function CalendarWallpaperClient() {
   const canvasRef = useRef<WallpaperCanvasHandle>(null)
+  const viewMode = useCalendarStore((state) => state.viewMode);
 
   const handleDownload = async () => {
-    canvasRef.current?.downloadPNG(3840, 2160)
+    if (viewMode === "mobile") {
+      canvasRef.current?.downloadPNG(1080, 1920)
+    } else {
+      canvasRef.current?.downloadPNG(3840, 2160)
+    }
     try {
       await fetch("/api/track-download", { method: "POST" });
       console.log("Download tracked");
