@@ -8,7 +8,7 @@ import { useCalendarStore } from '@/lib/calendar-store'
 
 export function CalendarWallpaperClient() {
   const canvasRef = useRef<WallpaperCanvasHandle>(null)
-  const viewMode = useCalendarStore((state: any) => state.viewMode);
+  const viewMode = useCalendarStore((state) => state.viewMode);
 
   const handleDownload = async () => {
     if (viewMode === "mobile") {
