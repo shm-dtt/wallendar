@@ -136,7 +136,7 @@ function drawWallpaper(
   
   // Tuned proportions; weekdays and dates share the same size
   let monthSize = Math.round(height * (isMobile ? 0.03 : 0.05));
-  const labelDaySize = Math.round(height * (isMobile ? 0.01 : 0.02)); // same size for weekday labels and dates
+  const labelDaySize = Math.round(height * (isMobile ? 0.0115 : 0.02)); // same size for weekday labels and dates
 
   const gridWidth = width * (isMobile ? 0.35 : 0.25);
   const startX = (width - gridWidth) / 2;
