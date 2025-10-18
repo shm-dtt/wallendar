@@ -1,6 +1,6 @@
 "use client";
 
-import { HeaderFormat } from "@/lib/calendar-store";
+import { HeaderFormat, ViewMode } from "@/lib/calendar-store";
 import { formatMonthHeader } from "@/lib/calendar-utils";
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 
@@ -19,6 +19,7 @@ type Props = {
   // Normalized offsets (-1..1) where (0,0) is centered
   offsetX?: number;
   offsetY?: number;
+  viewMode?: ViewMode;
 };
 
 // Day labels
@@ -130,14 +131,17 @@ function drawWallpaper(
     );
   }
 
+  // Adjust proportions based on view mode
+  const isMobile = opts.viewMode === "mobile";
+  
   // Tuned proportions; weekdays and dates share the same size
-  let monthSize = Math.round(height * 0.05);
-  const labelDaySize = Math.round(height * 0.02); // same size for weekday labels and dates
+  let monthSize = Math.round(height * (isMobile ? 0.03 : 0.05));
+  const labelDaySize = Math.round(height * (isMobile ? 0.01 : 0.02)); // same size for weekday labels and dates
 
-  const gridWidth = width * 0.25;
+  const gridWidth = width * (isMobile ? 0.35 : 0.25);
   const startX = (width - gridWidth) / 2;
   const colW = gridWidth / 7;
-  const baseY = height * 0.34;
+  const baseY = height * (isMobile ? 0.4 : 0.34);
 
   // Apply normalized offset to calendar block and month title
   const normX = Math.max(-1, Math.min(1, opts.offsetX ?? 0));
@@ -212,7 +216,7 @@ function drawWallpaper(
   const labels = opts.weekStart === "sunday" ? DOW_SUN : DOW_MON;
   const bodyWeight = getFontWeight(bodyFamily);
   context.font = `${bodyWeight} ${labelDaySize}px ${safeBodyFamily}`;
-  const dowY = baseY + Math.round(height * 0.08) + shiftY;
+  const dowY = baseY + Math.round(height * (isMobile ? 0.05 : 0.08)) + shiftY;
   labels.forEach((label, i) => {
     const x = startX + i * colW + colW / 2 + shiftX;
     context.globalAlpha = 0.8;
@@ -223,8 +227,8 @@ function drawWallpaper(
   context.font = `${bodyWeight} ${labelDaySize}px ${safeBodyFamily}`;
   const totalDays = daysInMonth(opts.year, opts.month);
   const offset = firstDayOffset(opts.year, opts.month, opts.weekStart);
-  const rowsTop = dowY + Math.round(height * 0.055);
-  const rowH = Math.round(height * 0.055);
+  const rowsTop = dowY + Math.round(height * (isMobile ? 0.03 : 0.055));
+  const rowH = Math.round(height * (isMobile ? 0.03 : 0.055));
 
   context.globalAlpha = 1;
   for (let d = 1; d <= totalDays; d++) {
@@ -256,6 +260,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
       imageSrc,
       offsetX = 0,
       offsetY = 0,
+      viewMode = "desktop",
     },
     ref
   ) {
@@ -283,12 +288,14 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
             scaleForExport: true,
             offsetX,
             offsetY,
+            viewMode,
           });
           const link = document.createElement("a");
+          const modeSuffix = viewMode === "mobile" ? "-mobile" : "";
           link.download = `calendar-${year}-${String(month + 1).padStart(
             2,
             "0"
-          )}.png`;
+          )}${modeSuffix}.png`;
           link.href = exportCanvas.toDataURL("image/png");
           link.click();
           exportCanvas.remove();
@@ -304,6 +311,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
         offsetX,
         offsetY,
         imageSrc,
+        viewMode,
       ]
     );
 
@@ -363,7 +371,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
       canvas.width = Math.max(320, Math.floor(rect.width * dpr));
       canvas.height = Math.max(180, Math.floor(rect.height * dpr));
 
-      if (imgRef.current) {
+        if (imgRef.current) {
         drawWallpaper(canvas, {
           month,
           year,
@@ -374,6 +382,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
           image: imgRef.current,
           offsetX,
           offsetY,
+          viewMode,
         });
       }
 
@@ -405,6 +414,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
               image: oldImg,
               offsetX,
               offsetY,
+              viewMode,
             });
             ctx.restore();
           }
@@ -421,6 +431,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
             image: newImg,
             offsetX,
             offsetY,
+            viewMode,
           });
           ctx.restore();
 
@@ -472,6 +483,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
             image: imgRef.current || loadedImg,
             offsetX,
             offsetY,
+            viewMode,
           });
         }
       }
@@ -490,6 +502,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
       imageSrc,
       offsetX,
       offsetY,
+      viewMode,
     ]);
 
     return (
