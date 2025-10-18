@@ -228,7 +228,7 @@ function drawWallpaper(
   const totalDays = daysInMonth(opts.year, opts.month);
   const offset = firstDayOffset(opts.year, opts.month, opts.weekStart);
   const rowsTop = dowY + Math.round(height * (isMobile ? 0.03 : 0.055));
-  const rowH = Math.round(height * (isMobile ? 0.03 : 0.055));
+  const rowH = Math.round(height * (isMobile ? 0.027 : 0.055));
 
   context.globalAlpha = 1;
   for (let d = 1; d <= totalDays; d++) {
