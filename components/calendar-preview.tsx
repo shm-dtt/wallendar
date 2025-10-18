@@ -57,7 +57,7 @@ export const CalendarPreview = forwardRef<
 
   // Get aspect ratio class based on view mode
   const getAspectRatioClass = (mode: ViewMode) => {
-    return mode === "mobile" ? "aspect-[9/16] h-[70vh]" : "aspect-video";
+    return mode === "mobile" ? "aspect-[9/16] h-[45vh] lg:h-[70vh]" : "aspect-video";
   };
 
   return (
@@ -71,11 +71,9 @@ export const CalendarPreview = forwardRef<
           <TabsList>
             <TabsTrigger value="desktop" className="flex items-center gap-2">
               <Monitor className="w-4 h-4" />
-              Desktop
             </TabsTrigger>
             <TabsTrigger value="mobile" className="flex items-center gap-2">
               <Smartphone className="w-4 h-4" />
-              Mobile
             </TabsTrigger>
           </TabsList>
         </div>
