@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ImageIcon, RefreshCcw } from "lucide-react";
+import { ImageIcon, RefreshCcw, Image } from "lucide-react";
 import { useCalendarStore } from "@/lib/calendar-store";
 import { ButtonGroup } from "@/components/ui/button-group";
 
@@ -30,7 +30,7 @@ export function BackgroundSettings() {
   return (
     <div className="py-1">
       <div className="items-center gap-2 mb-3 hidden lg:flex">
-        <ImageIcon className="w-4 h-4 text-primary" />
+        <Image className="w-4 h-4 text-primary" />
         <h2 className="font-semibold text-sm">Background</h2>
       </div>
 

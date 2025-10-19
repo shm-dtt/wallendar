@@ -3,7 +3,7 @@ import { TypographySettings } from "@/components/calendar-controls/typography-se
 import { BackgroundSettings } from "@/components/calendar-controls/background-settings";
 import { JoystickSettings } from "@/components/calendar-controls/joystick-settings";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, CaseSensitive, Crosshair, Wallpaper } from "lucide-react";
+import { Calendar, CaseSensitive, Move, Image } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 export function CalendarControls() {
@@ -27,13 +27,13 @@ export function CalendarControls() {
               <Calendar />
             </TabsTrigger>
             <TabsTrigger value="background">
-              <Wallpaper />
+              <Image />
             </TabsTrigger>
             <TabsTrigger value="typography">
               <CaseSensitive />
             </TabsTrigger>
             <TabsTrigger value="position">
-              <Crosshair />
+              <Move />
             </TabsTrigger>
           </TabsList>
           <div>

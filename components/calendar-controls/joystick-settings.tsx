@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useCalendarStore } from "@/lib/calendar-store";
 import { Label } from "@/components/ui/label";
-import { Crosshair } from "lucide-react";
+import { Move } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function JoystickSettings() {
@@ -129,7 +129,7 @@ export function JoystickSettings() {
   return (
     <div className="py-1">
       <div className="items-center gap-2 mb-2 hidden lg:flex">
-        <Crosshair className="w-4 h-4 text-primary" />
+        <Move className="w-4 h-4 text-primary" />
         <h2 className="font-semibold text-sm">Position</h2>
       </div>
 

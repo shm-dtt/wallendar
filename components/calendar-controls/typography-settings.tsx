@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Type, X } from "lucide-react"
+import { CaseSensitive,  X } from "lucide-react"
 import { useCalendarStore } from "@/lib/calendar-store"
 import { ModernColorPicker } from "@/components/color-picker"
 import { localFonts } from '@/lib/calendar-utils'
@@ -183,7 +183,7 @@ export function TypographySettings() {
   return (
     <div className="py-1">
       <div className="items-center gap-2 mb-3 hidden lg:flex">
-        <Type className="w-4 h-4 text-primary" />
+        <CaseSensitive className="w-4 h-4 text-primary" />
         <h2 className="font-semibold text-sm">Typography</h2>
       </div>
 
