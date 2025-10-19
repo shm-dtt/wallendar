@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { CaseSensitive,  X } from "lucide-react"
 import { useCalendarStore } from "@/lib/calendar-store"
-import { ModernColorPicker } from "@/components/color-picker"
+import { ModernColorPicker } from "@/components/misc/color-picker"
 import { localFonts } from '@/lib/calendar-utils'
 
 export function TypographySettings() {

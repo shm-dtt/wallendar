@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 export function CalendarControls() {
   return (
     <>
-      <ScrollArea className="hidden lg:block flex-2">
+      <ScrollArea className="hidden lg:block flex-[1.7]">
         <div className="max-h-[calc(100vh-8rem)] lg:pr-4">
           <MonthSettings />
           <Separator className="my-4" />

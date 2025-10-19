@@ -9,7 +9,6 @@ import { useCalendarStore, getResolutionDimensions, DownloadResolution } from "@
 export function CalendarWallpaperClient() {
   const canvasRef = useRef<WallpaperCanvasHandle>(null);
   const viewMode = useCalendarStore((state) => state.viewMode);
-  const downloadResolution = useCalendarStore((state) => state.downloadResolution);
   const setIsDownloading = useCalendarStore((state) => state.setIsDownloading);
 
   const handleDownload = async (resolution: DownloadResolution) => {
