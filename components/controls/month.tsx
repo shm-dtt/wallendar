@@ -27,7 +27,7 @@ export function MonthSettings() {
     <div className="py-1">
       <div className="items-center gap-2 mb-3 hidden lg:flex">
         <Calendar className="w-4 h-4 text-primary" />
-        <h2 className="font-semibold text-sm">Calendar Settings</h2>
+        <h2 className="font-semibold text-sm">Calendar</h2>
       </div>
 
       <div className="flex gap-4 flex-wrap">
