@@ -215,7 +215,7 @@ export function TypographySettings() {
                 }
               }}>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select font" />
+                  <SelectValue placeholder="Product Sans" />
                 </SelectTrigger>
                 <SelectContent>
                   {allFontOptions.map((font) => (

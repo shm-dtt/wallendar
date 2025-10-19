@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RefreshCcw, Image } from "lucide-react";
+import { Shuffle, Image } from "lucide-react";
 import { useCalendarStore } from "@/lib/calendar-store";
 import { ButtonGroup } from "@/components/ui/button-group";
 
@@ -49,7 +49,7 @@ export function BackgroundSettings() {
               className="text-sm file:text-muted-foreground"
             />
             <Button variant="outline" onClick={handleSampleImage}>
-              <RefreshCcw className="w-4 h-4" />
+              <Shuffle className="w-4 h-4" />
               Try Sample
             </Button>
           </ButtonGroup>

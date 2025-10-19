@@ -32,73 +32,67 @@ export function MonthSettings() {
 
       <div className="flex gap-4 flex-wrap">
         <div className="space-y-1">
-          <Label htmlFor="month" className="text-sm">
-            Month
+          <Label htmlFor="month-year" className="text-sm">
+            Month & Year
           </Label>
-          <Select
-            value={month !== null ? String(month) : ""}
-            onValueChange={(v) => setMonth(Number(v))}
-          >
-            <SelectTrigger id="month" className="w-[150px]">
-              <SelectValue placeholder="Select a month" />
-            </SelectTrigger>
-            <SelectContent>
-              {monthNames.map((m, idx) => (
-                <SelectItem key={m} value={String(idx)}>
-                  {m}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-1">
-          <Label htmlFor="year" className="text-sm">
-            Year
-          </Label>
-          <Input
-            id="year"
-            type="number"
-            value={year}
-            onChange={(e) =>
-              setYear(Number(e.target.value || new Date().getFullYear()))
-            }
-            min={1900}
-            max={9999}
-            className="text-sm"
-          />
+          <ButtonGroup>
+            <Select
+              value={month !== null ? String(month) : ""}
+              onValueChange={(v) => setMonth(Number(v))}
+            >
+              <SelectTrigger id="month">
+                <SelectValue placeholder="MMM" />
+              </SelectTrigger>
+              <SelectContent>
+                {monthNames.map((m, idx) => (
+                  <SelectItem key={m} value={String(idx)}>
+                    {m}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Input
+              id="year"
+              type="number"
+              value={year}
+              onChange={(e) =>
+                setYear(Number(e.target.value || new Date().getFullYear()))
+              }
+              min={1900}
+              max={9999}
+              className="text-sm"
+            />
+          </ButtonGroup>
         </div>
 
         <div className="space-y-1">
           <Label className="text-sm">Start week on</Label>
-          <div className="flex gap-2">
             <ButtonGroup>
-            <Button
-              variant={weekStart === "sunday" ? "default" : "outline"}
-              onClick={() => setWeekStart("sunday")}
-            >
-              Sun
-            </Button>
-            <Button
-              variant={weekStart === "monday" ? "default" : "outline"}
-              onClick={() => setWeekStart("monday")}
-            >
-              Mon
-            </Button>
+              <Button
+                variant={weekStart === "sunday" ? "default" : "outline"}
+                onClick={() => setWeekStart("sunday")}
+              >
+                Sun
+              </Button>
+              <Button
+                variant={weekStart === "monday" ? "default" : "outline"}
+                onClick={() => setWeekStart("monday")}
+              >
+                Mon
+              </Button>
             </ButtonGroup>
-          </div>
         </div>
 
         <div className="space-y-1">
           <Label htmlFor="headerFormat" className="text-sm">
-            Month formatting
+            Format
           </Label>
           <Select
             value={headerFormat || ""}
             onValueChange={(v) => setHeaderFormat(v as HeaderFormat)}
           >
-            <SelectTrigger id="headerFormat" className="w-[280px]">
-              <SelectValue placeholder="Default: Month (full)" />
+            <SelectTrigger id="headerFormat" className="w-[130px]">
+              <SelectValue placeholder="Full" />
             </SelectTrigger>
             <SelectContent>
               {headerFormatOptions.map((option) => (
