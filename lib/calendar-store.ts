@@ -36,6 +36,9 @@ interface CalendarState {
   // View mode
   viewMode: ViewMode;
 
+  // Loading states
+  isDownloading: boolean;
+
   // Actions
   setMonth: (month: number) => void;
   setYear: (year: number) => void;
@@ -51,6 +54,9 @@ interface CalendarState {
   setOffsetX: (x: number) => void;
   setOffsetY: (y: number) => void;
   setViewMode: (viewMode: ViewMode) => void;
+  
+  // Loading state actions
+  setIsDownloading: (loading: boolean) => void;
 }
 
 export const useCalendarStore = create<CalendarState>((set) => ({
@@ -68,6 +74,7 @@ export const useCalendarStore = create<CalendarState>((set) => ({
   offsetX: 0,
   offsetY: 0,
   viewMode: "desktop",
+  isDownloading: false,
 
   // Actions
   setMonth: (month) => set({ month }),
@@ -90,4 +97,5 @@ export const useCalendarStore = create<CalendarState>((set) => ({
   setOffsetX: (x) => set({ offsetX: Math.max(-1, Math.min(1, x)) }),
   setOffsetY: (y) => set({ offsetY: Math.max(-1, Math.min(1, y)) }),
   setViewMode: (viewMode) => set({ viewMode }),
+  setIsDownloading: (isDownloading) => set({ isDownloading }),
 }));
