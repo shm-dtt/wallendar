@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ImageIcon, RefreshCcw } from "lucide-react";
+import { Shuffle, Image } from "lucide-react";
 import { useCalendarStore } from "@/lib/calendar-store";
 import { ButtonGroup } from "@/components/ui/button-group";
 
@@ -29,8 +29,8 @@ export function BackgroundSettings() {
 
   return (
     <div className="py-1">
-      <div className="flex items-center gap-2 mb-3">
-        <ImageIcon className="w-4 h-4 text-primary" />
+      <div className="items-center gap-2 mb-3 hidden lg:flex">
+        <Image className="w-4 h-4 text-primary" />
         <h2 className="font-semibold text-sm">Background</h2>
       </div>
 
@@ -49,7 +49,7 @@ export function BackgroundSettings() {
               className="text-sm file:text-muted-foreground"
             />
             <Button variant="outline" onClick={handleSampleImage}>
-              <RefreshCcw className="w-4 h-4" />
+              <Shuffle className="w-4 h-4" />
               Try Sample
             </Button>
           </ButtonGroup>
@@ -57,7 +57,7 @@ export function BackgroundSettings() {
       </div>
 
       <p className="text-xs text-muted-foreground mt-2">
-        Images are automatically scaled to fit 16:9 aspect ratio
+        Images are scaled to fit the selected aspect ratio
       </p>
     </div>
   );

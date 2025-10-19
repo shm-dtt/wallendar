@@ -45,9 +45,9 @@ export function formatMonthHeader(month: number, year: number, format: HeaderFor
 }
 
 export const headerFormatOptions = [
-  { value: "full", label: "Month (full)" },
-  { value: "short", label: "Month (short)" },
-  { value: "numeric", label: "Month (numeric)" },
+  { value: "full", label: "Full" },
+  { value: "short", label: "Short" },
+  { value: "numeric", label: "Numeric" },
   { value: "numeric-full-year", label: "mm/YYYY" },
   { value: "numeric-short-year", label: "mm/YY" },
   { value: "short-full-year", label: "MMM/YYYY" },
@@ -55,7 +55,7 @@ export const headerFormatOptions = [
 ] as const;
 
 export const localFonts = [
-  { name: "Product Sans", displayName: "Product Sans (Default)", path: "/fonts/ProductSans.ttf" },
+  { name: "Product Sans", displayName: "Product Sans", path: "/fonts/ProductSans.ttf" },
   { name: "Montserrat", displayName: "Montserrat", path: "/fonts/Montserrat.ttf" },
   { name: "Doto", displayName: "Doto", path: "/fonts/Doto.ttf" },
   { name: "Crafty Girls", displayName: "Crafty Girls", path: "/fonts/CraftyGirls.ttf" },
@@ -73,18 +73,18 @@ export const gallery: string[] = [
 ];
 
 export const monthNames: string[] = [
-  "January",
-  "February",
-  "March",
-  "April",
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
   "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
 ];
 
 export const sampleImagePath : string[] = [

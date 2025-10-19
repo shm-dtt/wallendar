@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Type, X } from "lucide-react"
+import { CaseSensitive,  X } from "lucide-react"
 import { useCalendarStore } from "@/lib/calendar-store"
-import { ModernColorPicker } from "@/components/color-picker"
+import { ModernColorPicker } from "@/components/misc/color-picker"
 import { localFonts } from '@/lib/calendar-utils'
 
 export function TypographySettings() {
@@ -182,8 +182,8 @@ export function TypographySettings() {
 
   return (
     <div className="py-1">
-      <div className="flex items-center gap-2 mb-3">
-        <Type className="w-4 h-4 text-primary" />
+      <div className="items-center gap-2 mb-3 hidden lg:flex">
+        <CaseSensitive className="w-4 h-4 text-primary" />
         <h2 className="font-semibold text-sm">Typography</h2>
       </div>
 
@@ -215,7 +215,7 @@ export function TypographySettings() {
                 }
               }}>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select font" />
+                  <SelectValue placeholder="Product Sans" />
                 </SelectTrigger>
                 <SelectContent>
                   {allFontOptions.map((font) => (
@@ -285,9 +285,6 @@ export function TypographySettings() {
             />
             <span>Apply selected font to all text</span>
           </Label>
-          <p className="text-xs text-muted-foreground">
-            If unchecked, only the month name changes; days and dates use default font.
-          </p>
         </div>
       </div>
     </div>

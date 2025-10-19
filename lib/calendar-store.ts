@@ -12,6 +12,30 @@ export type HeaderFormat =
 
 export type ViewMode = "desktop" | "mobile";
 
+export type DownloadResolution = "hd" | "fhd" | "4k";
+
+export const getResolutionDimensions = (resolution: DownloadResolution, viewMode: ViewMode) => {
+  if (viewMode === "mobile") {
+    switch (resolution) {
+      case "hd":
+        return { width: 720, height: 1280 };
+      case "fhd":
+        return { width: 1080, height: 1920 };
+      case "4k":
+        return { width: 1440, height: 2560 };
+    }
+  } else {
+    switch (resolution) {
+      case "hd":
+        return { width: 1280, height: 720 };
+      case "fhd":
+        return { width: 1920, height: 1080 };
+      case "4k":
+        return { width: 3840, height: 2160 };
+    }
+  }
+};
+
 interface CalendarState {
   // Calendar settings
   month: number | null; // null means no month selected (placeholder)
@@ -36,6 +60,12 @@ interface CalendarState {
   // View mode
   viewMode: ViewMode;
 
+  // Loading states
+  isDownloading: boolean;
+  
+  // Download settings
+  downloadResolution: DownloadResolution;
+
   // Actions
   setMonth: (month: number) => void;
   setYear: (year: number) => void;
@@ -51,6 +81,12 @@ interface CalendarState {
   setOffsetX: (x: number) => void;
   setOffsetY: (y: number) => void;
   setViewMode: (viewMode: ViewMode) => void;
+  
+  // Loading state actions
+  setIsDownloading: (loading: boolean) => void;
+  
+  // Download actions
+  setDownloadResolution: (resolution: DownloadResolution) => void;
 }
 
 export const useCalendarStore = create<CalendarState>((set) => ({
@@ -68,6 +104,8 @@ export const useCalendarStore = create<CalendarState>((set) => ({
   offsetX: 0,
   offsetY: 0,
   viewMode: "desktop",
+  isDownloading: false,
+  downloadResolution: "4k",
 
   // Actions
   setMonth: (month) => set({ month }),
@@ -90,4 +128,24 @@ export const useCalendarStore = create<CalendarState>((set) => ({
   setOffsetX: (x) => set({ offsetX: Math.max(-1, Math.min(1, x)) }),
   setOffsetY: (y) => set({ offsetY: Math.max(-1, Math.min(1, y)) }),
   setViewMode: (viewMode) => set({ viewMode }),
+  setIsDownloading: (isDownloading) => set({ isDownloading }),
+  setDownloadResolution: (downloadResolution) => set({ downloadResolution }),
 }));
+
+export const resolutionOptions = (viewMode: ViewMode) => [
+  {
+    value: "hd" as DownloadResolution,
+    label: "HD",
+    description: viewMode === "mobile" ? "720 x 1280" : "1280 x 720",
+  },
+  {
+    value: "fhd" as DownloadResolution,
+    label: "FHD",
+    description: viewMode === "mobile" ? "1080 x 1920" : "1920 x 1080",
+  },
+  {
+    value: "4k" as DownloadResolution,
+    label: "4K",
+    description: viewMode === "mobile" ? "1440 x 2560" : "3840 x 2160",
+  },
+];

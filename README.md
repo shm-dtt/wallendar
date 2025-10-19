@@ -4,9 +4,9 @@
 
 # Wallendar
 
-Transform your images into calendar desktop wallpapers.
+Transform your images into calendar desktop wallpapers. [Check it out.](https://wallendar.shop/)
 
-A simple website to add overlay of a calendar on your wallpaper.
+![Wallpaper example 5](public/images/wallpaper1.webp)
 
 ## Features
 
@@ -28,7 +28,7 @@ A simple website to add overlay of a calendar on your wallpaper.
 
 ```bash
 # Clone the repo
-git clone <repository-url>
+git clone https://github.com/shm-dtt/wallendar
 cd wallendar
 
 # Install dependencies
