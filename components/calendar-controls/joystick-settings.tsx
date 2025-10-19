@@ -128,7 +128,7 @@ export function JoystickSettings() {
 
   return (
     <div className="py-1">
-      <div className="flex items-center gap-2 mb-2">
+      <div className="items-center gap-2 mb-2 hidden lg:flex">
         <Crosshair className="w-4 h-4 text-primary" />
         <h2 className="font-semibold text-sm">Position</h2>
       </div>

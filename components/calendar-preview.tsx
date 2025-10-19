@@ -7,12 +7,34 @@ import WallpaperCanvas, {
 } from "@/components/wallpaper-canvas";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Download, ScanEye, Monitor, Smartphone } from "lucide-react";
-import { HeaderFormat, useCalendarStore, ViewMode } from "@/lib/calendar-store";
+import {
+  Download,
+  ScanEye,
+  Monitor,
+  Smartphone,
+  ChevronDown,
+} from "lucide-react";
+import {
+  HeaderFormat,
+  useCalendarStore,
+  ViewMode,
+  DownloadResolution,
+  resolutionOptions,
+} from "@/lib/calendar-store";
 import { fontFamilyMap } from "@/lib/calendar-utils";
+import { Spinner } from "@/components/ui/spinner";
+import {
+  ButtonGroup,
+  ButtonGroupSeparator,
+} from "@/components/ui/button-group";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface CalendarPreviewProps {
-  onDownload: () => void;
+  onDownload: (resolution: DownloadResolution) => void;
 }
 
 export const CalendarPreview = forwardRef<
@@ -32,7 +54,6 @@ export const CalendarPreview = forwardRef<
   const offsetY = useCalendarStore((state) => state.offsetY);
   const viewMode = useCalendarStore((state) => state.viewMode);
   const setViewMode = useCalendarStore((state) => state.setViewMode);
-
 
   const effectiveFont = useMemo(() => {
     const baseFont =
@@ -57,17 +78,20 @@ export const CalendarPreview = forwardRef<
 
   // Get aspect ratio class based on view mode
   const getAspectRatioClass = (mode: ViewMode) => {
-    return mode === "mobile" ? "aspect-[9/16] h-[45vh] lg:h-[70vh]" : "aspect-video";
+    return mode === "mobile"
+      ? "aspect-[9/16] h-[45vh] lg:h-[70vh]"
+      : "aspect-video";
   };
+
+  const isDownloading = useCalendarStore((state) => state.isDownloading);
 
   return (
     <div className="flex-3 space-y-4">
-      <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as ViewMode)}>
+      <Tabs
+        value={viewMode}
+        onValueChange={(value) => setViewMode(value as ViewMode)}
+      >
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <ScanEye className="w-4 h-4 text-primary" />
-            <h2 className="font-semibold text-sm">Preview</h2>
-          </div>
           <TabsList>
             <TabsTrigger value="desktop" className="flex items-center gap-2">
               <Monitor className="w-4 h-4" />
@@ -76,10 +100,55 @@ export const CalendarPreview = forwardRef<
               <Smartphone className="w-4 h-4" />
             </TabsTrigger>
           </TabsList>
+          <ButtonGroup>
+            <Button
+              onClick={() => onDownload("4k" as DownloadResolution)}
+              size="sm"
+              disabled={!showPreview}
+            >
+              {isDownloading ? (
+                <Spinner className="w-4 h-4" />
+              ) : (
+                <Download className="w-4 h-4" />
+              )}
+              Download
+            </Button>
+            <ButtonGroupSeparator />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button size="sm" disabled={!showPreview}>
+                  <ChevronDown className="w-4 h-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-36 p-2" align="end">
+                <div className="space-y-1 flex flex-col">
+                  {resolutionOptions(viewMode).map((option) => (
+                    <Button
+                      key={option.value}
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onDownload(option.value)}
+                      disabled={isDownloading}
+                      className="justify-start"
+                    >
+                      {option.label}{" "}
+                      <span className="text-xs text-muted-foreground">
+                        {option.description}{" "}
+                      </span>
+                    </Button>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+          </ButtonGroup>
         </div>
 
         <TabsContent value="desktop">
-          <div className={`w-full ${getAspectRatioClass("desktop")} rounded-lg overflow-hidden bg-black border-2`}>
+          <div
+            className={`w-full ${getAspectRatioClass(
+              "desktop"
+            )} rounded-lg overflow-hidden bg-black border-2`}
+          >
             {showPreview ? (
               <WallpaperCanvas
                 ref={ref}
@@ -110,7 +179,11 @@ export const CalendarPreview = forwardRef<
         </TabsContent>
 
         <TabsContent value="mobile" className="flex justify-center">
-          <div className={`w-auto ${getAspectRatioClass("mobile")} rounded-lg overflow-hidden bg-black border-2`}>
+          <div
+            className={`w-auto ${getAspectRatioClass(
+              "mobile"
+            )} rounded-lg overflow-hidden bg-black border-2`}
+          >
             {showPreview ? (
               <WallpaperCanvas
                 ref={ref}
@@ -140,18 +213,6 @@ export const CalendarPreview = forwardRef<
           </div>
         </TabsContent>
       </Tabs>
-
-      <div className="flex-col items-center space-y-2">
-        <Button 
-          onClick={onDownload} 
-          size="lg" 
-          className="w-full"
-          disabled={!showPreview}
-        >
-          <Download className="w-4 h-4 mr-2" />
-          Download Wallpaper
-        </Button>
-      </div>
     </div>
   );
 });

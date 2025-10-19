@@ -29,7 +29,7 @@ export function BackgroundSettings() {
 
   return (
     <div className="py-1">
-      <div className="flex items-center gap-2 mb-3">
+      <div className="items-center gap-2 mb-3 hidden lg:flex">
         <ImageIcon className="w-4 h-4 text-primary" />
         <h2 className="font-semibold text-sm">Background</h2>
       </div>

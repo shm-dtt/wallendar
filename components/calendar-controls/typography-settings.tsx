@@ -182,7 +182,7 @@ export function TypographySettings() {
 
   return (
     <div className="py-1">
-      <div className="flex items-center gap-2 mb-3">
+      <div className="items-center gap-2 mb-3 hidden lg:flex">
         <Type className="w-4 h-4 text-primary" />
         <h2 className="font-semibold text-sm">Typography</h2>
       </div>
