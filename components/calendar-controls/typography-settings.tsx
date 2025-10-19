@@ -285,9 +285,6 @@ export function TypographySettings() {
             />
             <span>Apply selected font to all text</span>
           </Label>
-          <p className="text-xs text-muted-foreground">
-            If unchecked, only the month name changes; days and dates use default font.
-          </p>
         </div>
       </div>
     </div>

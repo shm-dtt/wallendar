@@ -27,7 +27,7 @@ export function CalendarWallpaperClient() {
   };
 
   return (
-    <div className="flex flex-col-reverse lg:flex-row gap-4 justify-between">
+    <div className="flex flex-col-reverse lg:flex-row gap-4 justify-between ">
       <CalendarControls />
       <CalendarPreview ref={canvasRef} onDownload={handleDownload} />
     </div>

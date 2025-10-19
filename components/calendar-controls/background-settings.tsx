@@ -57,7 +57,7 @@ export function BackgroundSettings() {
       </div>
 
       <p className="text-xs text-muted-foreground mt-2">
-        Images are automatically scaled to fit 16:9 aspect ratio
+        Images are scaled to fit the selected aspect ratio
       </p>
     </div>
   );
