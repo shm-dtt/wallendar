@@ -118,7 +118,7 @@ export const CalendarPreview = forwardRef<
               ) : (
                 <Download className="w-4 h-4" />
               )}
-              Download
+              Download 4K
             </Button>
             <ButtonGroupSeparator />
             <Popover>
@@ -139,8 +139,8 @@ export const CalendarPreview = forwardRef<
                       className="justify-start"
                     >
                       {option.label}{" "}
-                      <span className="text-xs text-muted-foreground">
-                        {option.description}{" "}
+                      <span className="text-xs text-muted-foreground font-normal">
+                        ({option.description}){" "}
                       </span>
                     </Button>
                   ))}

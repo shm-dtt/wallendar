@@ -3,14 +3,47 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useCalendarStore } from "@/lib/calendar-store";
 import { Label } from "@/components/ui/label";
-import { Move } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import {
+  Move,
+  ArrowUp,
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+  Plus,
+  Minus,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
 
 export function PositionSettings() {
   const offsetX = useCalendarStore((s) => s.offsetX);
   const offsetY = useCalendarStore((s) => s.offsetY);
   const setOffset = useCalendarStore((s) => s.setOffset);
   // setOffsetX and setOffsetY are not used here; we use the combined setter
+
+  // Helper functions for input handling
+  const handleInputChange = (value: string, axis: "x" | "y") => {
+    const numValue = parseFloat(value);
+    if (!isNaN(numValue)) {
+      const clampedValue = Math.max(-1, Math.min(1, numValue));
+      if (axis === "x") {
+        setOffset(clampedValue, offsetY);
+      } else {
+        setOffset(offsetX, clampedValue);
+      }
+    }
+  };
+
+  const adjustValue = (axis: "x" | "y", delta: number) => {
+    const currentValue = axis === "x" ? offsetX : offsetY;
+    const newValue = Math.max(-1, Math.min(1, currentValue + delta));
+    if (axis === "x") {
+      setOffset(newValue, offsetY);
+    } else {
+      setOffset(offsetX, newValue);
+    }
+  };
 
   const areaRef = useRef<HTMLDivElement | null>(null);
   const [dragging, setDragging] = useState(false);
@@ -90,31 +123,34 @@ export function PositionSettings() {
   };
 
   // Animation loop integrating velocity into position while joystick is deflected
-  const step = useCallback((ts: number) => {
-    if (lastTsRef.current == null) lastTsRef.current = ts;
-    const dt = Math.max(0, Math.min(0.05, (ts - lastTsRef.current) / 1000));
-    lastTsRef.current = ts;
+  const step = useCallback(
+    (ts: number) => {
+      if (lastTsRef.current == null) lastTsRef.current = ts;
+      const dt = Math.max(0, Math.min(0.05, (ts - lastTsRef.current) / 1000));
+      lastTsRef.current = ts;
 
-    const { vx, vy } = velRef.current;
-    if (vx !== 0 || vy !== 0) {
-      const MAX_SPEED_PER_SEC = 0.8; // normalized units per second
-      const nextX = Math.max(
-        -1,
-        Math.min(1, offsetXRef.current + vx * MAX_SPEED_PER_SEC * dt)
-      );
-      const nextY = Math.max(
-        -1,
-        Math.min(1, offsetYRef.current + vy * MAX_SPEED_PER_SEC * dt)
-      );
-      if (nextX !== offsetXRef.current || nextY !== offsetYRef.current) {
-        offsetXRef.current = nextX;
-        offsetYRef.current = nextY;
-        setOffset(nextX, nextY);
+      const { vx, vy } = velRef.current;
+      if (vx !== 0 || vy !== 0) {
+        const MAX_SPEED_PER_SEC = 0.8; // normalized units per second
+        const nextX = Math.max(
+          -1,
+          Math.min(1, offsetXRef.current + vx * MAX_SPEED_PER_SEC * dt)
+        );
+        const nextY = Math.max(
+          -1,
+          Math.min(1, offsetYRef.current + vy * MAX_SPEED_PER_SEC * dt)
+        );
+        if (nextX !== offsetXRef.current || nextY !== offsetYRef.current) {
+          offsetXRef.current = nextX;
+          offsetYRef.current = nextY;
+          setOffset(nextX, nextY);
+        }
       }
-    }
 
-    rafRef.current = requestAnimationFrame(step);
-  }, [setOffset]);
+      rafRef.current = requestAnimationFrame(step);
+    },
+    [setOffset]
+  );
 
   // Ensure RAF runs when component is mounted and stops on unmount
   useEffect(() => {
@@ -133,49 +169,87 @@ export function PositionSettings() {
         <h2 className="font-semibold text-sm">Position</h2>
       </div>
 
-      <div className="space-y-2">
-        <Label className="text-xs text-muted-foreground">
-          Move calendar block
-        </Label>
-        <div className="flex items-center gap-3">
+      <div className="space-y-4">
+        {/* Joystick Control */}
+        <div className="flex justify-center">
           <div
             ref={areaRef}
-            className="relative w-24 h-24 rounded-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm overflow-hidden select-none touch-none cursor-pointer hover:shadow-md transition-shadow"
+            className="relative w-20 h-20 rounded-full bg-muted/50 border-2 border-muted-foreground/20 overflow-hidden select-none touch-none cursor-pointer hover:bg-muted/70 transition-colors"
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
           >
             {/* Center dot */}
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-neutral-400 dark:bg-neutral-500" />
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-muted-foreground/60" />
 
-            {/* Direction indicators */}
-            <div className="absolute left-1/2 top-3 -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-b-3 border-l-transparent border-r-transparent border-b-neutral-400 dark:border-b-neutral-500" />
-            <div className="absolute left-1/2 bottom-3 -translate-x-1/2 rotate-180 w-0 h-0 border-l-2 border-r-2 border-b-3 border-l-transparent border-r-transparent border-b-neutral-400 dark:border-b-neutral-500" />
-            <div className="absolute top-1/2 left-3 -translate-y-1/2 -rotate-90 w-0 h-0 border-l-2 border-r-2 border-b-3 border-l-transparent border-r-transparent border-b-neutral-400 dark:border-b-neutral-500" />
-            <div className="absolute top-1/2 right-3 -translate-y-1/2 rotate-90 w-0 h-0 border-l-2 border-r-2 border-b-3 border-l-transparent border-r-transparent border-b-neutral-400 dark:border-b-neutral-500" />
+            {/* Direction indicators with Lucide icons */}
+            <ArrowUp className="absolute left-1/2 top-1.5 -translate-x-1/2 w-3 h-3 text-muted-foreground/60" />
+            <ArrowDown className="absolute left-1/2 bottom-1.5 -translate-x-1/2 w-3 h-3 text-muted-foreground/60" />
+            <ArrowLeft className="absolute top-1/2 left-1.5 -translate-y-1/2 w-3 h-3 text-muted-foreground/60" />
+            <ArrowRight className="absolute top-1/2 right-1.5 -translate-y-1/2 w-3 h-3 text-muted-foreground/60" />
 
             <div
-              className="absolute w-6 h-6 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white dark:bg-neutral-700 border border-neutral-300 dark:border-neutral-600 shadow-md flex items-center justify-center cursor-grab active:cursor-grabbing transition-transform hover:scale-105"
+              className="absolute w-5 h-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-background border-2 border-primary shadow-lg flex items-center justify-center cursor-grab active:cursor-grabbing transition-transform hover:scale-110"
               style={knobStyle}
             >
-              <div className="w-2 h-2 rounded-full bg-primary" />
+              <div className="w-1.5 h-1.5 rounded-full bg-primary" />
             </div>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-4 justify-end text-sm">
-              <p className="px-1 py-0.5 rounded text-muted-foreground">
-                X: {offsetX.toFixed(2)}
-              </p>
-              <p className="px-1 py-0.5 rounded text-muted-foreground">
-                Y: {offsetY.toFixed(2)}
-              </p>
-            </div>
-            <Button variant="outline" onClick={() => setOffset(0, 0)}>
-              Reset
-            </Button>
           </div>
         </div>
+
+        {/* Coordinate Controls */}
+        <div className="flex items-center gap-4">
+          {/* X coordinate controls */}
+          <div className="w-full space-y-1">
+            <Label className="text-xs text-muted-foreground">X Position</Label>
+            <ButtonGroup className="w-full">
+              <Button variant="outline" onClick={() => adjustValue("x", -0.01)}>
+                <Minus className="w-3 h-3" />
+              </Button>
+              <Input
+                type="number"
+                value={offsetX.toFixed(2)}
+                onChange={(e) => handleInputChange(e.target.value, "x")}
+                className="text-center text-sm"
+                step="0.01"
+                min="-1"
+                max="1"
+              />
+              <Button variant="outline" onClick={() => adjustValue("x", 0.01)}>
+                <Plus className="w-3 h-3" />
+              </Button>
+            </ButtonGroup>
+          </div>
+
+          {/* Y coordinate controls */}
+          <div className="w-full space-y-1">
+            <Label className="text-xs text-muted-foreground">Y Position</Label>
+            <ButtonGroup className="w-full">
+              <Button variant="outline" onClick={() => adjustValue("y", -0.01)}>
+                <Minus className="w-3 h-3" />
+              </Button>
+              <Input
+                type="number"
+                value={offsetY.toFixed(2)}
+                onChange={(e) => handleInputChange(e.target.value, "y")}
+                className="text-center text-sm"
+                step="0.01"
+                min="-1"
+                max="1"
+              />
+              <Button variant="outline" onClick={() => adjustValue("y", 0.01)}>
+                <Plus className="w-3 h-3" />
+              </Button>
+            </ButtonGroup>
+          </div>
+        </div>
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={() => setOffset(0, 0)}
+        >
+          Reset Position
+        </Button>
       </div>
     </div>
   );
