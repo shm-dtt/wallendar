@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useCalendarStore } from "@/lib/calendar-store";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import {
   Move,
   ArrowUp,
@@ -14,7 +13,6 @@ import {
   Minus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ButtonGroup } from "@/components/ui/button-group";
 
 export function PositionSettings() {
   const offsetX = useCalendarStore((s) => s.offsetX);
@@ -200,47 +198,51 @@ export function PositionSettings() {
         {/* Coordinate Controls */}
         <div className="flex items-center gap-4">
           {/* X coordinate controls */}
-          <div className="w-full space-y-1">
+          <div className="w-full space-y-1 flex flex-col items-center">
             <Label className="text-xs text-muted-foreground">X Position</Label>
-            <ButtonGroup className="w-full">
-              <Button variant="outline" onClick={() => adjustValue("x", -0.01)}>
-                <Minus className="w-3 h-3" />
+            <div className="w-full flex items-center gap-4 justify-between">
+              <Button
+                className="rounded-full"
+                size="icon"
+                variant="outline"
+                onClick={() => adjustValue("x", -0.01)}
+              >
+                <Minus />
               </Button>
-              <Input
-                type="number"
-                value={offsetX.toFixed(2)}
-                onChange={(e) => handleInputChange(e.target.value, "x")}
-                className="text-center text-sm"
-                step="0.01"
-                min="-1"
-                max="1"
-              />
-              <Button variant="outline" onClick={() => adjustValue("x", 0.01)}>
-                <Plus className="w-3 h-3" />
+              {offsetX.toFixed(2)}
+              <Button
+                className="rounded-full"
+                size="icon"
+                variant="outline"
+                onClick={() => adjustValue("x", 0.01)}
+              >
+                <Plus />
               </Button>
-            </ButtonGroup>
+            </div>
           </div>
 
           {/* Y coordinate controls */}
-          <div className="w-full space-y-1">
+          <div className="w-full space-y-1 flex flex-col items-center">
             <Label className="text-xs text-muted-foreground">Y Position</Label>
-            <ButtonGroup className="w-full">
-              <Button variant="outline" onClick={() => adjustValue("y", -0.01)}>
-                <Minus className="w-3 h-3" />
+            <div className="w-full flex items-center gap-4 justify-between">
+              <Button
+                className="rounded-full"
+                size="icon"
+                variant="outline"
+                onClick={() => adjustValue("y", -0.01)}
+              >
+                <Minus />
               </Button>
-              <Input
-                type="number"
-                value={offsetY.toFixed(2)}
-                onChange={(e) => handleInputChange(e.target.value, "y")}
-                className="text-center text-sm"
-                step="0.01"
-                min="-1"
-                max="1"
-              />
-              <Button variant="outline" onClick={() => adjustValue("y", 0.01)}>
-                <Plus className="w-3 h-3" />
+              {offsetY.toFixed(2)}
+              <Button
+                className="rounded-full"
+                size="icon"
+                variant="outline"
+                onClick={() => adjustValue("y", 0.01)}
+              >
+                <Plus />
               </Button>
-            </ButtonGroup>
+            </div>
           </div>
         </div>
         <Button
