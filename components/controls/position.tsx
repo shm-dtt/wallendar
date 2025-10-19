@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Move } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export function JoystickSettings() {
+export function PositionSettings() {
   const offsetX = useCalendarStore((s) => s.offsetX);
   const offsetY = useCalendarStore((s) => s.offsetY);
   const setOffset = useCalendarStore((s) => s.setOffset);

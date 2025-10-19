@@ -1,7 +1,7 @@
-import { CalendarSettings } from "@/components/calendar-controls/calendar-settings";
-import { TypographySettings } from "@/components/calendar-controls/typography-settings";
-import { BackgroundSettings } from "@/components/calendar-controls/background-settings";
-import { JoystickSettings } from "@/components/calendar-controls/joystick-settings";
+import { MonthSettings } from "@/components/controls/month";
+import { TypographySettings } from "@/components/controls/typography";
+import { BackgroundSettings } from "@/components/controls/background";
+import { PositionSettings } from "@/components/controls/position";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, CaseSensitive, Move, Image } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -11,19 +11,19 @@ export function CalendarControls() {
     <>
       <ScrollArea className="hidden lg:block flex-2">
         <div className="max-h-[calc(100vh-8rem)] lg:pr-4">
-          <CalendarSettings />
+          <MonthSettings />
           <Separator className="my-4" />
           <BackgroundSettings />
           <Separator className="my-4" />
           <TypographySettings />
           <Separator className="my-4" />
-          <JoystickSettings />
+          <PositionSettings />
         </div>
       </ScrollArea>
       <div className="lg:hidden flex w-full flex-col gap-6 h-full">
-        <Tabs defaultValue="calendar" className="w-full flex flex-col h-full">
+        <Tabs defaultValue="month" className="w-full flex flex-col h-full">
           <TabsList className="w-full mt-auto">
-            <TabsTrigger value="calendar">
+            <TabsTrigger value="month">
               <Calendar />
             </TabsTrigger>
             <TabsTrigger value="background">
@@ -37,8 +37,8 @@ export function CalendarControls() {
             </TabsTrigger>
           </TabsList>
           <div>
-            <TabsContent value="calendar">
-              <CalendarSettings />
+            <TabsContent value="month">
+              <MonthSettings />
             </TabsContent>
             <TabsContent value="background">
               <BackgroundSettings />
@@ -47,7 +47,7 @@ export function CalendarControls() {
               <TypographySettings />
             </TabsContent>
             <TabsContent value="position">
-              <JoystickSettings />
+              <PositionSettings />
             </TabsContent>
           </div>
         </Tabs>

@@ -13,7 +13,7 @@ import { HeaderFormat, useCalendarStore } from "@/lib/calendar-store";
 import { monthNames, headerFormatOptions } from "@/lib/calendar-utils";
 import { ButtonGroup } from "@/components/ui/button-group";
 
-export function CalendarSettings() {
+export function MonthSettings() {
   const month = useCalendarStore((state) => state.month);
   const setMonth = useCalendarStore((state) => state.setMonth);
   const year = useCalendarStore((state) => state.year);

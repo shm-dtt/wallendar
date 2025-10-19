@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ImageIcon, RefreshCcw, Image } from "lucide-react";
+import { RefreshCcw, Image } from "lucide-react";
 import { useCalendarStore } from "@/lib/calendar-store";
 import { ButtonGroup } from "@/components/ui/button-group";
 
