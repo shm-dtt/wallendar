@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import { CalendarControls } from "@/components/controls/calendar-controls";
-import { CalendarPreview } from "@/components/calendar-preview";
+import { CalendarPreview } from "@/components/preview";
 import type { WallpaperCanvasHandle } from "@/components/wallpaper-canvas";
 import { useCalendarStore, getResolutionDimensions, DownloadResolution } from "@/lib/calendar-store";
 
