@@ -13,6 +13,7 @@ import {
   Monitor,
   Smartphone,
   ChevronDown,
+  Maximize2,
 } from "lucide-react";
 import {
   HeaderFormat,
@@ -32,6 +33,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface CalendarPreviewProps {
   onDownload: (resolution: DownloadResolution) => void;
@@ -41,7 +50,6 @@ export const CalendarPreview = forwardRef<
   WallpaperCanvasHandle,
   CalendarPreviewProps
 >(function CalendarPreview({ onDownload }, ref) {
-
   const month = useCalendarStore((state) => state.month);
   const year = useCalendarStore((state) => state.year);
   const weekStart = useCalendarStore((state) => state.weekStart);
@@ -86,11 +94,9 @@ export const CalendarPreview = forwardRef<
   // Get aspect ratio class based on view mode
   const getAspectRatioClass = (mode: ViewMode) => {
     return mode === "mobile"
-      ? "aspect-[9/16] h-[42vh] lg:h-[70vh]"
+      ? "aspect-[9/16]"
       : "aspect-video";
   };
-
-
 
   return (
     <div className="flex-3 space-y-4">
@@ -99,14 +105,61 @@ export const CalendarPreview = forwardRef<
         onValueChange={(value) => setViewMode(value as ViewMode)}
       >
         <div className="flex items-center justify-between">
-          <TabsList>
-            <TabsTrigger value="desktop" className="flex items-center gap-2">
-              <Monitor className="w-4 h-4" />
-            </TabsTrigger>
-            <TabsTrigger value="mobile" className="flex items-center gap-2">
-              <Smartphone className="w-4 h-4" />
-            </TabsTrigger>
-          </TabsList>
+          <div className="flex items-center gap-2">
+            <TabsList>
+              <TabsTrigger value="desktop" className="flex items-center gap-2">
+                <Monitor className="w-4 h-4" />
+              </TabsTrigger>
+              <TabsTrigger value="mobile" className="flex items-center gap-2">
+                <Smartphone className="w-4 h-4" />
+              </TabsTrigger>
+            </TabsList>
+
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="secondary" size="icon" disabled={!showPreview}>
+                  <Maximize2 />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className={`!max-w-[100vw] !w-[95vw] !h-[90vh] m-0 p-6 overflow-hidden`}>
+                <DialogHeader>
+                  <DialogTitle>Fullscreen Preview</DialogTitle>
+                </DialogHeader>
+                <div
+                  className={`w-full ${getAspectRatioClass(
+                    viewMode as ViewMode
+                  )} rounded-lg overflow-hidden bg-black border-2`}
+                >
+                  {showPreview ? (
+                    <WallpaperCanvas
+                      ref={ref}
+                      month={month}
+                      year={year}
+                      weekStart={weekStart}
+                      headerFormat={headerFormat as HeaderFormat}
+                      textColor={textColor}
+                      fontFamily={
+                        applyFontToAll
+                          ? effectiveFont
+                          : `${monthOnlyFont.monthFont} |||MONTH_ONLY||| ${monthOnlyFont.bodyFont}`
+                      }
+                      imageSrc={imageSrc}
+                      offsetX={offsetX}
+                      offsetY={offsetY}
+                      viewMode={viewMode as ViewMode}
+                    />
+                  ) : (
+                    <div className="h-full w-full flex items-center justify-center text-muted-foreground">
+                      <div className="text-center">
+                        <ScanEye className="w-6 h-6 mx-auto mb-2 opacity-50" />
+                        <p className="text-sm">Select a month to see preview</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
           <ButtonGroup>
             <Button
               onClick={() => onDownload("4k" as DownloadResolution)}
@@ -189,7 +242,7 @@ export const CalendarPreview = forwardRef<
           <div
             className={`w-auto ${getAspectRatioClass(
               "mobile"
-            )} rounded-lg overflow-hidden bg-black border-2`}
+            )}  h-[42vh] lg:h-[70vh] rounded-lg overflow-hidden bg-black border-2`}
           >
             {showPreview ? (
               <WallpaperCanvas
