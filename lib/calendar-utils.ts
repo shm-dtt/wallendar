@@ -62,6 +62,8 @@ export const localFonts = [
   { name: "Freckle Face", displayName: "Freckle Face", path: "/fonts/FreckleFace.ttf" },
   { name: "Playwrite CA", displayName: "Playwrite CA", path: "/fonts/PlaywriteCA.ttf" },
   { name: "Segoe Script", displayName: "Segoe Script", path: "/fonts/SegoeScript.TTF" },
+  { name: "Instrument Serif", displayName: "Instrument Serif", path: "/fonts/InstrumentSerif.ttf" },
+  { name: "Ultra", displayName: "Ultra", path: "/fonts/Ultra.ttf" },
 ]
 
 export const gallery: string[] = [
@@ -114,4 +116,8 @@ export const fontFamilyMap = {
     '"Product Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans"',
   "Segoe Script":
     '"Segoe Script", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans"',
+  Ultra:
+    '"Ultra", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans"',
+  "Instrument Serif":
+    '"Instrument Serif", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans"',
 };
