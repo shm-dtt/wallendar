@@ -5,6 +5,7 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import Link from "next/link";
 import Image from "next/image";
+import AnnouncementBanner from "@/components/misc/announcement-banner";
 
 const instrumentSerif = Instrument_Serif({
   subsets: ["latin"],
@@ -19,23 +20,24 @@ export default function Page() {
         <section className="flex-1 flex flex-col px-4 py-4 sm:px-6 sm:py-8 lg:px-12 lg:py-12">
           <Header />
 
-          <div className="flex-1 flex flex-col justify-center items-center space-y-6 sm:space-y-8 max-w-none min-h-0">
-            <div className="space-y-4 sm:space-y-6">
+          <div className="flex-1 flex flex-col justify-center items-center space-y-6 max-w-none min-h-0">
+            <AnnouncementBanner />
+            <div className="space-y-4">
               <h1
                 className={` text-center text-3xl lg:text-4xl xl:text-5xl font-semibold leading-tight ${instrumentSerif.className}`}
               >
                 Wallpapers with calendar, but{" "}
                 <span className="italic">aesthetic</span>.
               </h1>
-              <p className=" text-center sm:text-lg lg:text-xl text-secondary-foreground/60">
+              <p className=" text-center text-base lg:text-xl text-secondary-foreground/60">
                 Personalize any photo with a clean, legible monthly calendar.
               </p>
             </div>
 
-            <div className="pt-4 sm:pt-6 pb-8 sm:pb-12">
+            <div className="py-4 lg:py-6">
               <Link href="/create">
                 <Button
-                  className=" px-6 py-3 sm:px-8 sm:py-4 text-sm sm:text-base shadow-sm cursor-pointer"
+                  className=" px-6 py-3 lg:px-8 lg:py-4 text-sm lg:text-base shadow-sm cursor-pointer"
                   size="lg"
                 >
                   Get Started
