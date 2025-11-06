@@ -14,16 +14,16 @@ const instrumentSerif = Instrument_Serif({
   weight: ["400"],
 });
 
-export default function Page() {
-  // const downloadCount = await getCachedDownloadCount();
+export default async function Page() {
+  const downloadCount = await getCachedDownloadCount();
   return (
     <main className=" font-sans">
       <div className="flex flex-col lg:flex-row min-h-screen">
         {/* Left Section */}
-        <section className="flex-1 flex flex-col px-4 py-4 sm:px-6 sm:py-8 lg:px-12 lg:py-12">
+        <section className="flex-1 flex flex-col px-4 py-4 lg:px-6 lg:py-8">
           <Header />
 
-          <div className="flex-1 flex flex-col justify-center items-center space-y-6 max-w-none min-h-0 -mt-18">
+          <div className="flex-1 flex flex-col justify-center items-center space-y-6 max-w-none">
             <AnnouncementBanner />
             <div className="space-y-4">
               <h1
@@ -48,7 +48,7 @@ export default function Page() {
               </Link>
             </div>
             <p className="text-center text-secondary-foreground/60 text-xs -mt-4">
-              {/* {(downloadCount-1).toLocaleString()}+ downloads */}
+              {(downloadCount-1).toLocaleString()}+ downloads
             </p>
           </div>
 
