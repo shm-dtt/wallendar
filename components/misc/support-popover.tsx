@@ -31,11 +31,11 @@ export function SupportPopover() {
     <Popover>
       <PopoverTrigger asChild>
         <Button
-          variant="ghost"
-          size="icon"
-          className="cursor-pointer text-red-500 hover:text-red-500"
+          variant="secondary"
+          size="lg"
+          className="cursor-pointer text-red-500 hover:text-red-500 size-10"
         >
-          <Heart aria-hidden="true" />
+          <Heart aria-hidden="true" fill="currentColor" className="size-5"/>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="flex flex-col gap-2">
