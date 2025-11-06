@@ -7,13 +7,15 @@ import Link from "next/link";
 import Image from "next/image";
 import AnnouncementBanner from "@/components/misc/announcement-banner";
 import { SupportPopover } from "@/components/misc/support-popover";
+import { getCachedDownloadCount } from "@/lib/redis";
 
 const instrumentSerif = Instrument_Serif({
   subsets: ["latin"],
   weight: ["400"],
 });
 
-export default function Page() {
+export default async function Page() {
+  const downloadCount = await getCachedDownloadCount();
   return (
     <main className=" font-sans">
       <div className="flex flex-col lg:flex-row min-h-screen">
@@ -21,7 +23,7 @@ export default function Page() {
         <section className="flex-1 flex flex-col px-4 py-4 sm:px-6 sm:py-8 lg:px-12 lg:py-12">
           <Header />
 
-          <div className="flex-1 flex flex-col justify-center items-center space-y-6 max-w-none min-h-0">
+          <div className="flex-1 flex flex-col justify-center items-center space-y-6 max-w-none min-h-0 -mt-18">
             <AnnouncementBanner />
             <div className="space-y-4">
               <h1
@@ -35,7 +37,7 @@ export default function Page() {
               </p>
             </div>
 
-            <div className="py-4 lg:py-6">
+            <div className="py-4">
               <Link href="/create">
                 <Button
                   className=" px-6 py-3 lg:px-8 lg:py-4 text-sm lg:text-base shadow-sm cursor-pointer"
@@ -45,6 +47,9 @@ export default function Page() {
                 </Button>
               </Link>
             </div>
+            <p className="text-center text-secondary-foreground/60 text-xs -mt-4">
+              {(downloadCount-1).toLocaleString()}+ downloads
+            </p>
           </div>
 
           <Footer />
