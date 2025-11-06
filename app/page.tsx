@@ -20,9 +20,8 @@ export default async function Page() {
     <main className=" font-sans">
       <div className="flex flex-col lg:flex-row min-h-screen">
         {/* Left Section */}
-        <section className="flex-1 flex flex-col px-4 py-4 lg:px-6 lg:py-8">
+        <section className="flex-1 flex flex-col p-4 lg:p-6">
           <Header />
-
           <div className="flex-1 flex flex-col justify-center items-center space-y-6 max-w-none">
             <AnnouncementBanner />
             <div className="space-y-4">
