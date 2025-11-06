@@ -47,7 +47,7 @@ export default async function Page() {
               </Link>
             </div>
             <p className="text-center text-secondary-foreground/60 text-xs -mt-4">
-              {(downloadCount-1).toLocaleString()}+ downloads
+              {(downloadCount - 1).toLocaleString()}+ downloads
             </p>
           </div>
 
@@ -80,7 +80,7 @@ export default async function Page() {
         </section>
       </div>
       <div className="fixed bottom-6 right-6">
-        <SupportPopover/>
+        <SupportPopover />
       </div>
     </main>
   );

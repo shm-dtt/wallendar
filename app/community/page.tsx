@@ -21,7 +21,9 @@ export default function Community() {
             <EmptyMedia variant="icon">
               <Pickaxe />
             </EmptyMedia>
-            <EmptyTitle className="text-2xl font-bold font-sans">Community Wallpapers</EmptyTitle>
+            <EmptyTitle className="text-2xl font-bold font-sans">
+              Community Wallpapers
+            </EmptyTitle>
             <EmptyDescription>
               Share your wallpapers with the community and get inspired by
               others.
