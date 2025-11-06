@@ -14,8 +14,8 @@ const instrumentSerif = Instrument_Serif({
   weight: ["400"],
 });
 
-export default async function Page() {
-  const downloadCount = await getCachedDownloadCount();
+export default function Page() {
+  // const downloadCount = await getCachedDownloadCount();
   return (
     <main className=" font-sans">
       <div className="flex flex-col lg:flex-row min-h-screen">
@@ -48,7 +48,7 @@ export default async function Page() {
               </Link>
             </div>
             <p className="text-center text-secondary-foreground/60 text-xs -mt-4">
-              {(downloadCount-1).toLocaleString()}+ downloads
+              {/* {(downloadCount-1).toLocaleString()}+ downloads */}
             </p>
           </div>
 

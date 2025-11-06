@@ -4,6 +4,7 @@ import GithubButton from "@/components/misc/github-button";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { Separator } from "@/components/ui/separator";
+import { SideMenu } from "@/components/layout/side-menu";
 
 export function Header() {
   return (
