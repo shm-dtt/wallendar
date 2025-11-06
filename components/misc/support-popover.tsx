@@ -33,9 +33,9 @@ export function SupportPopover() {
         <Button
           variant="secondary"
           size="lg"
-          className="cursor-pointer text-red-500 hover:text-red-500 size-10"
+          className="cursor-pointer text-red-500 hover:text-red-500 size-12"
         >
-          <Heart aria-hidden="true" fill="currentColor" className="size-5"/>
+          <Heart aria-hidden="true" className="size-5"/>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="flex flex-col gap-2">
