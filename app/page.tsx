@@ -6,6 +6,7 @@ import { Footer } from "@/components/layout/footer";
 import Link from "next/link";
 import Image from "next/image";
 import AnnouncementBanner from "@/components/misc/announcement-banner";
+import { SupportPopover } from "@/components/misc/support-popover";
 
 const instrumentSerif = Instrument_Serif({
   subsets: ["latin"],
@@ -14,7 +15,7 @@ const instrumentSerif = Instrument_Serif({
 
 export default function Page() {
   return (
-    <main className="min-h-screen font-sans">
+    <main className=" font-sans">
       <div className="flex flex-col lg:flex-row min-h-screen">
         {/* Left Section */}
         <section className="flex-1 flex flex-col px-4 py-4 sm:px-6 sm:py-8 lg:px-12 lg:py-12">
@@ -73,6 +74,9 @@ export default function Page() {
             </div>
           </div>
         </section>
+      </div>
+      <div className="fixed bottom-6 right-6">
+        <SupportPopover/>
       </div>
     </main>
   );
