@@ -33,6 +33,7 @@ export function SideMenu() {
           <Link href="/">Home</Link>
           <Link href="/create">Get Started</Link>
           <Link href="/community">Community</Link>
+          <Link href="/sponsors">Sponsors</Link>
         </div>
       </SheetContent>
     </Sheet>

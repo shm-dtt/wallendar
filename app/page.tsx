@@ -80,7 +80,7 @@ export default async function Page() {
         </section>
       </div>
       <div className="fixed bottom-6 right-6">
-        <SupportPopover />
+        <SupportPopover variant="outline" />
       </div>
     </main>
   );
