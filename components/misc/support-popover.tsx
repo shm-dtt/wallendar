@@ -11,7 +11,7 @@ import { SUPPORT_CONFIG } from "@/lib/support";
 import QRCode from "react-qr-code";
 import { useState } from "react";
 
-export function SupportPopover() {
+export function SupportPopover({variant = "outline"}: {variant: "default" | "secondary" | "outline" | "ghost" | "link" | "destructive"}) {
   const [copied, setCopied] = useState(false);
   const upiUrl = `upi://pay?pa=${SUPPORT_CONFIG.UPI_ID}&pn=${encodeURIComponent(
     SUPPORT_CONFIG.PAYEE_NAME
@@ -31,7 +31,7 @@ export function SupportPopover() {
     <Popover>
       <PopoverTrigger asChild>
         <Button
-          variant="secondary"
+          variant={variant}
           size="lg"
           className="cursor-pointer text-red-500 hover:text-red-500 size-12"
         >

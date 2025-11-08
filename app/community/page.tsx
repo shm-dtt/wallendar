@@ -10,6 +10,11 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { Header } from "@/components/layout/header";
+import { Instrument_Serif } from "next/font/google";
+const instrumentSerif = Instrument_Serif({
+  subsets: ["latin"],
+  weight: ["400"],
+});
 
 export default function Community() {
   return (
@@ -21,7 +26,7 @@ export default function Community() {
             <EmptyMedia variant="icon">
               <Pickaxe />
             </EmptyMedia>
-            <EmptyTitle className="text-2xl font-bold font-sans">
+            <EmptyTitle className={`text-4xl ${instrumentSerif.className}`}>
               Community Wallpapers
             </EmptyTitle>
             <EmptyDescription>
