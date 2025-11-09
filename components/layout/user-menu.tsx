@@ -1,23 +1,47 @@
 "use client";
 
-import { LogIn, User } from "lucide-react";
+import { useState } from "react";
+import { CircleX, LogIn, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { signOut } from "@/lib/actions/auth-actions";
+import { signOut, signInSocial } from "@/lib/actions/auth-actions";
 import { Separator } from "@/components/ui/separator";
 import { auth } from "@/lib/auth";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 type Session = typeof auth.$Infer.Session;
 
 export function UserMenu({ session }: { session: Session }) {
   const user = session?.user;
   const router = useRouter();
+  const pathname = usePathname();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+
   const handleSignOut = async () => {
     await signOut();
+    router.refresh();
+  };
+
+  const handleSocialAuth = async (provider: "google" | "github") => {
+    setIsLoading(true);
+    setError("");
+
+    try {
+      // Use current pathname as callback URL to stay on the same page after login
+      await signInSocial(provider, pathname);
+    } catch (err) {
+      setError(
+        `Error authenticating with ${provider}: ${
+          err instanceof Error ? err.message : "Unknown error"
+        }`
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return session ? (
@@ -69,13 +93,53 @@ export function UserMenu({ session }: { session: Session }) {
       </PopoverContent>
     </Popover>
   ) : (
-    <Button
-      variant="ghost"
-      size="icon-sm"
-      className="cursor-pointer"
-      onClick={() => router.push("/auth")}
-    >
-      <LogIn className="h-5 w-5" />
-    </Button>
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="ghost" size="icon-sm" className="cursor-pointer">
+          <LogIn className="h-5 w-5" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-80" align="end">
+        <div className="space-y-4">
+          <div className="text-center">
+            <h2 className="text-xl font-bold mb-1">Welcome Back</h2>
+            <p className="text-sm ">Sign in to your account to continue</p>
+          </div>
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <CircleX className="h-5 w-5 text-red-800" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-red-800">{error}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="flex gap-2 justify-center">
+            <Button
+              onClick={() => handleSocialAuth("google")}
+              disabled={isLoading}
+              variant="default"
+              className="flex items-center justify-center"
+            >
+              Google
+            </Button>
+
+            <Button
+              onClick={() => handleSocialAuth("github")}
+              disabled={isLoading}
+              variant="default"
+              className="flex items-center justify-center"
+            >
+              GitHub
+            </Button>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }

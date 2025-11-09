@@ -4,11 +4,14 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 
-export const signInSocial = async (provider: "github" | "google", ) => {
+export const signInSocial = async (
+  provider: "github" | "google",
+  callbackURL?: string
+) => {
   const { url } = await auth.api.signInSocial({
     body: {
       provider,
-      callbackURL: "/",
+      callbackURL: callbackURL || "/",
     },
   });
 
