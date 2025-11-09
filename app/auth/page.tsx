@@ -8,9 +8,9 @@ export default async function AuthPage() {
     headers: await headers(),
   });
 
-  if (session) {
-    redirect("/dashboard");
-  }
+  // if (session) {
+  //   redirect("/");
+  // }
 
   return <AuthClientPage />;
 }
