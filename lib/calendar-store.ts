@@ -67,6 +67,8 @@ interface CalendarState {
   // Download settings
   downloadResolution: DownloadResolution;
 
+  persistedAt?: number;
+
   // Actions
   setMonth: (month: number) => void;
   setYear: (year: number) => void;
@@ -103,6 +105,8 @@ const createStorage = () =>
     return window.localStorage;
   });
 
+const ONE_HOUR_MS = 60 * 60 * 1000;
+
 export const useCalendarStore = create<CalendarState>()(
   persist(
     (set) => ({
@@ -122,6 +126,7 @@ export const useCalendarStore = create<CalendarState>()(
       viewMode: "desktop",
       isDownloading: false,
       downloadResolution: "4k",
+      persistedAt: undefined,
 
       // Actions
       setMonth: (month) => set({ month }),
@@ -170,7 +175,17 @@ export const useCalendarStore = create<CalendarState>()(
         offsetY: state.offsetY,
         viewMode: state.viewMode,
         downloadResolution: state.downloadResolution,
+        persistedAt: Date.now(),
       }),
+      merge: (persistedState, currentState) => {
+        if (!persistedState) return currentState;
+        const { persistedAt, ...rest } = persistedState as CalendarState;
+        const timestamp = persistedAt ?? Date.now();
+        if (!persistedAt || Date.now() - timestamp > ONE_HOUR_MS) {
+          return { ...currentState, persistedAt: Date.now() };
+        }
+        return { ...currentState, ...rest, persistedAt: timestamp };
+      },
       version: 1,
     }
   )

@@ -25,10 +25,14 @@ export function CalendarWallpaperClient() {
     }
   };
 
+  const handlePublish = async () => {
+    console.log("Publishing...");
+  };
+
   return (
     <div className="flex flex-col-reverse lg:flex-row gap-4 justify-between">
       <CalendarControls />
-      <CalendarPreview ref={canvasRef} onDownload={handleDownload} />
+      <CalendarPreview ref={canvasRef} onDownload={handleDownload} onPublish={handlePublish} />
     </div>
   );
 }

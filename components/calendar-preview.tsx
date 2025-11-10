@@ -13,6 +13,7 @@ import {
   Monitor,
   Smartphone,
   ChevronDown,
+  UploadCloud,
 } from "lucide-react";
 import {
   HeaderFormat,
@@ -35,13 +36,13 @@ import {
 
 interface CalendarPreviewProps {
   onDownload: (resolution: DownloadResolution) => void;
+  onPublish: () => void;
 }
 
 export const CalendarPreview = forwardRef<
   WallpaperCanvasHandle,
   CalendarPreviewProps
->(function CalendarPreview({ onDownload }, ref) {
-
+>(function CalendarPreview({ onDownload, onPublish }, ref) {
   const month = useCalendarStore((state) => state.month);
   const year = useCalendarStore((state) => state.year);
   const weekStart = useCalendarStore((state) => state.weekStart);
@@ -90,8 +91,6 @@ export const CalendarPreview = forwardRef<
       : "aspect-video";
   };
 
-
-
   return (
     <div className="flex-3 space-y-4">
       <Tabs
@@ -107,6 +106,10 @@ export const CalendarPreview = forwardRef<
               <Smartphone className="w-4 h-4" />
             </TabsTrigger>
           </TabsList>
+          <Button onClick={() => onPublish()} size="sm" disabled={!showPreview}>
+            <UploadCloud className="w-4 h-4" />
+            Publish
+          </Button>
           <ButtonGroup>
             <Button
               onClick={() => onDownload("4k" as DownloadResolution)}
@@ -118,7 +121,7 @@ export const CalendarPreview = forwardRef<
               ) : (
                 <Download className="w-4 h-4" />
               )}
-              Download 4K
+              Download
             </Button>
             <ButtonGroupSeparator />
             <Popover>
