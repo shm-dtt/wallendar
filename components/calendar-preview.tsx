@@ -108,6 +108,7 @@ export const CalendarPreview = forwardRef<
               <Smartphone className="w-4 h-4" />
             </TabsTrigger>
           </TabsList>
+          <div className="flex items-center gap-2">
           <Button 
             onClick={() => onPublish()} 
             size="sm" 
@@ -118,7 +119,6 @@ export const CalendarPreview = forwardRef<
             ) : (
               <UploadCloud className="w-4 h-4" />
             )}
-            Publish
           </Button>
           <ButtonGroup>
             <Button
@@ -131,7 +131,7 @@ export const CalendarPreview = forwardRef<
               ) : (
                 <Download className="w-4 h-4" />
               )}
-              Download
+              Save
             </Button>
             <ButtonGroupSeparator />
             <Popover>
@@ -161,6 +161,7 @@ export const CalendarPreview = forwardRef<
               </PopoverContent>
             </Popover>
           </ButtonGroup>
+          </div>
         </div>
 
         {publishError && (

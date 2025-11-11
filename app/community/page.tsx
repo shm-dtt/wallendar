@@ -1,4 +1,4 @@
-import { Pickaxe } from "lucide-react";
+import { Frown } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,8 +32,10 @@ export default async function Community() {
     if (wallpaperUpload) {
       wallpapers = await wallpaperUpload.findMany({
         where: {
-          month: currentMonth,
-          year: currentYear,
+          OR: [
+            { year: { lt: currentYear } },
+            { year: currentYear, month: { lte: currentMonth } },
+          ],
         },
         include: {
           user: {
@@ -44,9 +46,11 @@ export default async function Community() {
             },
           },
         },
-        orderBy: {
-          createdAt: "desc",
-        },
+        orderBy: [
+          { year: "desc" },
+          { month: "desc" },
+          { createdAt: "desc" },
+        ],
       });
     }
   } catch (error) {
@@ -60,16 +64,12 @@ export default async function Community() {
     <main className="font-sans">
       <div className="p-4 md:p-6 space-y-6">
         <Header />
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 text-center">
           <h1 className={`text-4xl font-semibold ${instrumentSerif.className}`}>
             Community Wallpapers
           </h1>
           <p className="text-muted-foreground">
-            Browse wallpapers for <strong>{monthName} {currentYear}</strong> shared by the community or{" "}
-            <Link href="/create" className="underline underline-offset-4">
-              publish your own
-            </Link>
-            .
+            Browse wallpapers shared by the community.
           </p>
         </div>
 
@@ -83,9 +83,9 @@ export default async function Community() {
           <Empty>
             <EmptyHeader>
               <EmptyMedia variant="icon">
-                <Pickaxe />
+                <Frown />
               </EmptyMedia>
-              <EmptyTitle className={`text-4xl ${instrumentSerif.className}`}>
+              <EmptyTitle className={`text-2xl`}>
                 No Wallpapers Yet
               </EmptyTitle>
               <EmptyDescription>
@@ -94,7 +94,6 @@ export default async function Community() {
             </EmptyHeader>
             <EmptyContent>
               <div className="flex flex-col gap-12">
-                <p className="text-lg font-bold font-sans">Get started by creating your own</p>
                 <Link href="/create">
                   <Button variant="default">Create Your Own</Button>
                 </Link>

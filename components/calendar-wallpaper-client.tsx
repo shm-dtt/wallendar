@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { CalendarControls } from "@/components/controls/calendar-controls";
 import { CalendarPreview } from "@/components/calendar-preview";
 import type { WallpaperCanvasHandle } from "@/components/wallpaper-canvas";
@@ -42,6 +43,7 @@ export function CalendarWallpaperClient() {
 
       if (state.month === null) {
         setPublishError("Please select a month");
+        toast.error("Please select a month before publishing.");
         return;
       }
 
@@ -50,6 +52,7 @@ export function CalendarWallpaperClient() {
         setPublishError(
           "Canvas is not ready. Please wait a moment and try again."
         );
+        toast.error("Canvas not ready. Please try again in a moment.");
         return;
       }
 
@@ -62,7 +65,8 @@ export function CalendarWallpaperClient() {
       const blob = await canvasHandle.exportPNGBlob(width, height);
 
       if (!blob) {
-        throw new Error("Failed to export canvas image.");
+        toast.error("Failed to export canvas image");
+        return;
       }
 
       // Create file from blob
@@ -86,20 +90,22 @@ export function CalendarWallpaperClient() {
 
       if (!presignedResponse.ok) {
         const errorData = await presignedResponse.json();
-        throw new Error(errorData.error || "Failed to get upload URL");
+        toast.error(errorData.error || "Failed to get upload URL");
+        return;
       }
 
-      const { url, fields, publicUrl, s3Key, month, year } = await presignedResponse.json();
+      const { url, fields, publicUrl, s3Key, month, year } =
+        await presignedResponse.json();
 
       // Step 2: Upload file directly to S3 using presigned POST
       const formData = new FormData();
-      
+
       // Add all fields from presigned POST (order matters for S3)
       // These fields include the signature, policy, etc.
       Object.entries(fields).forEach(([key, value]) => {
         formData.append(key, value as string);
       });
-      
+
       // Add the file last (must be last field for presigned POST)
       // The field name "file" must match what's expected by the presigned POST
       formData.append("file", file);
@@ -116,17 +122,23 @@ export function CalendarWallpaperClient() {
       } catch (fetchError) {
         // Network error or CORS issue
         console.error("Fetch error:", fetchError);
-        throw new Error(
-          `Failed to upload to S3. This might be a CORS issue. Please ensure your S3 bucket has CORS configured. Error: ${fetchError instanceof Error ? fetchError.message : "Unknown error"}`
+        toast.error(
+          `Failed to upload to S3. This might be a CORS issue. Please ensure your S3 bucket has CORS configured. Error: ${
+            fetchError instanceof Error ? fetchError.message : "Unknown error"
+          }`
         );
+        return;
       }
 
       if (!uploadResponse.ok) {
         const errorText = await uploadResponse.text();
         console.error("Upload failed:", uploadResponse.status, errorText);
-        throw new Error(
-          `Upload failed with status ${uploadResponse.status}. ${errorText || "Check S3 bucket CORS configuration."}`
+        toast.error(
+          `Upload failed with status ${uploadResponse.status}. ${
+            errorText || "Check S3 bucket CORS configuration."
+          }`
         );
+        return;
       }
 
       console.log("Upload successful:", publicUrl);
@@ -147,10 +159,12 @@ export function CalendarWallpaperClient() {
         });
       } catch (dbError) {
         console.warn("Failed to save to database:", dbError);
+        toast.warning("Uploaded, but failed to record publish in database.");
         // Continue even if DB save fails
       }
 
-      // Cleanup persisted canvas data and redirect to community
+      // Success toast, cleanup, and redirect
+      toast.success("Wallpaper published successfully!");
       try {
         // Clear persisted Zustand state for the canvas
         window.localStorage.removeItem("calendar-wallpaper-store");
@@ -160,10 +174,10 @@ export function CalendarWallpaperClient() {
 
       router.push("/community");
     } catch (error) {
-      console.error("Publish error:", error);
       setPublishError(
         error instanceof Error ? error.message : "Failed to publish wallpaper"
       );
+      toast.error(publishError);
     } finally {
       setIsPublishing(false);
     }
