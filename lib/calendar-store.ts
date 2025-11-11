@@ -169,7 +169,8 @@ export const useCalendarStore = create<CalendarState>()(
         fontFamily: state.fontFamily,
         customFontName: state.customFontName,
         applyFontToAll: state.applyFontToAll,
-        imageSrc: state.imageSrc,
+        // imageSrc is excluded from persistence to avoid localStorage quota issues
+        // It will remain in memory during the session but won't be saved
         currentImageIndex: state.currentImageIndex,
         offsetX: state.offsetX,
         offsetY: state.offsetY,

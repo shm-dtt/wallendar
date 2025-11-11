@@ -74,7 +74,7 @@ export default async function Community() {
         </div>
 
         {hasWallpapers ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4 ">
+          <div className="columns-1 gap-5 sm:columns-2 lg:columns-3 xl:columns-4">
             {wallpapers.map((wallpaper) => (
               <WallpaperCard key={wallpaper.id} wallpaper={wallpaper} />
             ))}
