@@ -3,6 +3,7 @@ import { S3Client } from "@aws-sdk/client-s3";
 import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import prisma from "@/lib/prisma";
 
 const s3Client = new S3Client({
   region: process.env.AWS_REGION,
@@ -87,6 +88,8 @@ export async function POST(request: NextRequest) {
       ? `${process.env.AWS_S3_PUBLIC_URL}/${s3Key}`
       : `https://${bucket}.s3.${region}.amazonaws.com/${s3Key}`;
 
+    // Store upload record in database (will be created after successful upload)
+    // We return the data so client can save it after upload completes
     return NextResponse.json({
       success: true,
       url,
@@ -95,6 +98,7 @@ export async function POST(request: NextRequest) {
       s3Key,
       month,
       year,
+      userId: session.user.id, // Include for client to save to DB
     });
   } catch (error) {
     console.error("S3 presigned POST error:", error);

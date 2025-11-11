@@ -87,7 +87,7 @@ export function CalendarWallpaperClient() {
         throw new Error(errorData.error || "Failed to get upload URL");
       }
 
-      const { url, fields, publicUrl } = await presignedResponse.json();
+      const { url, fields, publicUrl, s3Key, month, year } = await presignedResponse.json();
 
       // Step 2: Upload file directly to S3 using presigned POST
       const formData = new FormData();
@@ -128,6 +128,25 @@ export function CalendarWallpaperClient() {
       }
 
       console.log("Upload successful:", publicUrl);
+
+      // Save to database
+      try {
+        await fetch("/api/wallpapers/save", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            s3Url: publicUrl,
+            s3Key,
+            month,
+            year,
+          }),
+        });
+      } catch (dbError) {
+        console.warn("Failed to save to database:", dbError);
+        // Continue even if DB save fails
+      }
 
       // You can redirect or show success message here
       alert(`Wallpaper published successfully! URL: ${publicUrl}`);
