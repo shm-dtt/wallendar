@@ -37,12 +37,14 @@ import {
 interface CalendarPreviewProps {
   onDownload: (resolution: DownloadResolution) => void;
   onPublish: () => void;
+  isPublishing?: boolean;
+  publishError?: string | null;
 }
 
 export const CalendarPreview = forwardRef<
   WallpaperCanvasHandle,
   CalendarPreviewProps
->(function CalendarPreview({ onDownload, onPublish }, ref) {
+>(function CalendarPreview({ onDownload, onPublish, isPublishing = false, publishError }, ref) {
   const month = useCalendarStore((state) => state.month);
   const year = useCalendarStore((state) => state.year);
   const weekStart = useCalendarStore((state) => state.weekStart);
@@ -106,8 +108,16 @@ export const CalendarPreview = forwardRef<
               <Smartphone className="w-4 h-4" />
             </TabsTrigger>
           </TabsList>
-          <Button onClick={() => onPublish()} size="sm" disabled={!showPreview}>
-            <UploadCloud className="w-4 h-4" />
+          <Button 
+            onClick={() => onPublish()} 
+            size="sm" 
+            disabled={!showPreview || isPublishing}
+          >
+            {isPublishing ? (
+              <Spinner className="w-4 h-4" />
+            ) : (
+              <UploadCloud className="w-4 h-4" />
+            )}
             Publish
           </Button>
           <ButtonGroup>
@@ -152,6 +162,10 @@ export const CalendarPreview = forwardRef<
             </Popover>
           </ButtonGroup>
         </div>
+
+        {publishError && (
+          <p className="text-sm text-destructive">{publishError}</p>
+        )}
 
         <TabsContent value="desktop">
           <div

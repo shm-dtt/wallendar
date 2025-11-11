@@ -9,6 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.927.0",
+    "@aws-sdk/s3-presigned-post": "^3.928.0",
     "@neondatabase/serverless": "^1.0.2",
     "@prisma/client": "^6.19.0",
     "@prisma/extension-accelerate": "^2.0.2",

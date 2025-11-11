@@ -24,6 +24,7 @@ model User {
   updatedAt     DateTime  @default(now()) @updatedAt
   sessions      Session[]
   accounts      Account[]
+  wallpapers    WallpaperUpload[]
 
   @@unique([email])
   @@map("user")
@@ -72,4 +73,19 @@ model Verification {
   updatedAt  DateTime @default(now()) @updatedAt
 
   @@map("verification")
+}
+
+model WallpaperUpload {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  month     Int      // 1-12
+  year      Int
+  s3Url     String
+  s3Key     String   // Full S3 key path
+  createdAt DateTime @default(now())
+
+  @@unique([userId, month, year, s3Key])
+  @@index([userId, month, year])
+  @@map("wallpaper_upload")
 }
