@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist, createJSONStorage, type StateStorage } from "zustand/middleware";
 import { sampleImagePath } from "@/lib/calendar-utils";
 
 export type HeaderFormat = 
@@ -66,6 +67,8 @@ interface CalendarState {
   // Download settings
   downloadResolution: DownloadResolution;
 
+  persistedAt?: number;
+
   // Actions
   setMonth: (month: number) => void;
   setYear: (year: number) => void;
@@ -89,48 +92,105 @@ interface CalendarState {
   setDownloadResolution: (resolution: DownloadResolution) => void;
 }
 
-export const useCalendarStore = create<CalendarState>((set) => ({
-  // Initial state - month is null (placeholder), year is current year
-  month: null,
-  year: new Date().getFullYear(),
-  weekStart: "sunday",
-  headerFormat: null,
-  textColor: "#ffffff",
-  fontFamily: "Product Sans",
-  customFontName: null,
-  applyFontToAll: false,
-  imageSrc: undefined,
-  currentImageIndex: 0,
-  offsetX: 0,
-  offsetY: 0,
-  viewMode: "desktop",
-  isDownloading: false,
-  downloadResolution: "4k",
+const createStorage = () =>
+  createJSONStorage(() => {
+    if (typeof window === "undefined") {
+      const noopStorage: StateStorage = {
+        getItem: () => null,
+        setItem: () => undefined,
+        removeItem: () => undefined,
+      };
+      return noopStorage;
+    }
+    return window.localStorage;
+  });
 
-  // Actions
-  setMonth: (month) => set({ month }),
-  setYear: (year) => set({ year }),
-  setWeekStart: (weekStart) => set({ weekStart }),
-  setHeaderFormat: (headerFormat) => set({ headerFormat }),
-  setTextColor: (textColor) => set({ textColor }),
-  setFontFamily: (fontFamily) => set({ fontFamily }),
-  setCustomFontName: (customFontName) => set({ customFontName }),
-  setApplyFontToAll: (applyFontToAll) => set({ applyFontToAll }),
-  setImageSrc: (imageSrc) => set({ imageSrc }),
-  handleSampleImage: () => set((state) => {
-    const nextIndex = (state.currentImageIndex + 1) % sampleImagePath.length;
-    return { 
-      imageSrc: sampleImagePath[nextIndex],
-      currentImageIndex: nextIndex
-    };
-  }),
-  setOffset: (x, y) => set({ offsetX: Math.max(-1, Math.min(1, x)), offsetY: Math.max(-1, Math.min(1, y)) }),
-  setOffsetX: (x) => set({ offsetX: Math.max(-1, Math.min(1, x)) }),
-  setOffsetY: (y) => set({ offsetY: Math.max(-1, Math.min(1, y)) }),
-  setViewMode: (viewMode) => set({ viewMode }),
-  setIsDownloading: (isDownloading) => set({ isDownloading }),
-  setDownloadResolution: (downloadResolution) => set({ downloadResolution }),
-}));
+const ONE_HOUR_MS = 60 * 60 * 1000;
+
+export const useCalendarStore = create<CalendarState>()(
+  persist(
+    (set) => ({
+      // Initial state - month is null (placeholder), year is current year
+      month: null,
+      year: new Date().getFullYear(),
+      weekStart: "sunday",
+      headerFormat: null,
+      textColor: "#ffffff",
+      fontFamily: "Product Sans",
+      customFontName: null,
+      applyFontToAll: false,
+      imageSrc: undefined,
+      currentImageIndex: 0,
+      offsetX: 0,
+      offsetY: 0,
+      viewMode: "desktop",
+      isDownloading: false,
+      downloadResolution: "4k",
+      persistedAt: undefined,
+
+      // Actions
+      setMonth: (month) => set({ month }),
+      setYear: (year) => set({ year }),
+      setWeekStart: (weekStart) => set({ weekStart }),
+      setHeaderFormat: (headerFormat) => set({ headerFormat }),
+      setTextColor: (textColor) => set({ textColor }),
+      setFontFamily: (fontFamily) => set({ fontFamily }),
+      setCustomFontName: (customFontName) => set({ customFontName }),
+      setApplyFontToAll: (applyFontToAll) => set({ applyFontToAll }),
+      setImageSrc: (imageSrc) => set({ imageSrc }),
+      handleSampleImage: () =>
+        set((state) => {
+          const nextIndex = (state.currentImageIndex + 1) % sampleImagePath.length;
+          return {
+            imageSrc: sampleImagePath[nextIndex],
+            currentImageIndex: nextIndex,
+          };
+        }),
+      setOffset: (x, y) =>
+        set({
+          offsetX: Math.max(-1, Math.min(1, x)),
+          offsetY: Math.max(-1, Math.min(1, y)),
+        }),
+      setOffsetX: (x) => set({ offsetX: Math.max(-1, Math.min(1, x)) }),
+      setOffsetY: (y) => set({ offsetY: Math.max(-1, Math.min(1, y)) }),
+      setViewMode: (viewMode) => set({ viewMode }),
+      setIsDownloading: (isDownloading) => set({ isDownloading }),
+      setDownloadResolution: (downloadResolution) => set({ downloadResolution }),
+    }),
+    {
+      name: "calendar-wallpaper-store",
+      storage: createStorage(),
+      partialize: (state) => ({
+        month: state.month,
+        year: state.year,
+        weekStart: state.weekStart,
+        headerFormat: state.headerFormat,
+        textColor: state.textColor,
+        fontFamily: state.fontFamily,
+        customFontName: state.customFontName,
+        applyFontToAll: state.applyFontToAll,
+        // imageSrc is excluded from persistence to avoid localStorage quota issues
+        // It will remain in memory during the session but won't be saved
+        currentImageIndex: state.currentImageIndex,
+        offsetX: state.offsetX,
+        offsetY: state.offsetY,
+        viewMode: state.viewMode,
+        downloadResolution: state.downloadResolution,
+        persistedAt: Date.now(),
+      }),
+      merge: (persistedState, currentState) => {
+        if (!persistedState) return currentState;
+        const { persistedAt, ...rest } = persistedState as CalendarState;
+        const timestamp = persistedAt ?? Date.now();
+        if (!persistedAt || Date.now() - timestamp > ONE_HOUR_MS) {
+          return { ...currentState, persistedAt: Date.now() };
+        }
+        return { ...currentState, ...rest, persistedAt: timestamp };
+      },
+      version: 1,
+    }
+  )
+);
 
 export const resolutionOptions = (viewMode: ViewMode) => [
   {
