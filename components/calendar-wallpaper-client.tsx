@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { CalendarControls } from "@/components/controls/calendar-controls";
 import { CalendarPreview } from "@/components/calendar-preview";
 import type { WallpaperCanvasHandle } from "@/components/wallpaper-canvas";
@@ -12,6 +13,7 @@ import {
 
 export function CalendarWallpaperClient() {
   const canvasRef = useRef<WallpaperCanvasHandle>(null);
+  const router = useRouter();
   const viewMode = useCalendarStore((state) => state.viewMode);
   const setIsDownloading = useCalendarStore((state) => state.setIsDownloading);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -148,8 +150,15 @@ export function CalendarWallpaperClient() {
         // Continue even if DB save fails
       }
 
-      // You can redirect or show success message here
-      alert(`Wallpaper published successfully! URL: ${publicUrl}`);
+      // Cleanup persisted canvas data and redirect to community
+      try {
+        // Clear persisted Zustand state for the canvas
+        window.localStorage.removeItem("calendar-wallpaper-store");
+      } catch (_e) {
+        // ignore cleanup errors
+      }
+
+      router.push("/community");
     } catch (error) {
       console.error("Publish error:", error);
       setPublishError(
