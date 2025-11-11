@@ -12,6 +12,7 @@ import { signOut, signInSocial } from "@/lib/actions/auth-actions";
 import { Separator } from "@/components/ui/separator";
 import { auth } from "@/lib/auth";
 import { useRouter, usePathname } from "next/navigation";
+import { toast } from "sonner";
 type Session = typeof auth.$Infer.Session;
 
 export function UserMenu({ session }: { session: Session }) {
@@ -19,7 +20,6 @@ export function UserMenu({ session }: { session: Session }) {
   const router = useRouter();
   const pathname = usePathname();
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
 
   const handleSignOut = async () => {
     await signOut();
@@ -28,16 +28,15 @@ export function UserMenu({ session }: { session: Session }) {
 
   const handleSocialAuth = async (provider: "google" | "github") => {
     setIsLoading(true);
-    setError("");
 
     try {
       // Use current pathname as callback URL to stay on the same page after login
       await signInSocial(provider, pathname);
     } catch (err) {
-      setError(
-        `Error authenticating with ${provider}: ${
+      toast.error(
+        `Error authenticating with ${provider}. ${
           err instanceof Error ? err.message : "Unknown error"
-        }`
+        } Please try again.`
       );
     } finally {
       setIsLoading(false);
@@ -105,19 +104,6 @@ export function UserMenu({ session }: { session: Session }) {
             <h2 className="text-xl font-bold mb-1">Welcome Back</h2>
             <p className="text-sm ">Sign in to your account to continue</p>
           </div>
-
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <CircleX className="h-5 w-5 text-red-800" />
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm text-red-800">{error}</p>
-                </div>
-              </div>
-            </div>
-          )}
 
           <div className="flex gap-2 justify-center">
             <Button
