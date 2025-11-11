@@ -31,7 +31,7 @@ export function UserMenu({ session }: { session: Session }) {
 
     try {
       // Use current pathname as callback URL to stay on the same page after login
-      await signInSocial(provider, pathname);
+      await signInSocial(provider);
     } catch (err) {
       toast.error(`Error authenticating with ${provider}. ${err instanceof Error ? err.message : "Unknown error"} Please try again.`);
       console.log(err);
