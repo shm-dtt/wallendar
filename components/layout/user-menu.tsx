@@ -33,11 +33,8 @@ export function UserMenu({ session }: { session: Session }) {
       // Use current pathname as callback URL to stay on the same page after login
       await signInSocial(provider, pathname);
     } catch (err) {
-      toast.error(
-        `Error authenticating with ${provider}. ${
-          err instanceof Error ? err.message : "Unknown error"
-        } Please try again.`
-      );
+      toast.error(`Error authenticating with ${provider}. ${err instanceof Error ? err.message : "Unknown error"} Please try again.`);
+      console.log(err);
     } finally {
       setIsLoading(false);
     }
