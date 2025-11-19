@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ModeToggle } from "@/components/ui/mode-toggle";
-import GithubButton from "@/components/misc/github-button";
+import GithubButton from "@/components/misc/github-stars";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { Separator } from "@/components/ui/separator";
