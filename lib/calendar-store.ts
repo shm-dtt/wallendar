@@ -1,21 +1,28 @@
 import { create } from "zustand";
-import { persist, createJSONStorage, type StateStorage } from "zustand/middleware";
+import {
+  persist,
+  createJSONStorage,
+  type StateStorage,
+} from "zustand/middleware";
 import { sampleImagePath } from "@/lib/calendar-utils";
 
-export type HeaderFormat = 
-  | "full" 
-  | "short" 
-  | "numeric" 
-  | "numeric-full-year" 
-  | "numeric-short-year" 
-  | "short-short-year" 
+export type HeaderFormat =
+  | "full"
+  | "short"
+  | "numeric"
+  | "numeric-full-year"
+  | "numeric-short-year"
+  | "short-short-year"
   | "short-full-year";
 
 export type ViewMode = "desktop" | "mobile";
 
 export type DownloadResolution = "hd" | "fhd" | "4k";
 
-export const getResolutionDimensions = (resolution: DownloadResolution, viewMode: ViewMode) => {
+export const getResolutionDimensions = (
+  resolution: DownloadResolution,
+  viewMode: ViewMode
+) => {
   if (viewMode === "mobile") {
     switch (resolution) {
       case "hd":
@@ -63,7 +70,7 @@ interface CalendarState {
 
   // Loading states
   isDownloading: boolean;
-  
+
   // Download settings
   downloadResolution: DownloadResolution;
 
@@ -84,10 +91,10 @@ interface CalendarState {
   setOffsetX: (x: number) => void;
   setOffsetY: (y: number) => void;
   setViewMode: (viewMode: ViewMode) => void;
-  
+
   // Loading state actions
   setIsDownloading: (loading: boolean) => void;
-  
+
   // Download actions
   setDownloadResolution: (resolution: DownloadResolution) => void;
 }
@@ -140,7 +147,8 @@ export const useCalendarStore = create<CalendarState>()(
       setImageSrc: (imageSrc) => set({ imageSrc }),
       handleSampleImage: () =>
         set((state) => {
-          const nextIndex = (state.currentImageIndex + 1) % sampleImagePath.length;
+          const nextIndex =
+            (state.currentImageIndex + 1) % sampleImagePath.length;
           return {
             imageSrc: sampleImagePath[nextIndex],
             currentImageIndex: nextIndex,
@@ -155,7 +163,8 @@ export const useCalendarStore = create<CalendarState>()(
       setOffsetY: (y) => set({ offsetY: Math.max(-1, Math.min(1, y)) }),
       setViewMode: (viewMode) => set({ viewMode }),
       setIsDownloading: (isDownloading) => set({ isDownloading }),
-      setDownloadResolution: (downloadResolution) => set({ downloadResolution }),
+      setDownloadResolution: (downloadResolution) =>
+        set({ downloadResolution }),
     }),
     {
       name: "calendar-wallpaper-store",
