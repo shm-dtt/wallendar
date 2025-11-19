@@ -9,6 +9,6 @@ export const announcementInfo: {
   title: string;
   link: string;
 } = {
-  title: "Wallendar Community is here!!",
-  link: "/community",
+  title: "New fonts added",
+  link: "/create",
 }
