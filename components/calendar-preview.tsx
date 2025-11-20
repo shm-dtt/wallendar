@@ -117,8 +117,8 @@ export const CalendarPreview = forwardRef<
             {isPublishing ? (
               <Spinner className="w-4 h-4" />
             ) : (
-              <UploadCloud className="w-4 h-4" />
-            )}
+              <UploadCloud className="w-4 h-4" /> 
+            )}Publish
           </Button>
           <ButtonGroup>
             <Button

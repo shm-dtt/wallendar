@@ -98,16 +98,16 @@ export function UserMenu({ session }: { session: Session }) {
       <PopoverContent className="w-80" align="end">
         <div className="space-y-4">
           <div className="text-center">
-            <h2 className="text-xl font-bold mb-1">Welcome Back</h2>
             <p className="text-sm ">Sign in to your account to continue</p>
           </div>
 
-          <div className="flex gap-2 justify-center">
+          <div className="flex gap-2 justify-center flex-col">
             <Button
               onClick={() => handleSocialAuth("google")}
               disabled={isLoading}
-              variant="default"
-              className="flex items-center justify-center"
+              variant="outline"
+              size="sm"
+              className="flex items-center justify-center w-full cursor-pointer"
             >
               Google
             </Button>
@@ -115,8 +115,9 @@ export function UserMenu({ session }: { session: Session }) {
             <Button
               onClick={() => handleSocialAuth("github")}
               disabled={isLoading}
-              variant="default"
-              className="flex items-center justify-center"
+              variant="outline"
+              size="sm"
+              className="flex items-center justify-center w-full cursor-pointer"
             >
               GitHub
             </Button>

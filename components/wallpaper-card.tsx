@@ -14,6 +14,8 @@ interface WallpaperCardProps {
   wallpaper: {
     id: string;
     s3Url: string;
+    month: number;
+    year: number;
     createdAt: string;
     user: {
       id: string;
@@ -37,9 +39,22 @@ export function WallpaperCard({ wallpaper }: WallpaperCardProps) {
   const [imageDimensions, setImageDimensions] = useState(() =>
     isPortrait ? { width: 9, height: 16 } : { width: 16, height: 9 }
   );
+  const monthYearLabel = useMemo(() => {
+    // Prefer explicit wallpaper month/year from DB
+    if (wallpaper.month && wallpaper.year) {
+      // wallpaper.month is stored as 1-12
+      const dateFromFields = new Date(wallpaper.year, wallpaper.month - 1, 1);
+      const monthName = dateFromFields.toLocaleString(undefined, {
+        month: "long",
+      });
+      return `${monthName} ${wallpaper.year}`;
+    }
+  }, [wallpaper.month, wallpaper.year]);
 
   useEffect(() => {
-    setImageDimensions(isPortrait ? { width: 9, height: 16 } : { width: 16, height: 9 });
+    setImageDimensions(
+      isPortrait ? { width: 9, height: 16 } : { width: 16, height: 9 }
+    );
     setIsImageLoaded(false);
   }, [isPortrait, wallpaper.s3Url]);
 
@@ -104,7 +119,7 @@ export function WallpaperCard({ wallpaper }: WallpaperCardProps) {
       touchHandledRef.current = false;
       return;
     }
-    
+
     // Don't toggle if clicking the download button
     const target = e.target as HTMLElement;
     if (target.closest("button")) {
@@ -116,17 +131,17 @@ export function WallpaperCard({ wallpaper }: WallpaperCardProps) {
   const handleTouchStart = (e: React.TouchEvent) => {
     // Prevent double-tap zoom on mobile
     if (e.touches.length > 1) return;
-    
+
     // Don't toggle if touching the download button
     const target = e.target as HTMLElement;
     if (target.closest("button")) {
       return;
     }
-    
+
     // Mark that touch was handled to prevent click from also firing
     touchHandledRef.current = true;
     setIsTapped(!isTapped);
-    
+
     // Reset after a short delay
     setTimeout(() => {
       touchHandledRef.current = false;
@@ -162,7 +177,9 @@ export function WallpaperCard({ wallpaper }: WallpaperCardProps) {
           fill
           className={cn(
             "z-[0] object-cover transition-all duration-400 group-hover:scale-105",
-            isImageLoaded ? "blur-0 opacity-100 scale-100" : "blur-2xl opacity-80 scale-105"
+            isImageLoaded
+              ? "blur-0 opacity-100 scale-100"
+              : "blur-2xl opacity-80 scale-105"
           )}
           sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
           unoptimized // S3 images may not be optimized
@@ -171,7 +188,10 @@ export function WallpaperCard({ wallpaper }: WallpaperCardProps) {
             const img = e.currentTarget;
             const { naturalWidth, naturalHeight } = img;
             if (naturalWidth > 0 && naturalHeight > 0) {
-              setImageDimensions({ width: naturalWidth, height: naturalHeight });
+              setImageDimensions({
+                width: naturalWidth,
+                height: naturalHeight,
+              });
             }
             setIsImageLoaded(true);
           }}
@@ -207,9 +227,16 @@ export function WallpaperCard({ wallpaper }: WallpaperCardProps) {
                   <User className="h-5 w-5" />
                 </AvatarFallback>
               </Avatar>
-              <p className="text-sm font-medium text-white truncate drop-shadow-lg">
-                {wallpaper.user.name}
-              </p>
+              <div className="flex flex-col items-start min-w-0">
+                <p className="text-xs font-medium text-white truncate drop-shadow-lg">
+                  {wallpaper.user.name}
+                </p>
+                {monthYearLabel && (
+                  <p className="text-xs text-white/80 truncate drop-shadow-lg">
+                    {monthYearLabel}
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* Download button */}
