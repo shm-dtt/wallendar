@@ -6,6 +6,7 @@ import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 
 export type WallpaperCanvasHandle = {
   downloadPNG: (width: number, height: number) => void;
+  exportPNGBlob: (width: number, height: number) => Promise<Blob | null>;
 };
 
 type Props = {
@@ -271,8 +272,8 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
 
     useImperativeHandle(
       ref,
-      () => ({
-        downloadPNG: (w: number, h: number) => {
+      () => {
+        const renderToCanvas = (w: number, h: number) => {
           const exportCanvas = document.createElement("canvas");
           exportCanvas.width = w;
           exportCanvas.height = h;
@@ -290,17 +291,32 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
             offsetY,
             viewMode,
           });
-          const link = document.createElement("a");
-          const modeSuffix = viewMode === "mobile" ? "-mobile" : "";
-          link.download = `calendar-${year}-${String(month + 1).padStart(
-            2,
-            "0"
-          )}${modeSuffix}.png`;
-          link.href = exportCanvas.toDataURL("image/png");
-          link.click();
-          exportCanvas.remove();
-        },
-      }),
+          return exportCanvas;
+        };
+
+        return {
+          downloadPNG: (w: number, h: number) => {
+            const exportCanvas = renderToCanvas(w, h);
+            const link = document.createElement("a");
+            const modeSuffix = viewMode === "mobile" ? "-mobile" : "";
+            link.download = `calendar-${year}-${String(month + 1).padStart(
+              2,
+              "0"
+            )}${modeSuffix}.png`;
+            link.href = exportCanvas.toDataURL("image/png");
+            link.click();
+            exportCanvas.remove();
+          },
+          exportPNGBlob: async (w: number, h: number) => {
+            const exportCanvas = renderToCanvas(w, h);
+            const blob = await new Promise<Blob | null>((resolve) =>
+              exportCanvas.toBlob((value) => resolve(value), "image/png")
+            );
+            exportCanvas.remove();
+            return blob;
+          },
+        };
+      },
       [
         month,
         year,

@@ -13,6 +13,7 @@ import {
   Monitor,
   Smartphone,
   ChevronDown,
+  UploadCloud,
 } from "lucide-react";
 import {
   HeaderFormat,
@@ -35,13 +36,15 @@ import {
 
 interface CalendarPreviewProps {
   onDownload: (resolution: DownloadResolution) => void;
+  onPublish: () => void;
+  isPublishing?: boolean;
+  publishError?: string | null;
 }
 
 export const CalendarPreview = forwardRef<
   WallpaperCanvasHandle,
   CalendarPreviewProps
->(function CalendarPreview({ onDownload }, ref) {
-
+>(function CalendarPreview({ onDownload, onPublish, isPublishing = false, publishError }, ref) {
   const month = useCalendarStore((state) => state.month);
   const year = useCalendarStore((state) => state.year);
   const weekStart = useCalendarStore((state) => state.weekStart);
@@ -90,8 +93,6 @@ export const CalendarPreview = forwardRef<
       : "aspect-video";
   };
 
-
-
   return (
     <div className="flex-3 space-y-4">
       <Tabs
@@ -107,6 +108,18 @@ export const CalendarPreview = forwardRef<
               <Smartphone className="w-4 h-4" />
             </TabsTrigger>
           </TabsList>
+          <div className="flex items-center gap-2">
+          <Button 
+            onClick={() => onPublish()} 
+            size="sm" 
+            disabled={!showPreview || isPublishing}
+          >
+            {isPublishing ? (
+              <Spinner className="w-4 h-4" />
+            ) : (
+              <UploadCloud className="w-4 h-4" /> 
+            )}Publish
+          </Button>
           <ButtonGroup>
             <Button
               onClick={() => onDownload("4k" as DownloadResolution)}
@@ -118,7 +131,7 @@ export const CalendarPreview = forwardRef<
               ) : (
                 <Download className="w-4 h-4" />
               )}
-              Download 4K
+              Save
             </Button>
             <ButtonGroupSeparator />
             <Popover>
@@ -148,7 +161,12 @@ export const CalendarPreview = forwardRef<
               </PopoverContent>
             </Popover>
           </ButtonGroup>
+          </div>
         </div>
+
+        {publishError && (
+          <p className="text-sm text-destructive">{publishError}</p>
+        )}
 
         <TabsContent value="desktop">
           <div
