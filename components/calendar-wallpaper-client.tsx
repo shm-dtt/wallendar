@@ -165,6 +165,8 @@ export function CalendarWallpaperClient() {
 
       // Success toast, cleanup, and redirect
       toast.success("Wallpaper published successfully!");
+      await fetch("/api/track-download", { method: "POST" });
+      console.log("Publishing tracked");
       try {
         // Clear persisted Zustand state for the canvas
         window.localStorage.removeItem("calendar-wallpaper-store");
