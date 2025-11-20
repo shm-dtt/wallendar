@@ -7,7 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import AnnouncementBanner from "@/components/misc/announcement-banner";
 import { SupportPopover } from "@/components/misc/support-popover";
-import { getCachedDownloadCount } from "@/lib/redis";
+import { getCachedCount } from "@/lib/redis";
 
 const instrumentSerif = Instrument_Serif({
   subsets: ["latin"],
@@ -15,7 +15,7 @@ const instrumentSerif = Instrument_Serif({
 });
 
 export default async function Page() {
-  const downloadCount = await getCachedDownloadCount();
+  const count = await getCachedCount();
   return (
     <main className=" font-sans">
       <div className="flex flex-col lg:flex-row min-h-screen">
@@ -47,7 +47,7 @@ export default async function Page() {
               </Link>
             </div>
             <p className="text-center text-secondary-foreground/60 text-xs -mt-4">
-              {(downloadCount - 1).toLocaleString()}+ downloads
+              {(count - 1).toLocaleString()}+ downloads
             </p>
           </div>
 

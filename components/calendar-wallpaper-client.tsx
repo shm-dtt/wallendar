@@ -25,7 +25,7 @@ export function CalendarWallpaperClient() {
     try {
       const { width, height } = getResolutionDimensions(resolution, viewMode);
       canvasRef.current?.downloadPNG(width, height);
-      await fetch("/api/track-download", { method: "POST" });
+      await fetch("/api/track", { method: "POST" });
       console.log("Download tracked");
     } catch (error) {
       console.error("Failed to track download:", error);
@@ -165,11 +165,11 @@ export function CalendarWallpaperClient() {
 
       // Success toast, cleanup, and redirect
       toast.success("Wallpaper published successfully!");
-      await fetch("/api/track-download", { method: "POST" });
-      console.log("Publishing tracked");
       try {
         // Clear persisted Zustand state for the canvas
         window.localStorage.removeItem("calendar-wallpaper-store");
+        await fetch("/api/track", { method: "POST" });
+        console.log("Publishing tracked");
       } catch (_e) {
         // ignore cleanup errors
       }
