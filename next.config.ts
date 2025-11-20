@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    remotePatterns: [new URL('https://avatars.githubusercontent.com/**/**'), new URL('https://lh3.googleusercontent.com/**/**')],
   },
   experimental: {
     optimizePackageImports: ['lucide-react'],
