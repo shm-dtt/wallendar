@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CircleX, LogIn, User } from "lucide-react";
+import { LogIn, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,

@@ -1,6 +1,6 @@
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Github, Twitter, Globe } from "lucide-react";
+import { Github, Globe } from "lucide-react";
 
 export interface Sponsor {
   id: string;

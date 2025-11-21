@@ -3,7 +3,6 @@ import { S3Client } from "@aws-sdk/client-s3";
 import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import prisma from "@/lib/prisma";
 
 const s3Client = new S3Client({
   region: process.env.AWS_REGION,
