@@ -17,59 +17,75 @@ const instrumentSerif = Instrument_Serif({
   weight: ["400"],
 });
 
+// Enable revalidation for better performance
+export const revalidate = 60; // Revalidate every 60 seconds
+
 export default async function Community() {
   // Get current month and year
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth() + 1; // 1-12
   const currentYear = currentDate.getFullYear();
 
-  // Fetch wallpapers for current month
+  // Fetch wallpapers in parallel for better performance
   let currentMonthWallpapers: any[] = [];
-  // Fetch wallpapers for older months (archive)
   let archiveWallpapers: any[] = [];
 
   try {
     const wallpaperUpload = (prisma as any).wallpaperUpload;
     if (wallpaperUpload) {
-      // Fetch current month wallpapers
-      currentMonthWallpapers = await wallpaperUpload.findMany({
-        where: {
-          year: currentYear,
-          month: currentMonth,
-        },
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              image: true,
+      // Run both queries in parallel using Promise.all
+      const [current, archive] = await Promise.all([
+        wallpaperUpload.findMany({
+          where: {
+            year: currentYear,
+            month: currentMonth,
+          },
+          select: {
+            id: true,
+            s3Url: true,
+            createdAt: true,
+            month: true,
+            year: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                image: true,
+              },
             },
           },
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-      });
+          orderBy: {
+            createdAt: "desc",
+          },
+        }),
+        wallpaperUpload.findMany({
+          where: {
+            OR: [
+              { year: { lt: currentYear } },
+              { year: currentYear, month: { lt: currentMonth } },
+            ],
+          },
+          select: {
+            id: true,
+            s3Url: true,
+            createdAt: true,
+            month: true,
+            year: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                image: true,
+              },
+            },
+          },
+          orderBy: [{ year: "desc" }, { month: "desc" }, { createdAt: "desc" }],
+          take: 50, // Limit archive results to prevent loading too much
+        }),
+      ]);
 
-      // Fetch archive wallpapers (older months)
-      archiveWallpapers = await wallpaperUpload.findMany({
-        where: {
-          OR: [
-            { year: { lt: currentYear } },
-            { year: currentYear, month: { lt: currentMonth } },
-          ],
-        },
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              image: true,
-            },
-          },
-        },
-        orderBy: [{ year: "desc" }, { month: "desc" }, { createdAt: "desc" }],
-      });
+      currentMonthWallpapers = current;
+      archiveWallpapers = archive;
     }
   } catch (error) {
     console.error("Failed to fetch wallpapers:", error);

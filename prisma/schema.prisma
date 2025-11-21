@@ -86,5 +86,7 @@ model WallpaperUpload {
 
   @@unique([userId, month, year, s3Key])
   @@index([userId, month, year])
+  @@index([year, month]) // Composite index for efficient month/year queries
+  @@index([year, month, createdAt]) // Composite index for ordered queries
   @@map("wallpaper_upload")
 }

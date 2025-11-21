@@ -26,13 +26,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch wallpapers for the specified month/year
+    // Fetch wallpapers for the specified month/year with optimized select
     const wallpapers = await (prisma as any).wallpaperUpload?.findMany({
       where: {
         month: targetMonth,
         year: targetYear,
       },
-      include: {
+      select: {
+        id: true,
+        s3Url: true,
+        createdAt: true,
+        month: true,
+        year: true,
         user: {
           select: {
             id: true,
@@ -46,12 +51,20 @@ export async function GET(request: NextRequest) {
       },
     }) || [];
 
-    return NextResponse.json({
-      success: true,
-      wallpapers,
-      month: targetMonth,
-      year: targetYear,
-    });
+    // Add cache headers for better performance
+    return NextResponse.json(
+      {
+        success: true,
+        wallpapers,
+        month: targetMonth,
+        year: targetYear,
+      },
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+        },
+      }
+    );
   } catch (error) {
     console.error("Failed to fetch wallpapers:", error);
     return NextResponse.json(
