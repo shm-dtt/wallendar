@@ -4,8 +4,8 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { CalendarControls } from "@/components/controls/calendar-controls";
-import { CalendarPreview } from "@/components/calendar-preview";
-import type { WallpaperCanvasHandle } from "@/components/wallpaper-canvas";
+import { CalendarPreview } from "@/components/preview/calendar-preview";
+import type { WallpaperCanvasHandle } from "@/components/preview/wallpaper-canvas";
 import {
   useCalendarStore,
   getResolutionDimensions,
