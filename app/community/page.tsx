@@ -123,8 +123,12 @@ export default async function Community() {
                 </p>
               </div>
               <div className="columns-1 gap-5 sm:columns-2 lg:columns-3 xl:columns-4">
-                {currentMonthWallpapers.map((wallpaper) => (
-                  <WallpaperCard key={wallpaper.id} wallpaper={wallpaper} />
+                {currentMonthWallpapers.map((wallpaper, index) => (
+                  <WallpaperCard 
+                    key={wallpaper.id} 
+                    wallpaper={wallpaper} 
+                    priority={index < 6}
+                  />
                 ))}
               </div>
             </>
@@ -160,8 +164,12 @@ export default async function Community() {
               </p>
             </div>
             <div className="columns-1 gap-5 sm:columns-2 lg:columns-3 xl:columns-4">
-              {archiveWallpapers.map((wallpaper) => (
-                <WallpaperCard key={wallpaper.id} wallpaper={wallpaper} />
+              {archiveWallpapers.map((wallpaper, index) => (
+                <WallpaperCard 
+                  key={wallpaper.id} 
+                  wallpaper={wallpaper} 
+                  priority={false}
+                />
               ))}
             </div>
           </div>
