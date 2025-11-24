@@ -8,7 +8,13 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-    remotePatterns: [new URL('https://avatars.githubusercontent.com/**/**'), new URL('https://lh3.googleusercontent.com/**/**')],
+    remotePatterns: [
+      { protocol: 'https', hostname: 'avatars.githubusercontent.com', pathname: '/**' },
+      { protocol: 'https', hostname: 'lh3.googleusercontent.com', pathname: '/**' },
+      // Support standard S3 URLs: bucket.s3.region.amazonaws.com or bucket.s3.amazonaws.com
+      { protocol: 'https', hostname: '*.s3.amazonaws.com', pathname: '/**' },
+      { protocol: 'https', hostname: '*.s3.*.amazonaws.com', pathname: '/**' },
+    ],
   },
   experimental: {
     optimizePackageImports: ['lucide-react'],
