@@ -1,4 +1,3 @@
-import { Frown } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -6,12 +5,11 @@ import {
   EmptyContent,
   EmptyDescription,
   EmptyHeader,
-  EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
 import { Header } from "@/components/layout/header";
 import { Instrument_Serif } from "next/font/google";
-import { WallpaperCard } from "@/components/wallpaper-card";
+import { WallpaperCard } from "@/components/misc/wallpaper-card";
 import prisma from "@/lib/prisma";
 
 const instrumentSerif = Instrument_Serif({

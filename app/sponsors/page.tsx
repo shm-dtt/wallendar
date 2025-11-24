@@ -1,7 +1,7 @@
 import { Header } from "@/components/layout/header";
 import { SponsorCard } from "@/components/misc/sponsor-card";
 import { Instrument_Serif } from "next/font/google";
-import { sponsors } from "@/lib/sponsors";
+import { sponsors } from "@/lib/support/sponsors";
 import { SupportPopover } from "@/components/misc/support-popover";
 const instrumentSerif = Instrument_Serif({
   subsets: ["latin"],

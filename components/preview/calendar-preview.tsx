@@ -4,7 +4,7 @@ import { forwardRef } from "react";
 import { useMemo } from "react";
 import WallpaperCanvas, {
   type WallpaperCanvasHandle,
-} from "@/components/wallpaper-canvas";
+} from "@/components/preview/wallpaper-canvas";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {

@@ -7,7 +7,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { SUPPORT_CONFIG } from "@/lib/support";
+import { SUPPORT_CONFIG } from "@/lib/support/support";
 import QRCode from "react-qr-code";
 import { useState } from "react";
 
