@@ -182,7 +182,7 @@ export function WallpaperCard({ wallpaper }: WallpaperCardProps) {
               : "blur-2xl opacity-80 scale-105"
           )}
           sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          unoptimized // S3 images may not be optimized
+          quality={75}
           loading="lazy"
           onLoad={(e) => {
             const img = e.currentTarget;
