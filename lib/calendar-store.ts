@@ -117,16 +117,16 @@ const ONE_HOUR_MS = 60 * 60 * 1000;
 export const useCalendarStore = create<CalendarState>()(
   persist(
     (set) => ({
-      // Initial state - month is null (placeholder), year is current year
-      month: null,
+      // Initial state - month is current month, year is current year
+      month: new Date().getMonth(),
       year: new Date().getFullYear(),
       weekStart: "sunday",
-      headerFormat: null,
+      headerFormat: "full",
       textColor: "#ffffff",
       fontFamily: "Product Sans",
       customFontName: null,
       applyFontToAll: false,
-      imageSrc: undefined,
+      imageSrc: sampleImagePath[0],
       currentImageIndex: 0,
       offsetX: 0,
       offsetY: 0,
