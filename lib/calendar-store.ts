@@ -128,7 +128,7 @@ export const useCalendarStore = create<CalendarState>()(
       fontFamily: "Product Sans",
       customFontName: null,
       applyFontToAll: false,
-      imageSrc: sampleImagePath[0],
+      imageSrc: undefined,
       currentImageIndex: 0,
       offsetX: 0,
       offsetY: 0,
