@@ -59,6 +59,7 @@ export const CalendarPreview = forwardRef<
 
   const offsetX = useCalendarStore((state) => state.offsetX);
   const offsetY = useCalendarStore((state) => state.offsetY);
+  const calendarScale = useCalendarStore((state) => state.calendarScale);
 
   const viewMode = useCalendarStore((state) => state.viewMode);
   const setViewMode = useCalendarStore((state) => state.setViewMode);
@@ -191,6 +192,7 @@ export const CalendarPreview = forwardRef<
                 offsetX={offsetX}
                 offsetY={offsetY}
                 viewMode="desktop"
+                calendarScale={calendarScale}
               />
             ) : (
               <div className="h-full w-full flex items-center justify-center text-muted-foreground">
@@ -226,6 +228,7 @@ export const CalendarPreview = forwardRef<
                 offsetX={offsetX}
                 offsetY={offsetY}
                 viewMode="mobile"
+                calendarScale={calendarScale}
               />
             ) : (
               <div className="h-full w-full flex items-center justify-center text-muted-foreground">

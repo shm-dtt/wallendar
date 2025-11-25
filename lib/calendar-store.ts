@@ -73,6 +73,7 @@ interface CalendarState {
 
   // Download settings
   downloadResolution: DownloadResolution;
+  calendarScale: number;
 
   persistedAt?: number;
 
@@ -97,6 +98,7 @@ interface CalendarState {
 
   // Download actions
   setDownloadResolution: (resolution: DownloadResolution) => void;
+  setCalendarScale: (scale: number) => void;
 }
 
 const createStorage = () =>
@@ -133,6 +135,7 @@ export const useCalendarStore = create<CalendarState>()(
       viewMode: "desktop",
       isDownloading: false,
       downloadResolution: "4k",
+      calendarScale: 1,
       persistedAt: undefined,
 
       // Actions
@@ -165,6 +168,10 @@ export const useCalendarStore = create<CalendarState>()(
       setIsDownloading: (isDownloading) => set({ isDownloading }),
       setDownloadResolution: (downloadResolution) =>
         set({ downloadResolution }),
+      setCalendarScale: (calendarScale) =>
+        set({
+          calendarScale: Math.max(0.5, Math.min(1.5, calendarScale)),
+        }),
     }),
     {
       name: "calendar-wallpaper-store",
@@ -186,15 +193,25 @@ export const useCalendarStore = create<CalendarState>()(
         viewMode: state.viewMode,
         downloadResolution: state.downloadResolution,
         persistedAt: Date.now(),
+        calendarScale: state.calendarScale,
       }),
       merge: (persistedState, currentState) => {
         if (!persistedState) return currentState;
-        const { persistedAt, ...rest } = persistedState as CalendarState;
+        const {
+          persistedAt,
+          calendarScale = currentState.calendarScale,
+          ...rest
+        } = persistedState as CalendarState;
         const timestamp = persistedAt ?? Date.now();
         if (!persistedAt || Date.now() - timestamp > ONE_HOUR_MS) {
           return { ...currentState, persistedAt: Date.now() };
         }
-        return { ...currentState, ...rest, persistedAt: timestamp };
+        return {
+          ...currentState,
+          ...rest,
+          calendarScale,
+          persistedAt: timestamp,
+        };
       },
       version: 1,
     }
