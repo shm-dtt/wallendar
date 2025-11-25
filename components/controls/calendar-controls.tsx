@@ -2,8 +2,9 @@ import { MonthSettings } from "@/components/controls/month";
 import { TypographySettings } from "@/components/controls/typography";
 import { BackgroundSettings } from "@/components/controls/background";
 import { PositionSettings } from "@/components/controls/position";
+import { ScaleSettings } from "@/components/controls/scale";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, CaseSensitive, Move, Image } from "lucide-react";
+import { Calendar, CaseSensitive, Move, Image, Scaling } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 export function CalendarControls() {
@@ -18,6 +19,8 @@ export function CalendarControls() {
           <TypographySettings />
           <Separator className="my-4" />
           <PositionSettings />
+          <Separator className="my-4" />
+          <ScaleSettings />
         </div>
       </ScrollArea>
       <div className="lg:hidden flex w-full flex-col gap-6 h-full">
@@ -35,6 +38,9 @@ export function CalendarControls() {
             <TabsTrigger value="position">
               <Move />
             </TabsTrigger>
+            <TabsTrigger value="scale">
+              <Scaling />
+            </TabsTrigger>
           </TabsList>
           <div>
             <TabsContent value="month">
@@ -48,6 +54,9 @@ export function CalendarControls() {
             </TabsContent>
             <TabsContent value="position">
               <PositionSettings />
+            </TabsContent>
+            <TabsContent value="scale">
+              <ScaleSettings />
             </TabsContent>
           </div>
         </Tabs>

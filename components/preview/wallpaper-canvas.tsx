@@ -21,6 +21,7 @@ type Props = {
   offsetX?: number;
   offsetY?: number;
   viewMode?: ViewMode;
+  calendarScale?: number;
 };
 
 // Day labels
@@ -134,12 +135,15 @@ function drawWallpaper(
 
   // Adjust proportions based on view mode
   const isMobile = opts.viewMode === "mobile";
+  const scale = Math.max(0.5, Math.min(1.5, opts.calendarScale ?? 1));
   
   // Tuned proportions; weekdays and dates share the same size
-  let monthSize = Math.round(height * (isMobile ? 0.03 : 0.05));
-  const labelDaySize = Math.round(height * (isMobile ? 0.0115 : 0.02)); // same size for weekday labels and dates
+  let monthSize = Math.round(height * (isMobile ? 0.03 : 0.05) * scale);
+  const labelDaySize = Math.round(
+    height * (isMobile ? 0.0115 : 0.02) * scale
+  ); // same size for weekday labels and dates
 
-  const gridWidth = width * (isMobile ? 0.35 : 0.25);
+  const gridWidth = width * (isMobile ? 0.35 : 0.25) * scale;
   const startX = (width - gridWidth) / 2;
   const colW = gridWidth / 7;
   const baseY = height * (isMobile ? 0.4 : 0.34);
@@ -217,7 +221,8 @@ function drawWallpaper(
   const labels = opts.weekStart === "sunday" ? DOW_SUN : DOW_MON;
   const bodyWeight = getFontWeight(bodyFamily);
   context.font = `${bodyWeight} ${labelDaySize}px ${safeBodyFamily}`;
-  const dowY = baseY + Math.round(height * (isMobile ? 0.05 : 0.08)) + shiftY;
+  const dowY =
+    baseY + Math.round(height * (isMobile ? 0.05 : 0.08) * scale) + shiftY;
   labels.forEach((label, i) => {
     const x = startX + i * colW + colW / 2 + shiftX;
     context.globalAlpha = 0.8;
@@ -228,8 +233,9 @@ function drawWallpaper(
   context.font = `${bodyWeight} ${labelDaySize}px ${safeBodyFamily}`;
   const totalDays = daysInMonth(opts.year, opts.month);
   const offset = firstDayOffset(opts.year, opts.month, opts.weekStart);
-  const rowsTop = dowY + Math.round(height * (isMobile ? 0.03 : 0.055));
-  const rowH = Math.round(height * (isMobile ? 0.027 : 0.055));
+  const rowsTop =
+    dowY + Math.round(height * (isMobile ? 0.03 : 0.055) * scale);
+  const rowH = Math.round(height * (isMobile ? 0.027 : 0.055) * scale);
 
   context.globalAlpha = 1;
   for (let d = 1; d <= totalDays; d++) {
@@ -262,6 +268,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
       offsetX = 0,
       offsetY = 0,
       viewMode = "desktop",
+      calendarScale = 1,
     },
     ref
   ) {
@@ -290,6 +297,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
             offsetX,
             offsetY,
             viewMode,
+            calendarScale,
           });
           return exportCanvas;
         };
@@ -328,6 +336,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
         offsetY,
         imageSrc,
         viewMode,
+        calendarScale,
       ]
     );
 
@@ -399,6 +408,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
           offsetX,
           offsetY,
           viewMode,
+          calendarScale,
         });
       }
 
@@ -431,6 +441,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
               offsetX,
               offsetY,
               viewMode,
+              calendarScale,
             });
             ctx.restore();
           }
@@ -448,6 +459,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
             offsetX,
             offsetY,
             viewMode,
+            calendarScale,
           });
           ctx.restore();
 
@@ -500,6 +512,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
             offsetX,
             offsetY,
             viewMode,
+            calendarScale,
           });
         }
       }
@@ -519,6 +532,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
       offsetX,
       offsetY,
       viewMode,
+      calendarScale,
     ]);
 
     return (
