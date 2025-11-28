@@ -23,15 +23,18 @@ interface WallpaperCardProps {
       image: string | null;
     };
   };
+  priority?: boolean;
 }
 
-export function WallpaperCard({ wallpaper }: WallpaperCardProps) {
+export function WallpaperCard({ wallpaper, priority = false }: WallpaperCardProps) {
   const [isDownloading, setIsDownloading] = useState(false);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
   const [isTapped, setIsTapped] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const touchHandledRef = useRef(false);
   const { ref, isInView } = useInView({ threshold: 0.1, rootMargin: "100px" });
+  // Priority images should always be considered "in view" to load immediately
+  const shouldLoadImage = priority || isInView;
   const isPortrait = useMemo(
     () => wallpaper.s3Url.toLowerCase().includes("mobile"),
     [wallpaper.s3Url]
@@ -170,7 +173,7 @@ export function WallpaperCard({ wallpaper }: WallpaperCardProps) {
       {!isImageLoaded && (
         <div className="absolute inset-0 z-[1] animate-pulse rounded-lg bg-muted-foreground/10 backdrop-blur-sm transition-opacity duration-500" />
       )}
-      {isInView && (
+      {shouldLoadImage && (
         <Image
           src={wallpaper.s3Url}
           alt={`Wallpaper by ${wallpaper.user.name}`}
@@ -182,8 +185,9 @@ export function WallpaperCard({ wallpaper }: WallpaperCardProps) {
               : "blur-2xl opacity-80 scale-105"
           )}
           sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          unoptimized // S3 images may not be optimized
-          loading="lazy"
+          quality={75}
+          priority={priority}
+          loading={priority ? "eager" : "lazy"}
           onLoad={(e) => {
             const img = e.currentTarget;
             const { naturalWidth, naturalHeight } = img;
