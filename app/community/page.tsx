@@ -41,12 +41,12 @@ export default async function Community() {
         {/* Action Buttons */}
         <div className="flex justify-center gap-4">
           <Link href="/create">
-            <Button variant="default" size="lg">
+            <Button variant="default" size="lg" className="cursor-pointer">
               Make Your Own
             </Button>
           </Link>
           <Link href="/community/archive">
-            <Button variant="secondary" size="lg">
+            <Button variant="secondary" size="lg" className="cursor-pointer">
               Explore Archive
             </Button>
           </Link>
@@ -89,7 +89,7 @@ export default async function Community() {
               </EmptyHeader>
               <EmptyContent>
                 <Link href="/create">
-                  <Button variant="default">Get Started</Button>
+                  <Button variant="default" className="cursor-pointer">Get Started</Button>
                 </Link>
               </EmptyContent>
             </Empty>

@@ -25,12 +25,12 @@ export default async function ArchivePage() {
         {/* Action Buttons */}
         <div className="flex justify-center gap-4">
           <Link href="/create">
-            <Button variant="default" size="lg">
+            <Button variant="default" size="lg" className="cursor-pointer">
               Make Your Own
             </Button>
           </Link>
           <Link href="/community">
-            <Button variant="secondary" size="lg">
+            <Button variant="secondary" size="lg" className="cursor-pointer">
               Back to Latest
             </Button>
           </Link>
