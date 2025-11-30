@@ -66,7 +66,7 @@ export default async function Community() {
               </div>
 
               <div className="columns-1 gap-5 sm:columns-2 lg:columns-3 xl:columns-4">
-                {current.map((wallpaper, index) => (
+                {current.map((wallpaper: typeof current[0], index: number) => (
                   <WallpaperCard
                     key={wallpaper.id}
                     wallpaper={{

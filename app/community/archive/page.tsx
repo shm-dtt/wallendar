@@ -38,7 +38,7 @@ export default async function ArchivePage() {
 
         {hasArchive ? (
           <div className="columns-1 gap-5 sm:columns-2 lg:columns-3 xl:columns-4">
-            {archive.map((wallpaper) => (
+            {archive.map((wallpaper: typeof archive[0]) => (
               <WallpaperCard key={wallpaper.id} wallpaper={{
                 ...wallpaper,
                 createdAt: wallpaper.createdAt.toISOString(),
