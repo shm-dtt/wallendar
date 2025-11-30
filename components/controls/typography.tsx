@@ -241,7 +241,7 @@ export function TypographySettings() {
                 asChild
                 variant="outline"
                 disabled={isUploading}
-                className="px-3 w-full"
+                className="px-3 w-full cursor-pointer"
               >
                 <label htmlFor="font-upload" className="cursor-pointer">
                   {isUploading ? (

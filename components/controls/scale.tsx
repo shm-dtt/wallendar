@@ -53,7 +53,7 @@ export function ScaleSettings() {
               key={preset.value}
               variant={Math.abs(calendarScale - preset.value) < 0.01 ? "default" : "outline"}
               size="icon-sm"
-              className="flex-1"
+              className="flex-1 cursor-pointer"
               onClick={() => setCalendarScale(preset.value)}
             >
               {preset.label}
@@ -61,7 +61,7 @@ export function ScaleSettings() {
           ))}
         </div>
 
-        <Button variant="outline" onClick={() => setCalendarScale(1)}>
+        <Button variant="outline" onClick={() => setCalendarScale(1)} className="cursor-pointer">
           Reset Size
         </Button>
       </div>

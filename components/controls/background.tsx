@@ -46,9 +46,9 @@ export function BackgroundSettings() {
               type="file"
               accept="image/*"
               onChange={handleImageUpload}
-              className="text-sm file:text-muted-foreground"
+              className="text-sm file:text-muted-foreground cursor-pointer"
             />
-            <Button variant="outline" onClick={handleSampleImage}>
+            <Button variant="outline" onClick={handleSampleImage} className="cursor-pointer">
               <Shuffle className="w-4 h-4" />
               Try Sample
             </Button>

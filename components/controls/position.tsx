@@ -202,7 +202,7 @@ export function PositionSettings() {
             <Label className="text-xs text-muted-foreground">X Position</Label>
             <div className="w-full flex items-center gap-4 justify-between">
               <Button
-                className="rounded-full"
+                className="rounded-full cursor-pointer"
                 size="icon"
                 variant="outline"
                 onClick={() => adjustValue("x", -0.01)}
@@ -211,7 +211,7 @@ export function PositionSettings() {
               </Button>
               {offsetX.toFixed(2)}
               <Button
-                className="rounded-full"
+                className="rounded-full cursor-pointer"
                 size="icon"
                 variant="outline"
                 onClick={() => adjustValue("x", 0.01)}
@@ -226,7 +226,7 @@ export function PositionSettings() {
             <Label className="text-xs text-muted-foreground">Y Position</Label>
             <div className="w-full flex items-center gap-4 justify-between">
               <Button
-                className="rounded-full"
+                className="rounded-full cursor-pointer"
                 size="icon"
                 variant="outline"
                 onClick={() => adjustValue("y", -0.01)}
@@ -235,7 +235,7 @@ export function PositionSettings() {
               </Button>
               {offsetY.toFixed(2)}
               <Button
-                className="rounded-full"
+                className="rounded-full cursor-pointer"
                 size="icon"
                 variant="outline"
                 onClick={() => adjustValue("y", 0.01)}
@@ -247,7 +247,7 @@ export function PositionSettings() {
         </div>
         <Button
           variant="outline"
-          className="w-full"
+          className="w-full cursor-pointer"
           onClick={() => setOffset(0, 0)}
         >
           Reset Position
