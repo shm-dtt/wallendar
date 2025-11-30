@@ -3,8 +3,10 @@ import { cache } from "react";
 
 export const getCommunityWallpapers = cache(async () => {
   const now = new Date();
-  const month = now.getMonth() + 1;
-  const year = now.getFullYear();
+  const istNow = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+
+  const month = istNow.getMonth() + 1;
+  const year = istNow.getFullYear();
 
   const wallpaperUpload = prisma.wallpaperUpload;
 
