@@ -22,7 +22,7 @@ const instrumentSerif = Instrument_Serif({
 export default async function Community() {
   const { current, now } = await getCommunityWallpapers();
   const hasCurrent = current.length > 0;
-  const monthName = now.toLocaleDateString(undefined, { month: "long" });
+  const monthName = now.toLocaleDateString("en-US", { month: "long", timeZone: "Asia/Kolkata" });
 
   return (
     <main className="font-sans">
