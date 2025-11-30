@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Header } from "@/components/layout/header";
+import { WallpaperCard } from "@/components/misc/wallpaper-card";
 import {
   Empty,
   EmptyContent,
@@ -7,100 +9,26 @@ import {
   EmptyHeader,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { Header } from "@/components/layout/header";
 import { Instrument_Serif } from "next/font/google";
-import { WallpaperCard } from "@/components/misc/wallpaper-card";
-import prisma from "@/lib/prisma";
+import { getCommunityWallpapers } from "@/lib/community-data";
+
+export const revalidate = 60;
 
 const instrumentSerif = Instrument_Serif({
   subsets: ["latin"],
   weight: ["400"],
 });
 
-// Enable revalidation for better performance
-export const revalidate = 60; // Revalidate every 60 seconds
-
 export default async function Community() {
-  // Get current month and year
-  const currentDate = new Date();
-  const currentMonth = currentDate.getMonth() + 1; // 1-12
-  const currentYear = currentDate.getFullYear();
-
-  // Fetch wallpapers in parallel for better performance
-  let currentMonthWallpapers: any[] = [];
-  let archiveWallpapers: any[] = [];
-
-  try {
-    const wallpaperUpload = (prisma as any).wallpaperUpload;
-    if (wallpaperUpload) {
-      // Run both queries in parallel using Promise.all
-      const [current, archive] = await Promise.all([
-        wallpaperUpload.findMany({
-          where: {
-            year: currentYear,
-            month: currentMonth,
-          },
-          select: {
-            id: true,
-            s3Url: true,
-            createdAt: true,
-            month: true,
-            year: true,
-            user: {
-              select: {
-                id: true,
-                name: true,
-                image: true,
-              },
-            },
-          },
-          orderBy: {
-            createdAt: "desc",
-          },
-        }),
-        wallpaperUpload.findMany({
-          where: {
-            OR: [
-              { year: { lt: currentYear } },
-              { year: currentYear, month: { lt: currentMonth } },
-            ],
-          },
-          select: {
-            id: true,
-            s3Url: true,
-            createdAt: true,
-            month: true,
-            year: true,
-            user: {
-              select: {
-                id: true,
-                name: true,
-                image: true,
-              },
-            },
-          },
-          orderBy: [{ year: "desc" }, { month: "desc" }, { createdAt: "desc" }],
-          take: 50, // Limit archive results to prevent loading too much
-        }),
-      ]);
-
-      currentMonthWallpapers = current;
-      archiveWallpapers = archive;
-    }
-  } catch (error) {
-    console.error("Failed to fetch wallpapers:", error);
-  }
-
-  const hasCurrentMonthWallpapers = currentMonthWallpapers.length > 0;
-  const hasArchiveWallpapers = archiveWallpapers.length > 0;
-  const monthName = currentDate.toLocaleDateString(undefined, {
-    month: "long",
-  });
+  const { current, now } = await getCommunityWallpapers();
+  const hasCurrent = current.length > 0;
+  const monthName = now.toLocaleDateString(undefined, { month: "long" });
 
   return (
     <main className="font-sans">
       <div className="p-4 md:p-6 space-y-8">
         <Header />
+
         <div className="flex flex-col gap-3 text-center">
           <h1 className={`text-4xl font-semibold ${instrumentSerif.className}`}>
             Community Wallpapers
@@ -110,70 +38,63 @@ export default async function Community() {
           </p>
         </div>
 
-        {/* Current Month Section */}
-        <div className="space-y-4 ">
-          {hasCurrentMonthWallpapers ? (
+        {/* Action Buttons */}
+        <div className="flex justify-center gap-4">
+          <Link href="/create">
+            <Button variant="default" size="lg">
+              Make Your Own
+            </Button>
+          </Link>
+          <Link href="/community/archive">
+            <Button variant="secondary" size="lg">
+              Explore Archive
+            </Button>
+          </Link>
+        </div>
+
+        {/* Current Month */}
+        <div className="space-y-4">
+          {hasCurrent ? (
             <>
               <div className="flex flex-col gap-1 my-8">
                 <h2 className="text-2xl font-semibold">
-                  {monthName} {currentYear}
+                  {monthName} {now.getFullYear()}
                 </h2>
                 <p className="text-sm text-muted-foreground">
                   Wallpapers from the current month
                 </p>
               </div>
+
               <div className="columns-1 gap-5 sm:columns-2 lg:columns-3 xl:columns-4">
-                {currentMonthWallpapers.map((wallpaper, index) => (
-                  <WallpaperCard 
-                    key={wallpaper.id} 
-                    wallpaper={wallpaper} 
-                    priority={index < 6}
+                {current.map((wallpaper, index) => (
+                  <WallpaperCard
+                    key={wallpaper.id}
+                    wallpaper={{
+                      ...wallpaper,
+                      createdAt: wallpaper.createdAt.toISOString(),
+                    }}
+                    priority={index < 2}
                   />
                 ))}
               </div>
             </>
           ) : (
             <Empty className="text-center">
-              <EmptyHeader className="text-center">
+              <EmptyHeader>
                 <EmptyTitle>No Wallpapers Yet</EmptyTitle>
-                <EmptyDescription className="text-center">
+                <EmptyDescription>
                   Be the first to share a wallpaper for {monthName}{" "}
-                  {currentYear}!
+                  {now.getFullYear()}!
                 </EmptyDescription>
               </EmptyHeader>
-              <EmptyContent className="text-center">
-                <div className="flex flex-col gap-6 items-center">
-                  <Link href="/create">
-                    <Button variant="default" className="mx-auto">
-                      Get Started
-                    </Button>
-                  </Link>
-                </div>
+              <EmptyContent>
+                <Link href="/create">
+                  <Button variant="default">Get Started</Button>
+                </Link>
               </EmptyContent>
             </Empty>
           )}
         </div>
-
-        {/* Archive Section */}
-        {hasArchiveWallpapers && (
-          <div className="space-y-4 pt-8 border-t">
-            <div className="flex flex-col gap-1">
-              <h2 className="text-2xl font-semibold">Archive</h2>
-              <p className="text-sm text-muted-foreground">
-                Wallpapers from previous months
-              </p>
-            </div>
-            <div className="columns-1 gap-5 sm:columns-2 lg:columns-3 xl:columns-4">
-              {archiveWallpapers.map((wallpaper, index) => (
-                <WallpaperCard 
-                  key={wallpaper.id} 
-                  wallpaper={wallpaper} 
-                  priority={false}
-                />
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </main>
   );
