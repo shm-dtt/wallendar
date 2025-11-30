@@ -81,7 +81,7 @@ export function UserMenu({ session }: { session: Session }) {
             variant="outline"
             size="sm"
             onClick={handleSignOut}
-            className="w-full"
+            className="w-full cursor-pointer"
           >
             Sign Out
           </Button>

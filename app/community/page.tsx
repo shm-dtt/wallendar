@@ -89,7 +89,7 @@ export default async function Community() {
               </EmptyHeader>
               <EmptyContent>
                 <Link href="/create">
-                  <Button variant="default" className="cursor-pointer">Get Started</Button>
+                  <Button variant="default" className="cursor-pointer">Make Your Own</Button>
                 </Link>
               </EmptyContent>
             </Empty>

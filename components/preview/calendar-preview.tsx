@@ -114,6 +114,7 @@ export const CalendarPreview = forwardRef<
             onClick={() => onPublish()} 
             size="sm" 
             disabled={!showPreview || isPublishing}
+            className="cursor-pointer"
           >
             {isPublishing ? (
               <Spinner className="w-4 h-4" />
@@ -126,6 +127,7 @@ export const CalendarPreview = forwardRef<
               onClick={() => onDownload("4k" as DownloadResolution)}
               size="sm"
               disabled={!showPreview}
+              className="cursor-pointer"
             >
               {isDownloading ? (
                 <Spinner className="w-4 h-4" />
@@ -137,7 +139,7 @@ export const CalendarPreview = forwardRef<
             <ButtonGroupSeparator />
             <Popover>
               <PopoverTrigger asChild>
-                <Button size="sm" disabled={!showPreview}>
+                <Button size="sm" disabled={!showPreview} className="cursor-pointer">
                   <ChevronDown className="w-4 h-4" />
                 </Button>
               </PopoverTrigger>
@@ -150,7 +152,7 @@ export const CalendarPreview = forwardRef<
                       size="sm"
                       onClick={() => onDownload(option.value)}
                       disabled={isDownloading}
-                      className="justify-start"
+                      className="justify-start cursor-pointer"
                     >
                       {option.label}{" "}
                       <span className="text-xs text-muted-foreground font-normal">

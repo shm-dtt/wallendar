@@ -71,12 +71,14 @@ export function MonthSettings() {
               <Button
                 variant={weekStart === "sunday" ? "default" : "outline"}
                 onClick={() => setWeekStart("sunday")}
+                className="cursor-pointer"
               >
                 Sun
               </Button>
               <Button
                 variant={weekStart === "monday" ? "default" : "outline"}
                 onClick={() => setWeekStart("monday")}
+                className="cursor-pointer"
               >
                 Mon
               </Button>

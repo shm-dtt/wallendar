@@ -31,7 +31,7 @@ export default async function ArchivePage() {
           </Link>
           <Link href="/community">
             <Button variant="secondary" size="lg" className="cursor-pointer">
-              Back to Latest
+              Back to Community
             </Button>
           </Link>
         </div>
