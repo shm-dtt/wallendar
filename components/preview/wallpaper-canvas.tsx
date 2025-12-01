@@ -22,6 +22,7 @@ type Props = {
   offsetY?: number;
   viewMode?: ViewMode;
   calendarScale?: number;
+  preset?: string | null;
 };
 
 // Day labels
@@ -101,7 +102,69 @@ function drawWallpaper(
     bottom.addColorStop(1, "rgba(0,0,0,0.18)");
     context.fillStyle = bottom;
     context.fillRect(0, height * 0.7, width, height * 0.3);
+    context.fillStyle = bottom;
+    context.fillRect(0, height * 0.7, width, height * 0.3);
   }
+
+  // Calculate calendar dimensions for preset background
+  const isMobile = opts.viewMode === "mobile";
+  const scale = Math.max(0.5, Math.min(1.5, opts.calendarScale ?? 1));
+  let monthSize = Math.round(height * (isMobile ? 0.03 : 0.05) * scale);
+  const labelDaySize = Math.round(
+    height * (isMobile ? 0.0115 : 0.02) * scale
+  );
+  const gridWidth = width * (isMobile ? 0.35 : 0.25) * scale;
+  const startX = (width - gridWidth) / 2;
+  let baseY = height * (isMobile ? 0.4 : 0.34);
+  const compensationFactor = (scale - 1) * height * (isMobile ? 0.08 : 0.19);
+  baseY -= compensationFactor;
+  const normX = Math.max(-1, Math.min(1, opts.offsetX ?? 0));
+  const normY = Math.max(-1, Math.min(1, opts.offsetY ?? 0));
+  const maxShiftX = startX;
+  const maxShiftY = height * 0.3;
+  const shiftX = normX * maxShiftX;
+  const shiftY = normY * maxShiftY;
+
+  // Draw preset overlay
+  if (opts.preset) {
+    const totalDays = daysInMonth(opts.year, opts.month);
+    const offset = firstDayOffset(opts.year, opts.month, opts.weekStart);
+    const numRows = Math.ceil((offset + totalDays) / 7);
+    const padding = gridWidth * 0.07;
+    
+    // Calculate positions WITHOUT shift first
+    const rectX = startX - padding;
+    const rectY = baseY - monthSize * 0.8 - padding;
+    const rectW = gridWidth + padding * 2;
+    
+    // Calculate the bottom of the calendar WITHOUT shift
+    const dowY = baseY + Math.round(height * (isMobile ? 0.05 : 0.08) * scale);
+    const rowsTop = dowY + Math.round(height * (isMobile ? 0.03 : 0.055) * scale);
+    const rowH = Math.round(height * (isMobile ? 0.027 : 0.055) * scale);
+    const lastRowY = rowsTop + (numRows - 1) * rowH;
+    const rectH = (lastRowY - rectY) + padding * 2;
+    
+    const radius = Math.round(height * 0.015 * scale);
+
+    context.save();
+    
+    if (opts.preset === "bg-white/50") {
+      context.fillStyle = "rgba(255, 255, 255, 0.3)";
+      context.shadowColor = "rgba(0,0,0,0.15)";
+      context.shadowBlur = 30;
+    } else if (opts.preset === "bg-black/50") {
+      context.fillStyle = "rgba(0, 0, 0, 0.5)";
+      context.shadowColor = "rgba(0,0,0,0.4)";
+      context.shadowBlur = 30;
+    }
+
+    context.beginPath();
+    // Apply shift only when drawing
+    context.roundRect(rectX + shiftX, rectY + shiftY, rectW, rectH, radius);
+    context.fill();
+    context.restore();
+  }
+
 
   function drawTrackedCentered(
     text: string,
@@ -133,30 +196,7 @@ function drawWallpaper(
     );
   }
 
-  // Adjust proportions based on view mode
-  const isMobile = opts.viewMode === "mobile";
-  const scale = Math.max(0.5, Math.min(1.5, opts.calendarScale ?? 1));
-  
-  // Tuned proportions; weekdays and dates share the same size
-  let monthSize = Math.round(height * (isMobile ? 0.03 : 0.05) * scale);
-  const labelDaySize = Math.round(
-    height * (isMobile ? 0.0115 : 0.02) * scale
-  ); // same size for weekday labels and dates
-
-  const gridWidth = width * (isMobile ? 0.35 : 0.25) * scale;
-  const startX = (width - gridWidth) / 2;
   const colW = gridWidth / 7;
-  const baseY = height * (isMobile ? 0.4 : 0.34);
-
-  // Apply normalized offset to calendar block and month title
-  const normX = Math.max(-1, Math.min(1, opts.offsetX ?? 0));
-  const normY = Math.max(-1, Math.min(1, opts.offsetY ?? 0));
-  // Allow shifting the grid all the way until its left/right edges touch the canvas edges.
-  // Since the grid is centered, the left margin equals the right margin = startX.
-  const maxShiftX = startX;
-  const maxShiftY = height * 0.3; // allow up to 30% height shift
-  const shiftX = normX * maxShiftX;
-  const shiftY = normY * maxShiftY;
 
   // Common text styles
   context.textAlign = "center";
@@ -269,6 +309,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
       offsetY = 0,
       viewMode = "desktop",
       calendarScale = 1,
+      preset = null,
     },
     ref
   ) {
@@ -298,6 +339,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
             offsetY,
             viewMode,
             calendarScale,
+            preset,
           });
           return exportCanvas;
         };
@@ -337,6 +379,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
         imageSrc,
         viewMode,
         calendarScale,
+        preset,
       ]
     );
 
@@ -409,6 +452,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
           offsetY,
           viewMode,
           calendarScale,
+          preset,
         });
       }
 
@@ -442,6 +486,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
               offsetY,
               viewMode,
               calendarScale,
+              preset,
             });
             ctx.restore();
           }
@@ -460,6 +505,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
             offsetY,
             viewMode,
             calendarScale,
+            preset,
           });
           ctx.restore();
 
@@ -513,6 +559,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
             offsetY,
             viewMode,
             calendarScale,
+            preset,
           });
         }
       }
@@ -533,6 +580,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
       offsetY,
       viewMode,
       calendarScale,
+      preset,
     ]);
 
     return (
