@@ -56,6 +56,7 @@ export const CalendarPreview = forwardRef<
   const customFontName = useCalendarStore((state) => state.customFontName);
 
   const imageSrc = useCalendarStore((state) => state.imageSrc);
+  const preset = useCalendarStore((state) => state.preset);
 
   const offsetX = useCalendarStore((state) => state.offsetX);
   const offsetY = useCalendarStore((state) => state.offsetY);
@@ -191,6 +192,7 @@ export const CalendarPreview = forwardRef<
                     : `${monthOnlyFont.monthFont} |||MONTH_ONLY||| ${monthOnlyFont.bodyFont}`
                 }
                 imageSrc={imageSrc}
+                preset={preset}
                 offsetX={offsetX}
                 offsetY={offsetY}
                 viewMode="desktop"
@@ -227,6 +229,7 @@ export const CalendarPreview = forwardRef<
                     : `${monthOnlyFont.monthFont} |||MONTH_ONLY||| ${monthOnlyFont.bodyFont}`
                 }
                 imageSrc={imageSrc}
+                preset={preset}
                 offsetX={offsetX}
                 offsetY={offsetY}
                 viewMode="mobile"

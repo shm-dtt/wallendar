@@ -59,6 +59,7 @@ interface CalendarState {
 
   // Background settings
   imageSrc?: string;
+  preset: string | null;
   currentImageIndex: number;
 
   // Position offsets (normalized -1..1)
@@ -87,6 +88,7 @@ interface CalendarState {
   setCustomFontName: (name: string | null) => void;
   setApplyFontToAll: (apply: boolean) => void;
   setImageSrc: (src?: string) => void;
+  setPreset: (preset: string | null) => void;
   handleSampleImage: () => void;
   setOffset: (x: number, y: number) => void;
   setOffsetX: (x: number) => void;
@@ -129,6 +131,7 @@ export const useCalendarStore = create<CalendarState>()(
       customFontName: null,
       applyFontToAll: false,
       imageSrc: undefined,
+      preset: null,
       currentImageIndex: 0,
       offsetX: 0,
       offsetY: 0,
@@ -148,6 +151,7 @@ export const useCalendarStore = create<CalendarState>()(
       setCustomFontName: (customFontName) => set({ customFontName }),
       setApplyFontToAll: (applyFontToAll) => set({ applyFontToAll }),
       setImageSrc: (imageSrc) => set({ imageSrc }),
+      setPreset: (preset) => set({ preset }),
       handleSampleImage: () =>
         set((state) => {
           const nextIndex =
@@ -170,7 +174,7 @@ export const useCalendarStore = create<CalendarState>()(
         set({ downloadResolution }),
       setCalendarScale: (calendarScale) =>
         set({
-          calendarScale: Math.max(0.5, Math.min(1.5, calendarScale)),
+          calendarScale: Math.max(0.5, Math.min(2.0, calendarScale)),
         }),
     }),
     {
@@ -187,6 +191,7 @@ export const useCalendarStore = create<CalendarState>()(
         applyFontToAll: state.applyFontToAll,
         // imageSrc is excluded from persistence to avoid localStorage quota issues
         // It will remain in memory during the session but won't be saved
+        preset: state.preset,
         currentImageIndex: state.currentImageIndex,
         offsetX: state.offsetX,
         offsetY: state.offsetY,
