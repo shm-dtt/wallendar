@@ -1,3 +1,6 @@
+export const dynamic = "force-dynamic";
+export const revalidate = 43200;
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Github } from "lucide-react";
