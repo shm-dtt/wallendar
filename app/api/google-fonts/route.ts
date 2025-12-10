@@ -21,7 +21,7 @@ type GoogleFontsResponse = {
 
 // API key from environment variables (falls back to provided key for testing)
 const GOOGLE_FONTS_API_KEY =
-  process.env.GOOGLE_FONTS_API_KEY || "AIzaSyCCNnAT7Grm5W4ooYvc2jypq25AfECOwI9"
+  process.env.GOOGLE_FONTS_API_KEY
 
 export async function GET() {
   try {
