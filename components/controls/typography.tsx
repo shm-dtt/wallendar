@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -10,6 +10,13 @@ import { CaseSensitive,  X } from "lucide-react"
 import { useCalendarStore } from "@/lib/calendar-store"
 import { ModernColorPicker } from "@/components/misc/color-picker"
 import { localFonts } from '@/lib/calendar-utils'
+
+type GoogleFont = {
+  family: string
+  variants: string[]
+  files: Record<string, string>
+  previewUrl?: string
+}
 
 export function TypographySettings() {
   const textColor = useCalendarStore((state) => state.textColor)
@@ -25,6 +32,11 @@ export function TypographySettings() {
   const [uploadedFonts, setUploadedFonts] = useState<{name: string, displayName: string}[]>([])
   const [installedFonts, setInstalledFonts] = useState<{name: string, displayName: string}[]>([])
   const [isUploading, setIsUploading] = useState(false)
+  const [googleFonts, setGoogleFonts] = useState<GoogleFont[]>([])
+  const [isLoadingGoogleFonts, setIsLoadingGoogleFonts] = useState(false)
+  const [googleFontError, setGoogleFontError] = useState<string | null>(null)
+  const loadedGoogleFontsRef = useRef<Set<string>>(new Set())
+  const [googleQuery, setGoogleQuery] = useState("")
 
 
   // Preinstalled fonts shipped in public/fonts
@@ -54,6 +66,32 @@ export function TypographySettings() {
       }
     }
     registerAll()
+    return () => {
+      canceled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    let canceled = false
+    async function fetchGoogleFonts() {
+      setIsLoadingGoogleFonts(true)
+      setGoogleFontError(null)
+      try {
+        const res = await fetch('/api/google-fonts')
+        if (!res.ok) throw new Error(`status ${res.status}`)
+        const data = await res.json()
+        if (!canceled && Array.isArray(data?.fonts)) {
+          // Keep full list; we filter client-side with search
+          setGoogleFonts(data.fonts)
+        }
+      } catch (err) {
+        console.error('Failed to load Google Fonts', err)
+        if (!canceled) setGoogleFontError('Could not load Google Fonts')
+      } finally {
+        if (!canceled) setIsLoadingGoogleFonts(false)
+      }
+    }
+    fetchGoogleFonts()
     return () => {
       canceled = true
     }
@@ -165,6 +203,27 @@ export function TypographySettings() {
     localStorage.setItem('uploadedFonts', JSON.stringify(updatedFonts))
   }
 
+  const loadGoogleFont = async (font: GoogleFont) => {
+    const alreadyLoaded = loadedGoogleFontsRef.current.has(font.family)
+    if (alreadyLoaded) return
+
+    const source = font.previewUrl || font.files?.['regular'] || font.files?.['400']
+    if (!source) return
+
+    const face = new FontFace(font.family, `url(${source})`)
+    const loaded = await face.load()
+    document.fonts.add(loaded)
+    loadedGoogleFontsRef.current.add(font.family)
+  }
+
+  const filteredGoogleFonts = useMemo(() => {
+    const q = googleQuery.trim().toLowerCase()
+    const list = q
+      ? googleFonts.filter((f) => f.family.toLowerCase().includes(q))
+      : googleFonts
+    return list.slice(0, 50)
+  }, [googleFonts, googleQuery])
+
   const allFontOptions = [
     ...installedFonts.map(font => ({ value: font.name, label: font.displayName })),
     ...uploadedFonts.map(font => ({ value: font.name, label: font.displayName })),
@@ -225,6 +284,50 @@ export function TypographySettings() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="flex-1 w-full">
+              <Select
+                value={googleFonts.some((f) => f.family === fontFamily) ? fontFamily : undefined}
+                onValueChange={async (value) => {
+                  const font = googleFonts.find((f) => f.family === value)
+                  if (!font) return
+                  try {
+                    await loadGoogleFont(font)
+                    setFontFamily(font.family)
+                    setCustomFontName(font.family)
+                  } catch (err) {
+                    console.error('Google font load failed', err)
+                  }
+                }}
+                disabled={isLoadingGoogleFonts || googleFonts.length === 0}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={isLoadingGoogleFonts ? "Loading Google Fonts..." : "Google Fonts"} />
+                </SelectTrigger>
+                <SelectContent>
+                  <div className="p-2">
+                    <Input
+                      value={googleQuery}
+                      onChange={(e) => setGoogleQuery(e.target.value)}
+                      placeholder="Search Google Fonts"
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                  {filteredGoogleFonts.length ? (
+                    filteredGoogleFonts.map((font) => (
+                      <SelectItem key={font.family} value={font.family}>
+                        {font.family}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <div className="px-3 py-2 text-xs text-muted-foreground">No matching fonts</div>
+                  )}
+                </SelectContent>
+              </Select>
+              {googleFontError ? (
+                <p className="mt-1 text-xs text-destructive">{googleFontError}</p>
+              ) : null}
             </div>
             
             <div className="relative basis-full">
