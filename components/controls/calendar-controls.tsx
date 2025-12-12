@@ -4,9 +4,10 @@ import { BackgroundSettings } from "@/components/controls/background";
 import { PositionSettings } from "@/components/controls/position";
 import { ScaleSettings } from "@/components/controls/scale";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, CaseSensitive, Move, Image, Scaling } from "lucide-react";
+import { Calendar, CaseSensitive, Move, Image, Scaling, LayoutGrid } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import PresetSettings from "@/components/controls/presets";
 export function CalendarControls() {
   return (
     <>
@@ -21,6 +22,8 @@ export function CalendarControls() {
           <PositionSettings />
           <Separator className="my-4" />
           <ScaleSettings />
+          <Separator className="my-4" />
+          <PresetSettings />
         </div>
       </ScrollArea>
       <div className="lg:hidden flex w-full flex-col gap-6 h-full">
@@ -41,6 +44,9 @@ export function CalendarControls() {
             <TabsTrigger value="scale">
               <Scaling />
             </TabsTrigger>
+            <TabsTrigger value="preset">
+              <LayoutGrid className="rotate-90" />
+            </TabsTrigger>
           </TabsList>
           <div>
             <TabsContent value="month">
@@ -57,6 +63,9 @@ export function CalendarControls() {
             </TabsContent>
             <TabsContent value="scale">
               <ScaleSettings />
+            </TabsContent>
+            <TabsContent value="preset">
+              <PresetSettings />
             </TabsContent>
           </div>
         </Tabs>
