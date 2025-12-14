@@ -150,7 +150,14 @@ function drawWallpaper(
 
   // Apply normalized offset to calendar block and month title
   const normX = Math.max(-1, Math.min(1, opts.offsetX ?? 0));
-  const normY = Math.max(-1, Math.min(1, opts.offsetY ?? 0));
+  let normY = Math.max(-1, Math.min(1, opts.offsetY ?? 0));
+
+  // FIX: Adjust vertical position based on scale to keep it centered.
+  // At scale 1.0, adjustment is 0. At scale 1.5, adjustment is -0.25.
+  const verticalScaleAdjustment = (scale - 1) * -0.5;
+  normY += verticalScaleAdjustment;
+  normY = Math.max(-1, Math.min(1, normY));
+
   // Allow shifting the grid all the way until its left/right edges touch the canvas edges.
   // Since the grid is centered, the left margin equals the right margin = startX.
   const maxShiftX = startX;
