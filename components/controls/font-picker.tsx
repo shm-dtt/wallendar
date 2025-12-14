@@ -69,7 +69,7 @@ export function FontPicker({
     // Re-register uploaded fonts from localStorage on mount
     useEffect(() => {
         uploadedFonts.forEach((font) => {
-            const fontFaces = Array.from(document.fonts.values());
+            const fontFaces = Array.from(document.fonts.values()) as FontFace[];
             const isLoaded = fontFaces.some(face => face.family === font.name);
             if (!isLoaded) {
                 // Font binary data is not persisted, will need re-upload
@@ -127,7 +127,7 @@ export function FontPicker({
 
     const handleRemoveFont = (fontName: string) => {
         // Remove from document.fonts
-        const fontFaces = Array.from(document.fonts.values());
+        const fontFaces = Array.from(document.fonts.values()) as FontFace[];
         fontFaces.forEach(face => {
             if (face.family === fontName) {
                 document.fonts.delete(face);
@@ -138,8 +138,10 @@ export function FontPicker({
         removeUploadedFont(fontName);
 
         // Reset selection if this font was selected
+        // Only change to Product Sans if the removed font exists in available fonts
         if (value === fontName) {
-            onChange("Product Sans");
+            const defaultFont = installedFonts.length > 0 ? installedFonts[0].name : "Product Sans";
+            onChange(defaultFont);
         }
     };
 
@@ -148,7 +150,7 @@ export function FontPicker({
             {label && <Label className="text-sm">{label}</Label>}
 
             <Select
-                value={value}
+                value={value || "Product Sans"}
                 onValueChange={onChange}
                 disabled={disabled}
             >
