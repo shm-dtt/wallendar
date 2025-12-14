@@ -1,29 +1,9 @@
 "use client";
 
-import { forwardRef, useState, useEffect } from "react";
-import { useMemo } from "react";
 import WallpaperCanvas, {
   type WallpaperCanvasHandle,
 } from "@/components/preview/wallpaper-canvas";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import {
-  Download,
-  ScanEye,
-  Monitor,
-  Smartphone,
-  ChevronDown,
-  UploadCloud,
-} from "lucide-react";
-import {
-  HeaderFormat,
-  useCalendarStore,
-  ViewMode,
-  DownloadResolution,
-  resolutionOptions,
-} from "@/lib/calendar-store";
-import { fontFamilyMap } from "@/lib/calendar-utils";
-import { Spinner } from "@/components/ui/spinner";
 import {
   ButtonGroup,
   ButtonGroupSeparator,
@@ -33,6 +13,26 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Spinner } from "@/components/ui/spinner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  DownloadResolution,
+  HeaderFormat,
+  resolutionOptions,
+  useCalendarStore,
+  ViewMode,
+} from "@/lib/calendar-store";
+import { fontFamilyMap } from "@/lib/calendar-utils";
+import {
+  ChevronDown,
+  Download,
+  Monitor,
+  ScanEye,
+  Smartphone,
+  UploadCloud,
+} from "lucide-react";
+import { forwardRef, useEffect, useMemo, useState } from "react";
+
 
 interface CalendarPreviewProps {
   onDownload: (resolution: DownloadResolution) => void;
@@ -71,6 +71,7 @@ export const CalendarPreview = forwardRef<
   const setViewMode = useCalendarStore((state) => state.setViewMode);
 
   const isDownloading = useCalendarStore((state) => state.isDownloading);
+  const textOverlay = useCalendarStore((state) => state.textOverlay);
 
   const effectiveFont = useMemo(() => {
     const baseFont =
@@ -116,60 +117,60 @@ export const CalendarPreview = forwardRef<
             </TabsTrigger>
           </TabsList>
           <div className="flex items-center gap-2">
-          <Button 
-            onClick={() => onPublish()} 
-            size="sm" 
-            disabled={!showPreview || isPublishing}
-            className="cursor-pointer"
-          >
-            {isPublishing ? (
-              <Spinner className="w-4 h-4" />
-            ) : (
-              <UploadCloud className="w-4 h-4" /> 
-            )}Publish
-          </Button>
-          <ButtonGroup>
             <Button
-              onClick={() => onDownload("4k" as DownloadResolution)}
+              onClick={() => onPublish()}
               size="sm"
-              disabled={!showPreview}
+              disabled={!showPreview || isPublishing}
               className="cursor-pointer"
             >
-              {isDownloading ? (
+              {isPublishing ? (
                 <Spinner className="w-4 h-4" />
               ) : (
-                <Download className="w-4 h-4" />
-              )}
-              Save
+                <UploadCloud className="w-4 h-4" />
+              )}Publish
             </Button>
-            <ButtonGroupSeparator />
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button size="sm" disabled={!showPreview} className="cursor-pointer">
-                  <ChevronDown className="w-4 h-4" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-36 p-2" align="end">
-                <div className="space-y-1 flex flex-col">
-                  {resolutionOptions(viewMode).map((option) => (
-                    <Button
-                      key={option.value}
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onDownload(option.value)}
-                      disabled={isDownloading}
-                      className="justify-start cursor-pointer"
-                    >
-                      {option.label}{" "}
-                      <span className="text-xs text-muted-foreground font-normal">
-                        ({option.description}){" "}
-                      </span>
-                    </Button>
-                  ))}
-                </div>
-              </PopoverContent>
-            </Popover>
-          </ButtonGroup>
+            <ButtonGroup>
+              <Button
+                onClick={() => onDownload("4k" as DownloadResolution)}
+                size="sm"
+                disabled={!showPreview}
+                className="cursor-pointer"
+              >
+                {isDownloading ? (
+                  <Spinner className="w-4 h-4" />
+                ) : (
+                  <Download className="w-4 h-4" />
+                )}
+                Save
+              </Button>
+              <ButtonGroupSeparator />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button size="sm" disabled={!showPreview} className="cursor-pointer">
+                    <ChevronDown className="w-4 h-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-36 p-2" align="end">
+                  <div className="space-y-1 flex flex-col">
+                    {resolutionOptions(viewMode).map((option) => (
+                      <Button
+                        key={option.value}
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onDownload(option.value)}
+                        disabled={isDownloading}
+                        className="justify-start cursor-pointer"
+                      >
+                        {option.label}{" "}
+                        <span className="text-xs text-muted-foreground font-normal">
+                          ({option.description}){" "}
+                        </span>
+                      </Button>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </ButtonGroup>
           </div>
         </div>
 
@@ -202,6 +203,7 @@ export const CalendarPreview = forwardRef<
                 offsetY={offsetY}
                 viewMode="desktop"
                 calendarScale={calendarScale}
+                textOverlay={textOverlay}
               />
             ) : (
               <div className="h-full w-full flex items-center justify-center text-muted-foreground">
@@ -239,6 +241,7 @@ export const CalendarPreview = forwardRef<
                 offsetY={offsetY}
                 viewMode="mobile"
                 calendarScale={calendarScale}
+                textOverlay={textOverlay}
               />
             ) : (
               <div className="h-full w-full flex items-center justify-center text-muted-foreground">

@@ -1,12 +1,13 @@
-import { MonthSettings } from "@/components/controls/month";
-import { TypographySettings } from "@/components/controls/typography";
 import { BackgroundSettings } from "@/components/controls/background";
+import { MonthSettings } from "@/components/controls/month";
 import { PositionSettings } from "@/components/controls/position";
 import { ScaleSettings } from "@/components/controls/scale";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, CaseSensitive, Move, Image, Scaling } from "lucide-react";
+import { TextOverlaySettings } from "@/components/controls/text-overlay";
+import { TypographySettings } from "@/components/controls/typography";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Calendar, CaseSensitive, Image, Move, Scaling, Type } from "lucide-react";
 export function CalendarControls() {
   return (
     <>
@@ -21,6 +22,8 @@ export function CalendarControls() {
           <PositionSettings />
           <Separator className="my-4" />
           <ScaleSettings />
+          <Separator className="my-4" />
+          <TextOverlaySettings />
         </div>
       </ScrollArea>
       <div className="lg:hidden flex w-full flex-col gap-6 h-full">
@@ -41,6 +44,9 @@ export function CalendarControls() {
             <TabsTrigger value="scale">
               <Scaling />
             </TabsTrigger>
+            <TabsTrigger value="textoverlay">
+              <Type />
+            </TabsTrigger>
           </TabsList>
           <div>
             <TabsContent value="month">
@@ -57,6 +63,9 @@ export function CalendarControls() {
             </TabsContent>
             <TabsContent value="scale">
               <ScaleSettings />
+            </TabsContent>
+            <TabsContent value="textoverlay">
+              <TextOverlaySettings />
             </TabsContent>
           </div>
         </Tabs>

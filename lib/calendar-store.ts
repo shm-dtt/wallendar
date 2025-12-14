@@ -1,10 +1,10 @@
+import { sampleImagePath } from "@/lib/calendar-utils";
 import { create } from "zustand";
 import {
-  persist,
   createJSONStorage,
+  persist,
   type StateStorage,
 } from "zustand/middleware";
-import { sampleImagePath } from "@/lib/calendar-utils";
 
 export type HeaderFormat =
   | "full"
@@ -75,6 +75,18 @@ interface CalendarState {
   downloadResolution: DownloadResolution;
   calendarScale: number;
 
+  // Custom uploaded fonts (shared globally)
+  uploadedFonts: { name: string; displayName: string }[];
+
+  // Text overlay settings
+  textOverlay: {
+    enabled: boolean;
+    content: string;
+    fontSize: number;
+    font: string;
+    useTypographyFont: boolean;
+  };
+
   persistedAt?: number;
 
   // Actions
@@ -99,6 +111,17 @@ interface CalendarState {
   // Download actions
   setDownloadResolution: (resolution: DownloadResolution) => void;
   setCalendarScale: (scale: number) => void;
+
+  // Text overlay actions
+  setTextOverlayEnabled: (enabled: boolean) => void;
+  setTextOverlayContent: (content: string) => void;
+  setTextOverlayFontSize: (fontSize: number) => void;
+  setTextOverlayFont: (font: string) => void;
+  setTextOverlayUseTypographyFont: (useTypographyFont: boolean) => void;
+
+  // Uploaded fonts actions
+  addUploadedFont: (font: { name: string; displayName: string }) => void;
+  removeUploadedFont: (name: string) => void;
 }
 
 const createStorage = () =>
@@ -136,6 +159,14 @@ export const useCalendarStore = create<CalendarState>()(
       isDownloading: false,
       downloadResolution: "4k",
       calendarScale: 1,
+      uploadedFonts: [],
+      textOverlay: {
+        enabled: false,
+        content: "",
+        fontSize: 1,
+        font: "Product Sans",
+        useTypographyFont: true,
+      },
       persistedAt: undefined,
 
       // Actions
@@ -172,6 +203,37 @@ export const useCalendarStore = create<CalendarState>()(
         set({
           calendarScale: Math.max(0.5, Math.min(1.5, calendarScale)),
         }),
+      setTextOverlayEnabled: (enabled) =>
+        set((state) => ({
+          textOverlay: { ...state.textOverlay, enabled },
+        })),
+      setTextOverlayContent: (content) =>
+        set((state) => ({
+          textOverlay: { ...state.textOverlay, content },
+        })),
+      setTextOverlayFontSize: (fontSize) =>
+        set((state) => ({
+          textOverlay: {
+            ...state.textOverlay,
+            fontSize: Math.max(0.5, Math.min(2, fontSize)),
+          },
+        })),
+      setTextOverlayFont: (font) =>
+        set((state) => ({
+          textOverlay: { ...state.textOverlay, font },
+        })),
+      setTextOverlayUseTypographyFont: (useTypographyFont) =>
+        set((state) => ({
+          textOverlay: { ...state.textOverlay, useTypographyFont },
+        })),
+      addUploadedFont: (font) =>
+        set((state) => ({
+          uploadedFonts: [...state.uploadedFonts, font],
+        })),
+      removeUploadedFont: (name) =>
+        set((state) => ({
+          uploadedFonts: state.uploadedFonts.filter((f) => f.name !== name),
+        })),
     }),
     {
       name: "calendar-wallpaper-store",
@@ -194,12 +256,16 @@ export const useCalendarStore = create<CalendarState>()(
         downloadResolution: state.downloadResolution,
         persistedAt: Date.now(),
         calendarScale: state.calendarScale,
+        textOverlay: state.textOverlay,
+        uploadedFonts: state.uploadedFonts,
       }),
       merge: (persistedState, currentState) => {
         if (!persistedState) return currentState;
         const {
           persistedAt,
           calendarScale = currentState.calendarScale,
+          textOverlay = currentState.textOverlay,
+          uploadedFonts = currentState.uploadedFonts,
           ...rest
         } = persistedState as CalendarState;
         const timestamp = persistedAt ?? Date.now();
@@ -210,6 +276,8 @@ export const useCalendarStore = create<CalendarState>()(
           ...currentState,
           ...rest,
           calendarScale,
+          textOverlay,
+          uploadedFonts,
           persistedAt: timestamp,
         };
       },

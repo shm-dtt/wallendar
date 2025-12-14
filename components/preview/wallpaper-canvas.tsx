@@ -24,6 +24,13 @@ type Props = {
   viewMode?: ViewMode;
   calendarScale?: number;
   setTextColor: (color: string) => void;
+  textOverlay?: {
+    enabled: boolean;
+    content: string;
+    fontSize: number;
+    font: string;
+    useTypographyFont: boolean;
+  };
 };
 
 // Day labels
@@ -269,6 +276,54 @@ function drawWallpaperCalendar(
     height * 0.018,
   )}px ${safeBodyFamily}`;
   context.fillText("", width / 2 + shiftX, rowsTop + rowH * 6.1);
+
+  // Text overlay (Phase 1: hardcoded center position, multi-line support)
+  // Font: Uses Typography font OR custom overlay font based on useTypographyFont setting
+  if (opts.textOverlay?.enabled && opts.textOverlay.content) {
+    context.globalAlpha = 1;
+    const overlayFontSize = Math.round(height * 0.04 * opts.textOverlay.fontSize);
+
+    // Determine which font to use
+    let overlayFontFamily: string;
+    let overlayFontWeight: string;
+
+    if (opts.textOverlay.useTypographyFont) {
+      // Use main typography font (month font)
+      overlayFontFamily = safeMonthFamily;
+      overlayFontWeight = monthWeight;
+    } else {
+      // Use custom overlay font
+      const customFont = opts.textOverlay.font || "Product Sans";
+      overlayFontFamily = sanitizeFamily(customFont);
+      overlayFontWeight = getFontWeight(customFont);
+    }
+
+    context.font = `${overlayFontWeight} ${overlayFontSize}px ${overlayFontFamily}`;
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillStyle = opts.textColor;
+    // Add shadow for better readability
+    context.shadowColor = "rgba(0,0,0,0.5)";
+    context.shadowBlur = Math.max(2, Math.round(height * 0.008));
+
+    // Split text by newlines for multi-line support
+    const lines = opts.textOverlay.content.split('\n');
+    const lineHeight = overlayFontSize * 1.2; // 1.2x line spacing
+
+    // Calculate starting Y position to center the entire text block
+    const totalHeight = lines.length * lineHeight;
+    let startY = height / 2 - (totalHeight - lineHeight) / 2;
+
+    // Draw each line
+    lines.forEach((line, index) => {
+      const y = startY + index * lineHeight;
+      context.fillText(line, width / 2, y);
+    });
+
+    // Reset shadow
+    context.shadowColor = "rgba(0,0,0,0.25)";
+    context.shadowBlur = Math.max(1, Math.round(height * 0.004));
+  }
 }
 
 function drawWallpaper(
@@ -297,6 +352,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
       viewMode = "desktop",
       calendarScale = 1,
       setTextColor,
+      textOverlay,
     },
     ref,
   ) {
@@ -311,7 +367,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
         exportCanvas.width = w;
         exportCanvas.height = h;
 
-        const drawOpts = {
+        drawWallpaper(exportCanvas, {
           month,
           year,
           weekStart,
@@ -324,9 +380,8 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
           offsetY,
           viewMode,
           calendarScale,
-        };
-
-        drawWallpaper(exportCanvas, drawOpts);
+          textOverlay,
+        });
         return exportCanvas;
       };
 
@@ -352,19 +407,22 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
           return blob;
         },
       };
-    }, [
-      month,
-      year,
-      weekStart,
-      headerFormat,
-      textColor,
-      fontFamily,
-      offsetX,
-      offsetY,
-      imageSrc,
-      viewMode,
-      calendarScale,
-    ]);
+    },
+      [
+        month,
+        year,
+        weekStart,
+        headerFormat,
+        textColor,
+        fontFamily,
+        offsetX,
+        offsetY,
+        imageSrc,
+        viewMode,
+        calendarScale,
+        textOverlay,
+      ]
+    );
 
     function parseFamilies(input: string) {
       const str = (input || "").trim();
@@ -397,11 +455,11 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
 
         const loads: Promise<unknown>[] = [
           fonts?.load?.(`400 24px ${JSON.stringify(cleaned)}`) ??
-            Promise.resolve(),
+          Promise.resolve(),
           fonts?.load?.(`500 24px ${JSON.stringify(cleaned)}`) ??
-            Promise.resolve(),
+          Promise.resolve(),
           fonts?.load?.(`700 24px ${JSON.stringify(cleaned)}`) ??
-            Promise.resolve(),
+          Promise.resolve(),
         ];
 
         await Promise.allSettled(loads);
@@ -433,6 +491,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
         offsetY,
         viewMode,
         calendarScale,
+        textOverlay,
       };
 
       if (imgRef.current) {
@@ -575,6 +634,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
       viewMode,
       calendarScale,
       setTextColor,
+      textOverlay,
     ]);
 
     return (
