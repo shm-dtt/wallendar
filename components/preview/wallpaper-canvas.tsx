@@ -30,6 +30,7 @@ type Props = {
     fontSize: number;
     font: string;
     useTypographyFont: boolean;
+    position: string;
   };
 };
 
@@ -277,8 +278,7 @@ function drawWallpaperCalendar(
   )}px ${safeBodyFamily}`;
   context.fillText("", width / 2 + shiftX, rowsTop + rowH * 6.1);
 
-  // Text overlay (Phase 1: hardcoded center position, multi-line support)
-  // Font: Uses Typography font OR custom overlay font based on useTypographyFont setting
+  // Text overlay with 9-position grid support
   if (opts.textOverlay?.enabled && opts.textOverlay.content) {
     context.globalAlpha = 1;
     const overlayFontSize = Math.round(height * 0.04 * opts.textOverlay.fontSize * scale);
@@ -299,25 +299,51 @@ function drawWallpaperCalendar(
     }
 
     context.font = `${overlayFontWeight} ${overlayFontSize}px ${overlayFontFamily}`;
-    context.textAlign = "center";
-    context.textBaseline = "middle";
     context.fillStyle = opts.textColor;
     // Add shadow for better readability
     context.shadowColor = "rgba(0,0,0,0.5)";
     context.shadowBlur = Math.max(2, Math.round(height * 0.008));
 
+    // Calculate position based on 9-zone grid
+    const paddingX = width * 0.05;   // Horizontal safe margin
+    const paddingY = height * 0.05;  // Vertical safe margin
+    const position = opts.textOverlay.position || "center";
+
     // Split text by newlines for multi-line support
     const lines = opts.textOverlay.content.split('\n');
     const lineHeight = overlayFontSize * 1.2; // 1.2x line spacing
-
-    // Calculate starting Y position to center the entire text block
     const totalHeight = lines.length * lineHeight;
-    let startY = height / 2 - (totalHeight - lineHeight) / 2;
+
+    // Determine horizontal alignment and X position
+    let x: number;
+    if (position.includes('left')) {
+      context.textAlign = 'left';
+      x = paddingX;
+    } else if (position.includes('right')) {
+      context.textAlign = 'right';
+      x = width - paddingX;
+    } else {
+      context.textAlign = 'center';
+      x = width / 2;
+    }
+
+    // Determine vertical alignment and starting Y position
+    // Use 'top' baseline for all positions to ensure consistent downward expansion (like month name)
+    context.textBaseline = 'top';
+    let startY: number;
+    if (position.startsWith('top-')) {
+      startY = paddingY;
+    } else if (position.startsWith('bottom-')) {
+      startY = height - paddingY - totalHeight;
+    } else {
+      // middle-* or center
+      startY = (height - totalHeight) / 2;
+    }
 
     // Draw each line
     lines.forEach((line, index) => {
       const y = startY + index * lineHeight;
-      context.fillText(line, width / 2, y);
+      context.fillText(line, x, y);
     });
 
     // Reset shadow

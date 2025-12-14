@@ -15,6 +15,17 @@ export type HeaderFormat =
   | "short-short-year"
   | "short-full-year";
 
+export type TextOverlayPosition =
+  | "top-left"
+  | "top-center"
+  | "top-right"
+  | "middle-left"
+  | "center"
+  | "middle-right"
+  | "bottom-left"
+  | "bottom-center"
+  | "bottom-right";
+
 export type ViewMode = "desktop" | "mobile";
 
 export type DownloadResolution = "hd" | "fhd" | "4k";
@@ -85,6 +96,7 @@ interface CalendarState {
     fontSize: number;
     font: string;
     useTypographyFont: boolean;
+    position: TextOverlayPosition;
   };
 
   persistedAt?: number;
@@ -118,6 +130,7 @@ interface CalendarState {
   setTextOverlayFontSize: (fontSize: number) => void;
   setTextOverlayFont: (font: string) => void;
   setTextOverlayUseTypographyFont: (useTypographyFont: boolean) => void;
+  setTextOverlayPosition: (position: TextOverlayPosition) => void;
 
   // Uploaded fonts actions
   addUploadedFont: (font: { name: string; displayName: string }) => void;
@@ -166,6 +179,7 @@ export const useCalendarStore = create<CalendarState>()(
         fontSize: 1,
         font: "Product Sans",
         useTypographyFont: true,
+        position: "center",
       },
       persistedAt: undefined,
 
@@ -225,6 +239,10 @@ export const useCalendarStore = create<CalendarState>()(
       setTextOverlayUseTypographyFont: (useTypographyFont) =>
         set((state) => ({
           textOverlay: { ...state.textOverlay, useTypographyFont },
+        })),
+      setTextOverlayPosition: (position) =>
+        set((state) => ({
+          textOverlay: { ...state.textOverlay, position },
         })),
       addUploadedFont: (font) =>
         set((state) => ({

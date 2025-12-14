@@ -1,8 +1,8 @@
 "use client";
 
 import { Label } from "@/components/ui/label";
-import { useCalendarStore } from "@/lib/calendar-store";
-import { Type } from "lucide-react";
+import { useCalendarStore, type TextOverlayPosition } from "@/lib/calendar-store";
+import { Grid3x3, Type } from "lucide-react";
 import { FontPicker } from "./font-picker";
 
 export function TextOverlaySettings() {
@@ -18,6 +18,9 @@ export function TextOverlaySettings() {
     );
     const setTextOverlayUseTypographyFont = useCalendarStore(
         (state) => state.setTextOverlayUseTypographyFont
+    );
+    const setTextOverlayPosition = useCalendarStore(
+        (state) => state.setTextOverlayPosition
     );
 
     return (
@@ -84,6 +87,53 @@ export function TextOverlaySettings() {
                                 Using main typography font
                             </p>
                         )}
+
+                        <div className="space-y-2">
+                            <Label className="text-sm flex items-center gap-2">
+                                <Grid3x3 className="w-3 h-3" />
+                                Text Position
+                            </Label>
+                            <div className="grid grid-cols-3 gap-1 w-fit">
+                                {[
+                                    ["top-left", "top-center", "top-right"],
+                                    ["middle-left", "center", "middle-right"],
+                                    ["bottom-left", "bottom-center", "bottom-right"],
+                                ].flat().map((pos) => (
+                                    <button
+                                        key={pos}
+                                        onClick={() => setTextOverlayPosition(pos as TextOverlayPosition)}
+                                        className={`
+                                            w-8 h-8 rounded border-2 transition-all relative
+                                            ${textOverlay.position === pos
+                                                ? "border-primary bg-primary/20"
+                                                : "border-input hover:border-primary/50 hover:bg-accent"
+                                            }
+                                        `}
+                                        title={pos}
+                                        aria-label={`Position: ${pos}`}
+                                        type="button"
+                                    >
+                                        <div
+                                            className={`
+                                                w-1.5 h-1.5 rounded-full bg-current absolute
+                                                ${pos.includes("left")
+                                                    ? "left-1"
+                                                    : pos.includes("right")
+                                                        ? "right-1"
+                                                        : "left-1/2 -translate-x-1/2"
+                                                }
+                                                ${pos.startsWith("top-")
+                                                    ? "top-1"
+                                                    : pos.startsWith("bottom-")
+                                                        ? "bottom-1"
+                                                        : "top-1/2 -translate-y-1/2"
+                                                }
+                                            `}
+                                        />
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
                     </>
                 )}
             </div>
