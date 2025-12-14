@@ -58,3 +58,13 @@ export function getAverageLuminance(
   // The result is already normalized between 0 and 1.
   return totalLuminance / pixelCount;
 }
+
+/**
+ * Chooses a high-contrast color (black or white) based on relative luminance.
+ * @param luminance A number between 0 (dark) and 1 (light).
+ * @returns The hex code for the contrasting color ('#000000' for light backgrounds, '#FFFFFF' for dark).
+ */
+export function getContrastColor(luminance: number): string {
+  // A threshold of 0.3 provides a balanced decision for what's considered "light" vs "dark".
+  return luminance > 0.3 ? "#000000" : "#FFFFFF";
+}
