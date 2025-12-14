@@ -16,6 +16,7 @@ interface FontPickerProps {
     label?: string;
     placeholder?: string;
     allowUpload?: boolean;
+    showUploadedFonts?: boolean; // Show the list of uploaded fonts below the upload button
 }
 
 export function FontPicker({
@@ -24,7 +25,8 @@ export function FontPicker({
     disabled = false,
     label,
     placeholder = "Product Sans",
-    allowUpload = false
+    allowUpload = false,
+    showUploadedFonts = true // Default to true for backward compatibility
 }: FontPickerProps) {
     const [installedFonts, setInstalledFonts] = useState<{ name: string, displayName: string }[]>([]);
     const [isUploading, setIsUploading] = useState(false);
@@ -208,7 +210,7 @@ export function FontPicker({
                         </Button>
                     </div>
 
-                    {uploadedFonts.length > 0 && (
+                    {showUploadedFonts && uploadedFonts.length > 0 && (
                         <div className="space-y-1">
                             <Label className="text-xs text-muted-foreground">Custom Fonts</Label>
                             <div className="flex flex-wrap gap-1">
@@ -216,7 +218,10 @@ export function FontPicker({
                                     <div key={font.name} className="inline-flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary rounded-full text-xs">
                                         <span>{font.displayName}</span>
                                         <button
-                                            onClick={() => handleRemoveFont(font.name)}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleRemoveFont(font.name);
+                                            }}
                                             className="hover:bg-primary/20 rounded-full p-0.5"
                                             disabled={disabled}
                                         >

@@ -77,6 +77,7 @@ export function TextOverlaySettings() {
                             onChange={setTextOverlayFont}
                             disabled={textOverlay.useTypographyFont}
                             allowUpload={true}
+                            showUploadedFonts={false}
                         />
                         {textOverlay.useTypographyFont && (
                             <p className="text-xs text-muted-foreground -mt-1">
