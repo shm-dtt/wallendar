@@ -2,6 +2,7 @@
 
 import { HeaderFormat, ViewMode } from "@/lib/calendar-store";
 import { formatMonthHeader } from "@/lib/calendar-utils";
+import { getAverageLuminance, getContrastColor } from "@/lib/color-utils";
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 
 export type WallpaperCanvasHandle = {
@@ -22,6 +23,7 @@ type Props = {
   offsetY?: number;
   viewMode?: ViewMode;
   calendarScale?: number;
+  setTextColor: (color: string) => void;
 };
 
 // Day labels
@@ -35,7 +37,7 @@ function daysInMonth(year: number, monthIndex: number) {
 function firstDayOffset(
   year: number,
   monthIndex: number,
-  weekStart: "sunday" | "monday"
+  weekStart: "sunday" | "monday",
 ) {
   // JS getDay: 0=Sun ... 6=Sat
   const jsDay = new Date(year, monthIndex, 1).getDay();
@@ -53,12 +55,11 @@ async function loadImage(src: string) {
   });
 }
 
-function drawWallpaper(
+function drawWallpaperBackground(
   canvas: HTMLCanvasElement,
-  opts: Omit<Props, "imageSrc"> & {
+  opts: Omit<Props, "imageSrc" | "setTextColor"> & {
     image?: HTMLImageElement;
-    scaleForExport?: boolean;
-  }
+  },
 ) {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
@@ -88,7 +89,7 @@ function drawWallpaper(
       Math.min(width, height) * 0.25,
       width / 2,
       height / 2,
-      Math.max(width, height) * 0.9
+      Math.max(width, height) * 0.9,
     );
     grad.addColorStop(0, "rgba(0,0,0,0.10)");
     grad.addColorStop(1, "rgba(0,0,0,0.40)");
@@ -102,12 +103,23 @@ function drawWallpaper(
     context.fillStyle = bottom;
     context.fillRect(0, height * 0.7, width, height * 0.3);
   }
+}
+
+function drawWallpaperCalendar(
+  canvas: HTMLCanvasElement,
+  opts: Omit<Props, "imageSrc" | "setTextColor">,
+) {
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  const context = ctx as CanvasRenderingContext2D;
+  const { width, height } = canvas;
 
   function drawTrackedCentered(
     text: string,
     x: number,
     y: number,
-    trackingPx: number
+    trackingPx: number,
   ) {
     const chars = Array.from(text);
     const widths = chars.map((ch) => context.measureText(ch).width);
@@ -136,12 +148,10 @@ function drawWallpaper(
   // Adjust proportions based on view mode
   const isMobile = opts.viewMode === "mobile";
   const scale = Math.max(0.5, Math.min(1.5, opts.calendarScale ?? 1));
-  
+
   // Tuned proportions; weekdays and dates share the same size
   let monthSize = Math.round(height * (isMobile ? 0.03 : 0.05) * scale);
-  const labelDaySize = Math.round(
-    height * (isMobile ? 0.0115 : 0.02) * scale
-  ); // same size for weekday labels and dates
+  const labelDaySize = Math.round(height * (isMobile ? 0.0115 : 0.02) * scale); // same size for weekday labels and dates
 
   const gridWidth = width * (isMobile ? 0.35 : 0.25) * scale;
   const startX = (width - gridWidth) / 2;
@@ -233,8 +243,7 @@ function drawWallpaper(
   context.font = `${bodyWeight} ${labelDaySize}px ${safeBodyFamily}`;
   const totalDays = daysInMonth(opts.year, opts.month);
   const offset = firstDayOffset(opts.year, opts.month, opts.weekStart);
-  const rowsTop =
-    dowY + Math.round(height * (isMobile ? 0.03 : 0.055) * scale);
+  const rowsTop = dowY + Math.round(height * (isMobile ? 0.03 : 0.055) * scale);
   const rowH = Math.round(height * (isMobile ? 0.027 : 0.055) * scale);
 
   context.globalAlpha = 1;
@@ -250,9 +259,20 @@ function drawWallpaper(
   // Optional credit line kept blank intentionally, but spacing preserved
   context.globalAlpha = 0.8;
   context.font = `${bodyWeight} ${Math.round(
-    height * 0.018
+    height * 0.018,
   )}px ${safeBodyFamily}`;
   context.fillText("", width / 2 + shiftX, rowsTop + rowH * 6.1);
+}
+
+function drawWallpaper(
+  canvas: HTMLCanvasElement,
+  opts: Omit<Props, "imageSrc" | "setTextColor"> & {
+    image?: HTMLImageElement;
+    scaleForExport?: boolean;
+  },
+) {
+  drawWallpaperBackground(canvas, opts);
+  drawWallpaperCalendar(canvas, opts);
 }
 
 const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
@@ -269,76 +289,75 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
       offsetY = 0,
       viewMode = "desktop",
       calendarScale = 1,
+      setTextColor,
     },
-    ref
+    ref,
   ) {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const imgRef = useRef<HTMLImageElement | null>(null);
     const prevImageSrcRef = useRef<string | undefined>(undefined);
     const prevFontKeyRef = useRef<string | undefined>(undefined);
 
-    useImperativeHandle(
-      ref,
-      () => {
-        const renderToCanvas = (w: number, h: number) => {
-          const exportCanvas = document.createElement("canvas");
-          exportCanvas.width = w;
-          exportCanvas.height = h;
+    useImperativeHandle(ref, () => {
+      const renderToCanvas = (w: number, h: number) => {
+        const exportCanvas = document.createElement("canvas");
+        exportCanvas.width = w;
+        exportCanvas.height = h;
 
-          drawWallpaper(exportCanvas, {
-            month,
-            year,
-            weekStart,
-            headerFormat,
-            textColor,
-            fontFamily,
-            image: imgRef.current || undefined,
-            scaleForExport: true,
-            offsetX,
-            offsetY,
-            viewMode,
-            calendarScale,
-          });
-          return exportCanvas;
+        const drawOpts = {
+          month,
+          year,
+          weekStart,
+          headerFormat,
+          textColor,
+          fontFamily,
+          image: imgRef.current || undefined,
+          scaleForExport: true,
+          offsetX,
+          offsetY,
+          viewMode,
+          calendarScale,
         };
 
-        return {
-          downloadPNG: (w: number, h: number) => {
-            const exportCanvas = renderToCanvas(w, h);
-            const link = document.createElement("a");
-            const modeSuffix = viewMode === "mobile" ? "-mobile" : "";
-            link.download = `calendar-${year}-${String(month + 1).padStart(
-              2,
-              "0"
-            )}${modeSuffix}.png`;
-            link.href = exportCanvas.toDataURL("image/png");
-            link.click();
-            exportCanvas.remove();
-          },
-          exportPNGBlob: async (w: number, h: number) => {
-            const exportCanvas = renderToCanvas(w, h);
-            const blob = await new Promise<Blob | null>((resolve) =>
-              exportCanvas.toBlob((value) => resolve(value), "image/png")
-            );
-            exportCanvas.remove();
-            return blob;
-          },
-        };
-      },
-      [
-        month,
-        year,
-        weekStart,
-        headerFormat,
-        textColor,
-        fontFamily,
-        offsetX,
-        offsetY,
-        imageSrc,
-        viewMode,
-        calendarScale,
-      ]
-    );
+        drawWallpaper(exportCanvas, drawOpts);
+        return exportCanvas;
+      };
+
+      return {
+        downloadPNG: (w: number, h: number) => {
+          const exportCanvas = renderToCanvas(w, h);
+          const link = document.createElement("a");
+          const modeSuffix = viewMode === "mobile" ? "-mobile" : "";
+          link.download = `calendar-${year}-${String(month + 1).padStart(
+            2,
+            "0",
+          )}${modeSuffix}.png`;
+          link.href = exportCanvas.toDataURL("image/png");
+          link.click();
+          exportCanvas.remove();
+        },
+        exportPNGBlob: async (w: number, h: number) => {
+          const exportCanvas = renderToCanvas(w, h);
+          const blob = await new Promise<Blob | null>((resolve) =>
+            exportCanvas.toBlob((value) => resolve(value), "image/png"),
+          );
+          exportCanvas.remove();
+          return blob;
+        },
+      };
+    }, [
+      month,
+      year,
+      weekStart,
+      headerFormat,
+      textColor,
+      fontFamily,
+      offsetX,
+      offsetY,
+      imageSrc,
+      viewMode,
+      calendarScale,
+    ]);
 
     function parseFamilies(input: string) {
       const str = (input || "").trim();
@@ -396,27 +415,28 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
       canvas.width = Math.max(320, Math.floor(rect.width * dpr));
       canvas.height = Math.max(180, Math.floor(rect.height * dpr));
 
-        if (imgRef.current) {
-        drawWallpaper(canvas, {
-          month,
-          year,
-          weekStart,
-          headerFormat,
-          textColor,
-          fontFamily,
-          image: imgRef.current,
-          offsetX,
-          offsetY,
-          viewMode,
-          calendarScale,
-        });
+      const baseDrawOpts = {
+        month,
+        year,
+        weekStart,
+        headerFormat,
+        textColor,
+        fontFamily,
+        offsetX,
+        offsetY,
+        viewMode,
+        calendarScale,
+      };
+
+      if (imgRef.current) {
+        drawWallpaper(canvas, { ...baseDrawOpts, image: imgRef.current });
       }
 
       async function fadeTransition(
         canvas: HTMLCanvasElement,
         oldImg: HTMLImageElement | null,
         newImg: HTMLImageElement,
-        duration = 800 // ms
+        duration = 800, // ms
       ) {
         const start = performance.now();
 
@@ -430,37 +450,13 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
           if (oldImg) {
             ctx.save();
             ctx.globalAlpha = 1 - eased;
-            drawWallpaper(canvas, {
-              month,
-              year,
-              weekStart,
-              headerFormat,
-              textColor,
-              fontFamily,
-              image: oldImg,
-              offsetX,
-              offsetY,
-              viewMode,
-              calendarScale,
-            });
+            drawWallpaper(canvas, { ...baseDrawOpts, image: oldImg });
             ctx.restore();
           }
 
           ctx.save();
           ctx.globalAlpha = eased;
-          drawWallpaper(canvas, {
-            month,
-            year,
-            weekStart,
-            headerFormat,
-            textColor,
-            fontFamily,
-            image: newImg,
-            offsetX,
-            offsetY,
-            viewMode,
-            calendarScale,
-          });
+          drawWallpaper(canvas, { ...baseDrawOpts, image: newImg });
           ctx.restore();
 
           if (t < 1) {
@@ -474,6 +470,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
       async function render() {
         const needImageLoad =
           !!imageSrc && imageSrc !== prevImageSrcRef.current;
+
         const fontKey = fontFamily;
         const needFontLoad = fontKey !== prevFontKeyRef.current;
 
@@ -481,13 +478,57 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
         if (needImageLoad && imageSrc) {
           try {
             loadedImg = await loadImage(imageSrc);
+
+            // ANALYZE FOR AUTO TEXT COLOR
+            const tempCanvas = document.createElement("canvas");
+            const tempCtx = tempCanvas.getContext("2d", {
+              willReadFrequently: true,
+            });
+            if (tempCtx) {
+              tempCanvas.width = loadedImg.width;
+              tempCanvas.height = loadedImg.height;
+
+              try {
+                // Draw the background with effects to the temp canvas
+                drawWallpaperBackground(tempCanvas, {
+                  ...baseDrawOpts,
+                  image: loadedImg,
+                });
+
+                // Analyze the result, but only in the center of the canvas where the calendar is.
+                // This avoids the dark vignette edges from skewing the result.
+                const w = tempCanvas.width;
+                const h = tempCanvas.height;
+                const analysisW = w * 0.5;
+                const analysisH = h * 0.5;
+                const analysisX = (w - analysisW) / 2;
+                const analysisY = (h - analysisH) / 2;
+
+                const avgLuminance = getAverageLuminance(
+                  tempCtx,
+                  analysisX,
+                  analysisY,
+                  analysisW,
+                  analysisH,
+                );
+                const newColor = getContrastColor(avgLuminance);
+
+                setTextColor(newColor);
+                // Could not analyze, ignore.
+              } catch (e) {
+                // Could not analyze image for automatic text color.
+              }
+              tempCanvas.remove();
+            }
+            // End analysis
+
             if (!canceled) {
               await fadeTransition(canvas!, imgRef.current, loadedImg);
               imgRef.current = loadedImg;
               prevImageSrcRef.current = imageSrc;
             }
           } catch (e) {
-            console.error("image load failed", e);
+            // image load failed
           }
         }
 
@@ -502,17 +543,8 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
 
         if (!canceled && !needImageLoad) {
           drawWallpaper(canvas!, {
-            month,
-            year,
-            weekStart,
-            headerFormat,
-            textColor,
-            fontFamily,
+            ...baseDrawOpts,
             image: imgRef.current || loadedImg,
-            offsetX,
-            offsetY,
-            viewMode,
-            calendarScale,
           });
         }
       }
@@ -533,6 +565,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
       offsetY,
       viewMode,
       calendarScale,
+      setTextColor,
     ]);
 
     return (
@@ -542,7 +575,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
         className="h-full w-full block"
       />
     );
-  }
+  },
 );
 
 export default WallpaperCanvas;
