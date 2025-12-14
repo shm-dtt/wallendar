@@ -513,7 +513,9 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
                 );
                 const newColor = getContrastColor(avgLuminance);
 
-                setTextColor(newColor);
+                if (newColor !== textColor) {
+                  setTextColor(newColor);
+                }
                 // Could not analyze, ignore.
               } catch (e) {
                 // Could not analyze image for automatic text color.
