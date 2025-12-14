@@ -22,6 +22,13 @@ type Props = {
   offsetY?: number;
   viewMode?: ViewMode;
   calendarScale?: number;
+  textOverlay?: {
+    enabled: boolean;
+    content: string;
+    fontSize: number;
+    font: string;
+    useTypographyFont: boolean;
+  };
 };
 
 // Day labels
@@ -136,7 +143,7 @@ function drawWallpaper(
   // Adjust proportions based on view mode
   const isMobile = opts.viewMode === "mobile";
   const scale = Math.max(0.5, Math.min(1.5, opts.calendarScale ?? 1));
-  
+
   // Tuned proportions; weekdays and dates share the same size
   let monthSize = Math.round(height * (isMobile ? 0.03 : 0.05) * scale);
   const labelDaySize = Math.round(
@@ -253,6 +260,54 @@ function drawWallpaper(
     height * 0.018
   )}px ${safeBodyFamily}`;
   context.fillText("", width / 2 + shiftX, rowsTop + rowH * 6.1);
+
+  // Text overlay (Phase 1: hardcoded center position, multi-line support)
+  // Font: Uses Typography font OR custom overlay font based on useTypographyFont setting
+  if (opts.textOverlay?.enabled && opts.textOverlay.content) {
+    context.globalAlpha = 1;
+    const overlayFontSize = Math.round(height * 0.04 * opts.textOverlay.fontSize);
+
+    // Determine which font to use
+    let overlayFontFamily: string;
+    let overlayFontWeight: string;
+
+    if (opts.textOverlay.useTypographyFont) {
+      // Use main typography font (month font)
+      overlayFontFamily = safeMonthFamily;
+      overlayFontWeight = monthWeight;
+    } else {
+      // Use custom overlay font
+      const customFont = opts.textOverlay.font || "Product Sans";
+      overlayFontFamily = sanitizeFamily(customFont);
+      overlayFontWeight = getFontWeight(customFont);
+    }
+
+    context.font = `${overlayFontWeight} ${overlayFontSize}px ${overlayFontFamily}`;
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillStyle = opts.textColor;
+    // Add shadow for better readability
+    context.shadowColor = "rgba(0,0,0,0.5)";
+    context.shadowBlur = Math.max(2, Math.round(height * 0.008));
+
+    // Split text by newlines for multi-line support
+    const lines = opts.textOverlay.content.split('\n');
+    const lineHeight = overlayFontSize * 1.2; // 1.2x line spacing
+
+    // Calculate starting Y position to center the entire text block
+    const totalHeight = lines.length * lineHeight;
+    let startY = height / 2 - (totalHeight - lineHeight) / 2;
+
+    // Draw each line
+    lines.forEach((line, index) => {
+      const y = startY + index * lineHeight;
+      context.fillText(line, width / 2, y);
+    });
+
+    // Reset shadow
+    context.shadowColor = "rgba(0,0,0,0.25)";
+    context.shadowBlur = Math.max(1, Math.round(height * 0.004));
+  }
 }
 
 const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
@@ -269,6 +324,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
       offsetY = 0,
       viewMode = "desktop",
       calendarScale = 1,
+      textOverlay,
     },
     ref
   ) {
@@ -298,6 +354,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
             offsetY,
             viewMode,
             calendarScale,
+            textOverlay,
           });
           return exportCanvas;
         };
@@ -337,6 +394,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
         imageSrc,
         viewMode,
         calendarScale,
+        textOverlay,
       ]
     );
 
@@ -371,11 +429,11 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
 
         const loads: Promise<unknown>[] = [
           fonts?.load?.(`400 24px ${JSON.stringify(cleaned)}`) ??
-            Promise.resolve(),
+          Promise.resolve(),
           fonts?.load?.(`500 24px ${JSON.stringify(cleaned)}`) ??
-            Promise.resolve(),
+          Promise.resolve(),
           fonts?.load?.(`700 24px ${JSON.stringify(cleaned)}`) ??
-            Promise.resolve(),
+          Promise.resolve(),
         ];
 
         await Promise.allSettled(loads);
@@ -396,7 +454,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
       canvas.width = Math.max(320, Math.floor(rect.width * dpr));
       canvas.height = Math.max(180, Math.floor(rect.height * dpr));
 
-        if (imgRef.current) {
+      if (imgRef.current) {
         drawWallpaper(canvas, {
           month,
           year,
@@ -409,6 +467,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
           offsetY,
           viewMode,
           calendarScale,
+          textOverlay,
         });
       }
 
@@ -442,6 +501,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
               offsetY,
               viewMode,
               calendarScale,
+              textOverlay,
             });
             ctx.restore();
           }
@@ -460,6 +520,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
             offsetY,
             viewMode,
             calendarScale,
+            textOverlay,
           });
           ctx.restore();
 
@@ -513,6 +574,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
             offsetY,
             viewMode,
             calendarScale,
+            textOverlay,
           });
         }
       }
@@ -533,6 +595,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
       offsetY,
       viewMode,
       calendarScale,
+      textOverlay,
     ]);
 
     return (
