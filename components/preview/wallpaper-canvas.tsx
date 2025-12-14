@@ -281,7 +281,7 @@ function drawWallpaperCalendar(
   // Font: Uses Typography font OR custom overlay font based on useTypographyFont setting
   if (opts.textOverlay?.enabled && opts.textOverlay.content) {
     context.globalAlpha = 1;
-    const overlayFontSize = Math.round(height * 0.04 * opts.textOverlay.fontSize);
+    const overlayFontSize = Math.round(height * 0.04 * opts.textOverlay.fontSize * scale);
 
     // Determine which font to use
     let overlayFontFamily: string;
