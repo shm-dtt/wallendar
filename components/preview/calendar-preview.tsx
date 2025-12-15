@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef } from "react";
+import { forwardRef, useState, useEffect } from "react";
 import { useMemo } from "react";
 import WallpaperCanvas, {
   type WallpaperCanvasHandle,
@@ -45,12 +45,18 @@ export const CalendarPreview = forwardRef<
   WallpaperCanvasHandle,
   CalendarPreviewProps
 >(function CalendarPreview({ onDownload, onPublish, isPublishing = false, publishError }, ref) {
+  const [hasMounted, setHasMounted] = useState(false);
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
   const month = useCalendarStore((state) => state.month);
   const year = useCalendarStore((state) => state.year);
   const weekStart = useCalendarStore((state) => state.weekStart);
   const headerFormat = useCalendarStore((state) => state.headerFormat);
 
   const textColor = useCalendarStore((state) => state.textColor);
+  const setTextColor = useCalendarStore((state) => state.setTextColor);
   const fontFamily = useCalendarStore((state) => state.fontFamily);
   const applyFontToAll = useCalendarStore((state) => state.applyFontToAll);
   const customFontName = useCalendarStore((state) => state.customFontName);
@@ -84,8 +90,8 @@ export const CalendarPreview = forwardRef<
     return { monthFont: withCustom, bodyFont: productSansOnly };
   }, [customFontName, fontFamily]);
 
-  // Only show preview if month is selected
-  const showPreview = month !== null;
+  // Only show preview if month is selected and component has mounted on client
+  const showPreview = month !== null && hasMounted;
 
   // Get aspect ratio class based on view mode
   const getAspectRatioClass = (mode: ViewMode) => {
@@ -185,6 +191,7 @@ export const CalendarPreview = forwardRef<
                 weekStart={weekStart}
                 headerFormat={headerFormat as HeaderFormat}
                 textColor={textColor}
+                setTextColor={setTextColor}
                 fontFamily={
                   applyFontToAll
                     ? effectiveFont
@@ -221,6 +228,7 @@ export const CalendarPreview = forwardRef<
                 weekStart={weekStart}
                 headerFormat={headerFormat as HeaderFormat}
                 textColor={textColor}
+                setTextColor={setTextColor}
                 fontFamily={
                   applyFontToAll
                     ? effectiveFont
