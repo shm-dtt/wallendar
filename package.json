@@ -10,8 +10,12 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@ai-sdk/google": "^2.0.47",
+    "@ai-sdk/groq": "^2.0.33",
+    "@ai-sdk/react": "^1.0.0",
     "@aws-sdk/client-s3": "^3.927.0",
     "@aws-sdk/s3-presigned-post": "^3.928.0",
+    "@google/genai": "^1.33.0",
     "@neondatabase/serverless": "^1.0.2",
     "@prisma/client": "^6.19.0",
     "@prisma/extension-accelerate": "^2.0.2",
@@ -28,6 +32,7 @@
     "@radix-ui/react-tabs": "^1.1.13",
     "@upstash/redis": "^1.35.6",
     "@vercel/analytics": "^1.5.0",
+    "ai": "^5.0.113",
     "better-auth": "^1.4.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
