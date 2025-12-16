@@ -1,8 +1,18 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { useCalendarStore, type TextOverlayPosition } from "@/lib/calendar-store";
-import { Grid3x3, Type } from "lucide-react";
+// Removed useCompletion import - using manual fetch instead
+import { Grid3x3, Sparkles, Type } from "lucide-react";
+import { useState } from "react";
 import { FontPicker } from "./font-picker";
 
 export function TextOverlaySettings() {
@@ -22,6 +32,48 @@ export function TextOverlaySettings() {
     const setTextOverlayPosition = useCalendarStore(
         (state) => state.setTextOverlayPosition
     );
+
+    const [selectedMood, setSelectedMood] = useState<string>("Motivational");
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    // Handler for generate button click
+    const handleGenerate = async () => {
+        console.log('[FRONTEND] Generate button clicked!');
+        console.log('   Selected Mood:', selectedMood);
+        console.log('   Calling API with mood prompt...');
+
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            const response = await fetch('/api/completion', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt: selectedMood }),
+            });
+
+            console.log('[FRONTEND] API Response received:', response.status, response.statusText);
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to generate text');
+            }
+
+            const generatedText = await response.text();
+            console.log(' [FRONTEND] AI Generation Complete!');
+            console.log('   Prompt:', selectedMood);
+            console.log('   Generated Text:', generatedText);
+
+            setTextOverlayContent(generatedText);
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+            console.error('❌ [FRONTEND] AI Generation Error:', errorMessage);
+            setError(errorMessage);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     return (
         <div className="py-1">
@@ -46,6 +98,34 @@ export function TextOverlaySettings() {
 
                 {textOverlay.enabled && (
                     <>
+                        <div className="space-y-2">
+                            <Label className="text-sm">AI Mood</Label>
+                            <div className="flex gap-2">
+                                <Select value={selectedMood} onValueChange={setSelectedMood}>
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Select mood" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Motivational">Motivational</SelectItem>
+                                        <SelectItem value="Stoic">Stoic</SelectItem>
+                                        <SelectItem value="Funny">Funny</SelectItem>
+                                        <SelectItem value="Chill">Chill</SelectItem>
+                                        <SelectItem value="Hustle">Hustle</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <Button
+                                    onClick={handleGenerate}
+                                    disabled={isLoading}
+                                    size="sm"
+                                    className="gap-1.5"
+                                    type="button"
+                                >
+                                    <Sparkles className="w-4 h-4" />
+                                    {isLoading ? "Generating..." : "Generate"}
+                                </Button>
+                            </div>
+                        </div>
+
                         <div className="space-y-2">
                             <Label className="text-sm">Custom Text</Label>
                             <textarea
