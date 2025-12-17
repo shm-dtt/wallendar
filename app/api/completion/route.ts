@@ -65,7 +65,8 @@ export async function POST(req: Request) {
         console.log('[API] Calling Groq (Llama 3.3 70B)...');
         const result = await streamText({
             model: groq('llama-3.3-70b-versatile'),
-            system: "You are a creative wallpaper assistant. Generate a short, punchy quote (max 10 words) based on the user's requested mood. Do not use quotes around the text. Do not use hashtags. Just the raw text.",
+            // system: "You are a creative wallpaper assistant. Generate a short, punchy quote (max 10 words) based on the user's requested mood. Do not use quotes around the text. Do not use hashtags. Just the raw text.",
+            system: "You are a minimalist editor. Based on the user's mood, provide a powerful one-liner (max 8 words) that works as a visual statement. The quote should be evocative and popular. Output the raw text only. No quotes, no hashtags, no filler.",
             prompt: prompt.trim(),
         });
 
