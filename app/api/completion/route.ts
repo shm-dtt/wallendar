@@ -3,7 +3,7 @@ import { streamText } from 'ai';
 
 // Initialize Groq client  
 const groq = createGroq({
-    apiKey: process.env.API_KEY,
+    apiKey: process.env.GROQ_API_KEY,
 });
 
 export async function POST(req: Request) {
@@ -32,6 +32,16 @@ export async function POST(req: Request) {
             });
         }
 
+        // Whitelist validation: Only allow predefined moods
+        const ALLOWED_MOODS = ['Motivational', 'Stoic', 'Funny', 'Chill', 'Hustle'];
+        if (!ALLOWED_MOODS.includes(prompt.trim())) {
+            console.error('[API] Invalid mood selection:', prompt);
+            return new Response(JSON.stringify({ error: 'Invalid mood selection. Please choose from the available options. Motivational, Stoic, Funny, Chill, Hustle' }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
+
         // Validate prompt length (reasonable limit)
         if (prompt.length > 100) {
             console.error('[API] Prompt too long:', prompt.length, 'characters');
@@ -42,7 +52,7 @@ export async function POST(req: Request) {
         }
 
         // Check if API key is loaded
-        const apiKey = process.env.API_KEY;
+        const apiKey = process.env.GROQ_API_KEY;
         if (!apiKey) {
             console.error('[API] API_KEY is not set!');
             return new Response(JSON.stringify({ error: 'API key not configured. Get your free key at https://console.groq.com' }), {
@@ -50,7 +60,7 @@ export async function POST(req: Request) {
                 headers: { 'Content-Type': 'application/json' },
             });
         }
-    
+
 
         console.log('[API] Calling Groq (Llama 3.3 70B)...');
         const result = await streamText({

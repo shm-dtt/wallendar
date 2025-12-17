@@ -78,6 +78,12 @@ export function TextOverlaySettings() {
 
             if (!response.ok) {
                 const errorData = await response.json();
+
+                // Provide specific error messages based on status code
+                if (response.status === 400) {
+                    throw new Error(errorData.error || 'Invalid request. Please try again.');
+                }
+
                 throw new Error(errorData.error || 'Failed to generate text');
             }
 
