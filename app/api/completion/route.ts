@@ -8,8 +8,38 @@ const groq = createGroq({
 
 export async function POST(req: Request) {
     try {
-        const { prompt } = await req.json();
+        // Parse and validate JSON request
+        let body;
+        try {
+            body = await req.json();
+        } catch {
+            console.error('[API] Invalid JSON in request body');
+            return new Response(JSON.stringify({ error: 'Invalid request format' }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
+
+        const { prompt } = body;
         console.log('[API] Received completion request with prompt:', prompt);
+
+        // Validate prompt exists and is non-empty
+        if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
+            console.error('[API] Missing or empty prompt');
+            return new Response(JSON.stringify({ error: 'Prompt is required and cannot be empty' }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
+
+        // Validate prompt length (reasonable limit)
+        if (prompt.length > 100) {
+            console.error('[API] Prompt too long:', prompt.length, 'characters');
+            return new Response(JSON.stringify({ error: 'Prompt must be 100 characters or less' }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
 
         // Check if API key is loaded
         const apiKey = process.env.API_KEY;
@@ -20,13 +50,13 @@ export async function POST(req: Request) {
                 headers: { 'Content-Type': 'application/json' },
             });
         }
-        console.log('[API] Groq API Key found:', apiKey.substring(0, 15) + '...');
+    
 
         console.log('[API] Calling Groq (Llama 3.3 70B)...');
         const result = await streamText({
             model: groq('llama-3.3-70b-versatile'),
             system: "You are a creative wallpaper assistant. Generate a short, punchy quote (max 10 words) based on the user's requested mood. Do not use quotes around the text. Do not use hashtags. Just the raw text.",
-            prompt,
+            prompt: prompt.trim(),
         });
 
         console.log('[API] Collecting full response...');
@@ -37,10 +67,20 @@ export async function POST(req: Request) {
             fullText += chunk;
         }
 
-        console.log('[API] Generated quote:', fullText);
+        // Validate response is not empty
+        const trimmedText = fullText.trim();
+        if (!trimmedText) {
+            console.error('[API] AI generated empty response');
+            return new Response(JSON.stringify({ error: 'AI generated empty response. Please try again.' }), {
+                status: 500,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
+
+        console.log('[API] Generated quote:', trimmedText);
 
         // Return complete text as plain response (not streaming)
-        return new Response(fullText, {
+        return new Response(trimmedText, {
             headers: {
                 'Content-Type': 'text/plain; charset=utf-8',
             },

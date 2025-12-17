@@ -37,12 +37,31 @@ export function TextOverlaySettings() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    // Track current request to handle cancellation
+    const [abortController, setAbortController] = useState<AbortController | null>(null);
+
     // Handler for generate button click
     const handleGenerate = async () => {
         console.log('[FRONTEND] Generate button clicked!');
         console.log('   Selected Mood:', selectedMood);
-        console.log('   Calling API with mood prompt...');
 
+        // Cancel any previous ongoing request
+        if (abortController) {
+            console.log('[FRONTEND] Canceling previous request...');
+            abortController.abort();
+        }
+
+        // Create new AbortController for this request
+        const controller = new AbortController();
+        setAbortController(controller);
+
+        // Set timeout to abort request after 15 seconds
+        const timeoutId = setTimeout(() => {
+            console.log('[FRONTEND] Request timeout - aborting...');
+            controller.abort();
+        }, 15000);
+
+        console.log('   Calling API with mood prompt...');
         setIsLoading(true);
         setError(null);
 
@@ -51,8 +70,10 @@ export function TextOverlaySettings() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ prompt: selectedMood }),
+                signal: controller.signal,
             });
 
+            clearTimeout(timeoutId);
             console.log('[FRONTEND] API Response received:', response.status, response.statusText);
 
             if (!response.ok) {
@@ -66,10 +87,26 @@ export function TextOverlaySettings() {
             console.log('   Generated Text:', generatedText);
 
             setTextOverlayContent(generatedText);
+            setAbortController(null);
         } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-            console.error('❌ [FRONTEND] AI Generation Error:', errorMessage);
-            setError(errorMessage);
+            clearTimeout(timeoutId);
+
+            // Check if error was due to abort
+            if (err instanceof Error && err.name === 'AbortError') {
+                const errorMessage = abortController === controller
+                    ? 'Request timed out. Please try again.'
+                    : 'Request canceled due to new generation.';
+                console.error('❌ [FRONTEND] Request aborted:', errorMessage);
+                setError(errorMessage);
+            } else {
+                const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+                console.error('❌ [FRONTEND] AI Generation Error:', errorMessage);
+                setError(errorMessage);
+            }
+
+            if (abortController === controller) {
+                setAbortController(null);
+            }
         } finally {
             setIsLoading(false);
         }
@@ -124,6 +161,28 @@ export function TextOverlaySettings() {
                                     {isLoading ? "Generating..." : "Generate"}
                                 </Button>
                             </div>
+
+                            {/* Error message display */}
+                            {error && (
+                                <div className="flex items-start gap-2 p-2.5 text-xs rounded-md bg-destructive/10 text-destructive border border-destructive/20">
+                                    <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <div className="flex-1">
+                                        <p className="font-medium">Error</p>
+                                        <p className="mt-0.5 opacity-90">{error}</p>
+                                    </div>
+                                    <button
+                                        onClick={() => setError(null)}
+                                        className="flex-shrink-0 opacity-70 hover:opacity-100 transition-opacity"
+                                        aria-label="Dismiss error"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
                         <div className="space-y-2">
