@@ -40,7 +40,4 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-
-wallendar.code-workspace
-
 wallendar.code-workspace
