@@ -16,29 +16,29 @@ export function firstDayOffset(
 
 export function formatMonthHeader(month: number, year: number, format: HeaderFormat): string {
   const date = new Date(year, month, 1);
-  
+
   switch (format) {
     case "full":
       return date.toLocaleString("en-US", { month: "long" }).toLowerCase();
-    
+
     case "short":
       return date.toLocaleString("en-US", { month: "short" }).toLowerCase();
-    
+
     case "numeric":
       return String(month + 1).padStart(2, "0");
-    
+
     case "numeric-full-year":
       return `${String(month + 1).padStart(2, "0")}-${year}`;
-    
+
     case "numeric-short-year":
       return `${String(month + 1).padStart(2, "0")}-${String(year).slice(-2)}`;
-    
+
     case "short-short-year":
       return `${date.toLocaleString("en-US", { month: "short" }).toLowerCase()} ${String(year).slice(-2)}`;
-    
+
     case "short-full-year":
       return `${date.toLocaleString("en-US", { month: "short" }).toLowerCase()} ${year}`;
-    
+
     default:
       return date.toLocaleString("en-US", { month: "long" }).toLowerCase();
   }
@@ -71,7 +71,9 @@ export const gallery: string[] = [
   "/images/wallpaper2.webp",
   "/images/wallpaper3.webp",
   "/images/wallpaper4.webp",
-  "/images/wallpaper5.webp",
+  "/images/wallpaper5.png",
+  "/images/wallpaper6.png",
+  "/images/wallpaper7.webp",
 ];
 
 export const monthNames: string[] = [
@@ -89,7 +91,7 @@ export const monthNames: string[] = [
   "Dec",
 ];
 
-export const sampleImagePath : string[] = [
+export const sampleImagePath: string[] = [
   "/samples/sample-bg1.jpg",
   "/samples/sample-bg2.jpg",
   "/samples/sample-bg3.jpg",
