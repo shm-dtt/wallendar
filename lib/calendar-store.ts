@@ -329,17 +329,17 @@ export const resolutionOptions = (viewMode: ViewMode) => [
  *
  * Desktop viewport:
  *   - Scale 0.5: 2000 chars
- *   - Scale 0.75: 800 chars
- *   - Scale 1.0: 360 chars
+ *   - Scale 0.75: 720 chars
+ *   - Scale 1.0: 300 chars
  *   - Scale 1.25: 150 chars
- *   - Scale 1.5: 100 chars
+ *   - Scale 1.5: 92 chars
  *
  * Mobile viewport:
  *   - Scale 0.5: 720 chars
- *   - Scale 0.75: 360 chars
- *   - Scale 1.0: 180 chars
- *   - Scale 1.25: 80 chars
- *   - Scale 1.5: 50 chars
+ *   - Scale 0.75: 280 chars
+ *   - Scale 1.0: 150 chars
+ *   - Scale 1.25: 75 chars
+ *   - Scale 1.5: 40 chars
  *
  * @param viewMode - Current viewport mode (desktop or mobile)
  * @param calendarScale - Calendar scale factor (0.5 to 1.5)
@@ -355,32 +355,32 @@ export function getMaxTextOverlayLength(
   if (viewMode === "desktop") {
     // Desktop: Piecewise linear interpolation
     if (scale <= 0.75) {
-      // 0.5->2000, 0.75->800: slope = -4800
-      return Math.floor(2000 + (scale - 0.5) * -4800);
+      // 0.5->2000, 0.75->720: slope = -5120
+      return Math.floor(2000 + (scale - 0.5) * -5120);
     } else if (scale <= 1.0) {
-      // 0.75->800, 1.0->360: slope = -1760
-      return Math.floor(800 + (scale - 0.75) * -1760);
+      // 0.75->720, 1.0->300: slope = -1680
+      return Math.floor(720 + (scale - 0.75) * -1680);
     } else if (scale <= 1.25) {
-      // 1.0->360, 1.25->150: slope = -840
-      return Math.floor(360 + (scale - 1.0) * -840);
+      // 1.0->300, 1.25->150: slope = -600
+      return Math.floor(300 + (scale - 1.0) * -600);
     } else {
-      // 1.25->150, 1.5->100: slope = -200
-      return Math.floor(150 + (scale - 1.25) * -200);
+      // 1.25->150, 1.5->92: slope = -232
+      return Math.floor(150 + (scale - 1.25) * -232);
     }
   } else {
     // Mobile viewport: Piecewise linear interpolation
     if (scale <= 0.75) {
-      // 0.5->720, 0.75->360: slope = -1440
-      return Math.floor(720 + (scale - 0.5) * -1440);
+      // 0.5->720, 0.75->280: slope = -1760
+      return Math.floor(720 + (scale - 0.5) * -1760);
     } else if (scale <= 1.0) {
-      // 0.75->360, 1.0->180: slope = -720
-      return Math.floor(360 + (scale - 0.75) * -720);
+      // 0.75->280, 1.0->150: slope = -520
+      return Math.floor(280 + (scale - 0.75) * -520);
     } else if (scale <= 1.25) {
-      // 1.0->180, 1.25->80: slope = -400
-      return Math.floor(180 + (scale - 1.0) * -400);
+      // 1.0->150, 1.25->75: slope = -300
+      return Math.floor(150 + (scale - 1.0) * -300);
     } else {
-      // 1.25->80, 1.5->50: slope = -120
-      return Math.floor(80 + (scale - 1.25) * -120);
+      // 1.25->75, 1.5->40: slope = -140
+      return Math.floor(75 + (scale - 1.25) * -140);
     }
   }
 }
