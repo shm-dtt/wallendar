@@ -325,8 +325,19 @@ export const resolutionOptions = (viewMode: ViewMode) => [
 /**
  * Calculate maximum character limit for text overlay based on viewport.
  * Smaller calendar scale = more space for text = higher limit.
- * Desktop viewport: 100-200 characters
- * Mobile viewport: 70-140 characters
+ * Uses piecewise function for optimal limits at different scales.
+ *
+ * Desktop viewport:
+ *   - Scale 0.5: ~750 chars
+ *   - Scale 0.75: ~450 chars
+ *   - Scale 1.0: 150 chars
+ *   - Scale 1.5: 100 chars
+ *
+ * Mobile viewport:
+ *   - Scale 0.5: ~750 chars
+ *   - Scale 0.75: ~430 chars
+ *   - Scale 1.0: 105 chars
+ *   - Scale 1.5: 50 chars
  *
  * @param viewMode - Current viewport mode (desktop or mobile)
  * @param calendarScale - Calendar scale factor (0.5 to 1.5)
@@ -340,12 +351,25 @@ export function getMaxTextOverlayLength(
   const scale = Math.max(0.5, Math.min(1.5, calendarScale));
 
   if (viewMode === "desktop") {
-    // Desktop: Inverse relationship - smaller scale = more characters
-    // Scale 0.5 = 200 chars, Scale 1.0 = 150 chars, Scale 1.5 = 100 chars
-    return Math.floor(250 - scale * 100);
+    if (scale < 1.0) {
+      // For scale < 1: High limits for small calendar
+      // Scale 0.5 = 750, Scale 0.75 = 450, Scale 1.0 = 150
+      return Math.floor(1950 - scale * 1800);
+    } else {
+      // For scale >= 1: Keep current limits
+      // Scale 1.0 = 150, Scale 1.5 = 100
+      return Math.floor(250 - scale * 100);
+    }
   } else {
-    // Mobile: Inverse relationship - smaller scale = more characters
-    // Scale 0.5 = 140 chars, Scale 1.0 = 105 chars, Scale 1.5 = 70 chars
-    return Math.floor(175 - scale * 70);
+    // Mobile viewport
+    if (scale < 1.0) {
+      // For scale < 1: High limits for small calendar
+      // Scale 0.5 = 750, Scale 0.75 = 427, Scale 1.0 = 105
+      return Math.floor(2055 - scale * 1950);
+    } else {
+      // For scale >= 1: Adjusted limits (reduced for 1.5)
+      // Scale 1.0 = 105, Scale 1.5 = 50
+      return Math.floor(215 - scale * 110);
+    }
   }
 }
