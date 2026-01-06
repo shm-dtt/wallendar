@@ -326,6 +326,7 @@ export const resolutionOptions = (viewMode: ViewMode) => [
  * Calculate maximum character limit for text overlay based on viewport.
  * Smaller calendar scale = more space for text = higher limit.
  * Desktop viewport: 100-200 characters
+ * Mobile viewport: 70-140 characters
  *
  * @param viewMode - Current viewport mode (desktop or mobile)
  * @param calendarScale - Calendar scale factor (0.5 to 1.5)
@@ -342,8 +343,9 @@ export function getMaxTextOverlayLength(
     // Desktop: Inverse relationship - smaller scale = more characters
     // Scale 0.5 = 200 chars, Scale 1.0 = 150 chars, Scale 1.5 = 100 chars
     return Math.floor(250 - scale * 100);
+  } else {
+    // Mobile: Inverse relationship - smaller scale = more characters
+    // Scale 0.5 = 140 chars, Scale 1.0 = 105 chars, Scale 1.5 = 70 chars
+    return Math.floor(175 - scale * 70);
   }
-
-  // Mobile will be implemented separately
-  return 200; // Default fallback
 }
