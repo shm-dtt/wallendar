@@ -16,7 +16,7 @@ import {
 } from "@/lib/calendar-store";
 // Removed useCompletion import - using manual fetch instead
 import { Grid3x3, Sparkles, Type } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FontPicker } from "./font-picker";
 
 export function TextOverlaySettings() {
@@ -41,6 +41,13 @@ export function TextOverlaySettings() {
 
   // Calculate dynamic character limit based on viewport and scale
   const maxLength = getMaxTextOverlayLength(viewMode, calendarScale);
+
+  // Auto-trim text content when limit decreases
+  useEffect(() => {
+    if (textOverlay.content.length > maxLength) {
+      setTextOverlayContent(textOverlay.content.slice(0, maxLength));
+    }
+  }, [maxLength, textOverlay.content, setTextOverlayContent]);
 
   const [selectedMood, setSelectedMood] = useState<string>("Motivational");
   const [isLoading, setIsLoading] = useState(false);
