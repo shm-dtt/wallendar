@@ -32,7 +32,7 @@ export type DownloadResolution = "hd" | "fhd" | "4k";
 
 export const getResolutionDimensions = (
   resolution: DownloadResolution,
-  viewMode: ViewMode
+  viewMode: ViewMode,
 ) => {
   if (viewMode === "mobile") {
     switch (resolution) {
@@ -300,8 +300,8 @@ export const useCalendarStore = create<CalendarState>()(
         };
       },
       version: 1,
-    }
-  )
+    },
+  ),
 );
 
 export const resolutionOptions = (viewMode: ViewMode) => [
@@ -321,3 +321,29 @@ export const resolutionOptions = (viewMode: ViewMode) => [
     description: viewMode === "mobile" ? "1440 x 2560" : "3840 x 2160",
   },
 ];
+
+/**
+ * Calculate maximum character limit for text overlay based on viewport.
+ * Smaller calendar scale = more space for text = higher limit.
+ * Desktop viewport: 100-200 characters
+ *
+ * @param viewMode - Current viewport mode (desktop or mobile)
+ * @param calendarScale - Calendar scale factor (0.5 to 1.5)
+ * @returns Maximum allowed characters for text overlay
+ */
+export function getMaxTextOverlayLength(
+  viewMode: ViewMode,
+  calendarScale: number,
+): number {
+  // Clamp scale to valid range
+  const scale = Math.max(0.5, Math.min(1.5, calendarScale));
+
+  if (viewMode === "desktop") {
+    // Desktop: Inverse relationship - smaller scale = more characters
+    // Scale 0.5 = 200 chars, Scale 1.0 = 150 chars, Scale 1.5 = 100 chars
+    return Math.floor(250 - scale * 100);
+  }
+
+  // Mobile will be implemented separately
+  return 200; // Default fallback
+}
