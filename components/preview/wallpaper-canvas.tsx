@@ -298,6 +298,23 @@ function drawWallpaperCalendar(
 
       for (let i = 0; i < words.length; i++) {
         const word = words[i];
+        // Check if single word exceeds maxWidth
+        const wordWidth = context.measureText(word).width;
+        if (wordWidth > maxWidth) {
+          // Push current line if exists
+          if (currentLine) {
+            wrappedLines.push(currentLine);
+            currentLine = "";
+          }
+          // Truncate long word with ellipsis
+          let truncated = word;
+          while (context.measureText(truncated + "...").width > maxWidth && truncated.length > 0) {
+            truncated = truncated.slice(0, -1);
+          }
+          wrappedLines.push(truncated + "...");
+          continue;
+        }
+        
         const testLine = currentLine ? `${currentLine} ${word}` : word;
         const metrics = context.measureText(testLine);
         const testWidth = metrics.width;
@@ -377,7 +394,7 @@ function drawWallpaperCalendar(
     const totalHeight = lines.length * lineHeight;
 
     // Determine vertical alignment and starting Y position
-    // Use 'top' baseline for all positions to ensure consistent downward expansion (like month name)
+    // Use 'top' baseline for consistent downward expansion in multi-line text
     context.textBaseline = "top";
     let startY: number;
     if (position.startsWith("top-")) {
