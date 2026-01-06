@@ -325,18 +325,20 @@ export const resolutionOptions = (viewMode: ViewMode) => [
 /**
  * Calculate maximum character limit for text overlay based on viewport.
  * Smaller calendar scale = more space for text = higher limit.
- * Uses piecewise function for optimal limits at different scales.
+ * Uses piecewise linear interpolation for precise limits at all scales.
  *
  * Desktop viewport:
- *   - Scale 0.5: ~750 chars
- *   - Scale 0.75: ~450 chars
- *   - Scale 1.0: 150 chars
+ *   - Scale 0.5: 2000 chars
+ *   - Scale 0.75: 800 chars
+ *   - Scale 1.0: 360 chars
+ *   - Scale 1.25: 150 chars
  *   - Scale 1.5: 100 chars
  *
  * Mobile viewport:
- *   - Scale 0.5: ~750 chars
- *   - Scale 0.75: ~430 chars
- *   - Scale 1.0: 105 chars
+ *   - Scale 0.5: 720 chars
+ *   - Scale 0.75: 360 chars
+ *   - Scale 1.0: 180 chars
+ *   - Scale 1.25: 80 chars
  *   - Scale 1.5: 50 chars
  *
  * @param viewMode - Current viewport mode (desktop or mobile)
@@ -351,25 +353,34 @@ export function getMaxTextOverlayLength(
   const scale = Math.max(0.5, Math.min(1.5, calendarScale));
 
   if (viewMode === "desktop") {
-    if (scale < 1.0) {
-      // For scale < 1: High limits for small calendar
-      // Scale 0.5 = 750, Scale 0.75 = 450, Scale 1.0 = 150
-      return Math.floor(1950 - scale * 1800);
+    // Desktop: Piecewise linear interpolation
+    if (scale <= 0.75) {
+      // 0.5->2000, 0.75->800: slope = -4800
+      return Math.floor(2000 + (scale - 0.5) * -4800);
+    } else if (scale <= 1.0) {
+      // 0.75->800, 1.0->360: slope = -1760
+      return Math.floor(800 + (scale - 0.75) * -1760);
+    } else if (scale <= 1.25) {
+      // 1.0->360, 1.25->150: slope = -840
+      return Math.floor(360 + (scale - 1.0) * -840);
     } else {
-      // For scale >= 1: Keep current limits
-      // Scale 1.0 = 150, Scale 1.5 = 100
-      return Math.floor(250 - scale * 100);
+      // 1.25->150, 1.5->100: slope = -200
+      return Math.floor(150 + (scale - 1.25) * -200);
     }
   } else {
-    // Mobile viewport
-    if (scale < 1.0) {
-      // For scale < 1: High limits for small calendar
-      // Scale 0.5 = 750, Scale 0.75 = 427, Scale 1.0 = 105
-      return Math.floor(2055 - scale * 1950);
+    // Mobile viewport: Piecewise linear interpolation
+    if (scale <= 0.75) {
+      // 0.5->720, 0.75->360: slope = -1440
+      return Math.floor(720 + (scale - 0.5) * -1440);
+    } else if (scale <= 1.0) {
+      // 0.75->360, 1.0->180: slope = -720
+      return Math.floor(360 + (scale - 0.75) * -720);
+    } else if (scale <= 1.25) {
+      // 1.0->180, 1.25->80: slope = -400
+      return Math.floor(180 + (scale - 1.0) * -400);
     } else {
-      // For scale >= 1: Adjusted limits (reduced for 1.5)
-      // Scale 1.0 = 105, Scale 1.5 = 50
-      return Math.floor(215 - scale * 110);
+      // 1.25->80, 1.5->50: slope = -120
+      return Math.floor(80 + (scale - 1.25) * -120);
     }
   }
 }
