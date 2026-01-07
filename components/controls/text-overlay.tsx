@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { useCalendarStore, type TextOverlayPosition } from "@/lib/calendar-store";
 import { Sparkles, Type } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { FontPicker } from "./font-picker";
 import { cn } from "@/lib/utils";
 
@@ -30,6 +30,16 @@ export function TextOverlaySettings() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [abortController, setAbortController] = useState<AbortController | null>(null);
+
+    const settingsRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (textOverlay.enabled && settingsRef.current) {
+            setTimeout(() => {
+                settingsRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+            }, 300);
+        }
+    }, [textOverlay.enabled]);
 
     const handleGenerate = async () => {
         console.log('[FRONTEND] Generate button clicked!');
@@ -138,126 +148,133 @@ export function TextOverlaySettings() {
                     />
                 </div>
 
-                {textOverlay.enabled && (
-                    <>
-                        <div className="space-y-2">
-                            <Label className="text-sm">AI Text Generation</Label>
-                            <div className="flex gap-2">
-                                <Select value={selectedMood} onValueChange={setSelectedMood}>
-                                    <SelectTrigger className="flex-1">
-                                        <SelectValue placeholder="Mood" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="Motivational">Motivational</SelectItem>
-                                        <SelectItem value="Stoic">Stoic</SelectItem>
-                                        <SelectItem value="Funny">Funny</SelectItem>
-                                        <SelectItem value="Chill">Chill</SelectItem>
-                                        <SelectItem value="Hustle">Hustle</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <Button
-                                    onClick={handleGenerate}
-                                    disabled={isLoading}
-                                    className="shrink-0 w-auto gap-2"
-                                    type="button"
-                                >
-                                    <Sparkles className="w-4 h-4" />
-                                    {isLoading ? "Generating..." : "Generate"}
-                                </Button>
-                            </div>
-                            
-                            {error && (
-                                <p className="text-xs text-destructive mt-1">{error}</p>
-                            )}
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label className="text-sm">Custom Text</Label>
-                            <Textarea
-                                placeholder="Enter your text..."
-                                value={textOverlay.content}
-                                onChange={(e) => setTextOverlayContent(e.target.value)}
-                                maxLength={200}
-                                rows={3}
-                                className="resize-none"
-                            />
-                            <p className="text-xs text-muted-foreground text-right">
-                                {textOverlay.content.length}/200
-                            </p>
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                             <Label htmlFor="matchTypographyFont" className="text-sm cursor-pointer">
-                                Match Typography Font
-                            </Label>
-                             <Switch
-                                id="matchTypographyFont"
-                                checked={textOverlay.useTypographyFont}
-                                onCheckedChange={setTextOverlayUseTypographyFont}
-                            />
-                        </div>
-
-                        <FontPicker
-                            label="Overlay Font"
-                            value={textOverlay.font}
-                            onChange={setTextOverlayFont}
-                            disabled={textOverlay.useTypographyFont}
-                            allowUpload={true}
-                            showUploadedFonts={false}
-                        />
-
-                        <div className="space-y-3">
-                            <Label className="text-sm">Position</Label>
-                            <div className="flex justify-center bg-muted/30 rounded-lg p-4 border border-border/50">
-                                <div 
-                                    className={cn(
-                                        "relative bg-background border-2 border-border shadow-sm rounded-md overflow-hidden transition-all duration-300",
-                                        viewMode === "mobile" ? "w-[200px] aspect-[9/16]" : "w-full aspect-[16/9]"
-                                    )}
-                                >
-                                    <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none">
-                                        <div className="border-r border-b border-muted/50" />
-                                        <div className="border-r border-b border-muted/50" />
-                                        <div className="border-b border-muted/50" />
-                                        <div className="border-r border-b border-muted/50" />
-                                        <div className="border-r border-b border-muted/50" />
-                                        <div className="border-b border-muted/50" />
-                                        <div className="border-r border-muted/50" />
-                                        <div className="border-r border-muted/50" />
-                                        <div />
-                                    </div>
-
-                                    <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 z-10">
-                                        {[
-                                            "top-left", "top-center", "top-right",
-                                            "middle-left", "center", "middle-right",
-                                            "bottom-left", "bottom-center", "bottom-right"
-                                        ].map((pos) => (
-                                            <button
-                                                key={pos}
-                                                className="w-full h-full focus:outline-none focus:bg-primary/5 hover:bg-primary/5 transition-colors"
-                                                onClick={() => setTextOverlayPosition(pos as TextOverlayPosition)}
-                                                aria-label={`Set position to ${pos}`}
-                                                type="button"
-                                            />
-                                        ))}
-                                    </div>
-
-                                    <div 
-                                        className="bg-primary/90 rounded-sm shadow-sm flex items-center justify-center pointer-events-none z-20"
-                                        style={{
-                                            ...getPositionStyles(textOverlay.position),
-                                            width: viewMode === 'mobile' ? '60%' : '40%',
-                                            height: '20%',
-                                        }}
+                <div 
+                    className={cn(
+                        "grid transition-all duration-300 ease-in-out",
+                        textOverlay.enabled ? "grid-rows-[1fr] opacity-100 mt-4" : "grid-rows-[0fr] opacity-0 mt-0"
+                    )}
+                >
+                    <div className="overflow-hidden">
+                        <div ref={settingsRef} className="space-y-4 pt-1">
+                            <div className="space-y-2">
+                                <Label className="text-sm">AI Text Generation</Label>
+                                <div className="flex gap-2">
+                                    <Select value={selectedMood} onValueChange={setSelectedMood}>
+                                        <SelectTrigger className="flex-1">
+                                            <SelectValue placeholder="Mood" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="Motivational">Motivational</SelectItem>
+                                            <SelectItem value="Stoic">Stoic</SelectItem>
+                                            <SelectItem value="Funny">Funny</SelectItem>
+                                            <SelectItem value="Chill">Chill</SelectItem>
+                                            <SelectItem value="Hustle">Hustle</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <Button
+                                        onClick={handleGenerate}
+                                        disabled={isLoading}
+                                        className="shrink-0 w-auto gap-2"
+                                        type="button"
                                     >
-                                        <div className="w-3/4 h-1.5 bg-primary-foreground/50 rounded-full" />
+                                        <Sparkles className="w-4 h-4" />
+                                        {isLoading ? "Generating..." : "Generate"}
+                                    </Button>
+                                </div>
+                                
+                                {error && (
+                                    <p className="text-xs text-destructive mt-1">{error}</p>
+                                )}
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="text-sm">Custom Text</Label>
+                                <Textarea
+                                    placeholder="Enter your text..."
+                                    value={textOverlay.content}
+                                    onChange={(e) => setTextOverlayContent(e.target.value)}
+                                    maxLength={200}
+                                    rows={3}
+                                    className="resize-none"
+                                />
+                                <p className="text-xs text-muted-foreground text-right">
+                                    {textOverlay.content.length}/200
+                                </p>
+                            </div>
+
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="matchTypographyFont" className="text-sm cursor-pointer">
+                                    Match Typography Font
+                                </Label>
+                                <Switch
+                                    id="matchTypographyFont"
+                                    checked={textOverlay.useTypographyFont}
+                                    onCheckedChange={setTextOverlayUseTypographyFont}
+                                />
+                            </div>
+
+                            <FontPicker
+                                label="Overlay Font"
+                                value={textOverlay.font}
+                                onChange={setTextOverlayFont}
+                                disabled={textOverlay.useTypographyFont}
+                                allowUpload={true}
+                                showUploadedFonts={false}
+                            />
+
+                            <div className="space-y-3">
+                                <Label className="text-sm">Position</Label>
+                                <div className="flex justify-center bg-muted/30 rounded-lg p-4 border border-border/50">
+                                    <div 
+                                        className={cn(
+                                            "relative bg-background border-2 border-border shadow-sm rounded-md overflow-hidden transition-all duration-300",
+                                            viewMode === "mobile" ? "w-[200px] aspect-[9/16]" : "w-full aspect-[16/9]"
+                                        )}
+                                    >
+                                        <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none">
+                                            <div className="border-r border-b border-muted/50" />
+                                            <div className="border-r border-b border-muted/50" />
+                                            <div className="border-b border-muted/50" />
+                                            <div className="border-r border-b border-muted/50" />
+                                            <div className="border-r border-b border-muted/50" />
+                                            <div className="border-b border-muted/50" />
+                                            <div className="border-r border-muted/50" />
+                                            <div className="border-r border-muted/50" />
+                                            <div />
+                                        </div>
+
+                                        <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 z-10">
+                                            {[
+                                                "top-left", "top-center", "top-right",
+                                                "middle-left", "center", "middle-right",
+                                                "bottom-left", "bottom-center", "bottom-right"
+                                            ].map((pos) => (
+                                                <button
+                                                    key={pos}
+                                                    className="w-full h-full focus:outline-none focus:bg-primary/5 hover:bg-primary/5 transition-colors"
+                                                    onClick={() => setTextOverlayPosition(pos as TextOverlayPosition)}
+                                                    aria-label={`Set position to ${pos}`}
+                                                    type="button"
+                                                />
+                                            ))}
+                                        </div>
+
+                                        <div 
+                                            className="bg-primary/90 rounded-sm shadow-sm flex items-center justify-center pointer-events-none z-20"
+                                            style={{
+                                                ...getPositionStyles(textOverlay.position),
+                                                width: viewMode === 'mobile' ? '60%' : '40%',
+                                                height: '20%',
+                                            }}
+                                        >
+                                            <div className="w-3/4 h-1.5 bg-primary-foreground/50 rounded-full" />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </>
-                )}
+                    </div>
+                </div>
             </div>
         </div>
     );
