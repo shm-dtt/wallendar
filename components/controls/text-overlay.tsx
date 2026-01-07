@@ -144,7 +144,7 @@ export function TextOverlaySettings() {
                             <Label className="text-sm">AI Text Generation</Label>
                             <div className="flex gap-2">
                                 <Select value={selectedMood} onValueChange={setSelectedMood}>
-                                    <SelectTrigger className="w-[140px] shrink-0">
+                                    <SelectTrigger className="flex-1">
                                         <SelectValue placeholder="Mood" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -158,7 +158,7 @@ export function TextOverlaySettings() {
                                 <Button
                                     onClick={handleGenerate}
                                     disabled={isLoading}
-                                    className="flex-1 gap-2"
+                                    className="shrink-0 w-auto gap-2"
                                     type="button"
                                 >
                                     <Sparkles className="w-4 h-4" />
@@ -212,7 +212,7 @@ export function TextOverlaySettings() {
                                 <div 
                                     className={cn(
                                         "relative bg-background border-2 border-border shadow-sm rounded-md overflow-hidden transition-all duration-300",
-                                        viewMode === "mobile" ? "w-[120px] aspect-[9/16]" : "w-[200px] aspect-[16/9]"
+                                        viewMode === "mobile" ? "w-[160px] aspect-[9/16]" : "w-full aspect-[16/9]"
                                     )}
                                 >
                                     <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none">
