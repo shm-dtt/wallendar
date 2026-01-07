@@ -35,9 +35,10 @@ export function TextOverlaySettings() {
 
     useEffect(() => {
         if (textOverlay.enabled && settingsRef.current) {
-            setTimeout(() => {
+            const timer = setTimeout(() => {
                 settingsRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-            }, 300);
+            }, 150);
+            return () => clearTimeout(timer);
         }
     }, [textOverlay.enabled]);
 
