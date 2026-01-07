@@ -212,7 +212,7 @@ export function TextOverlaySettings() {
                                 <div 
                                     className={cn(
                                         "relative bg-background border-2 border-border shadow-sm rounded-md overflow-hidden transition-all duration-300",
-                                        viewMode === "mobile" ? "w-[160px] aspect-[9/16]" : "w-full aspect-[16/9]"
+                                        viewMode === "mobile" ? "w-[200px] aspect-[9/16]" : "w-full aspect-[16/9]"
                                     )}
                                 >
                                     <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none">
