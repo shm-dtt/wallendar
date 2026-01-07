@@ -36,8 +36,8 @@ export function TextOverlaySettings() {
     useEffect(() => {
         if (textOverlay.enabled && settingsRef.current) {
             const timer = setTimeout(() => {
-                settingsRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-            }, 150);
+                settingsRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+            }, 500);
             return () => clearTimeout(timer);
         }
     }, [textOverlay.enabled]);
@@ -151,7 +151,7 @@ export function TextOverlaySettings() {
 
                 <div 
                     className={cn(
-                        "grid transition-all duration-300 ease-in-out",
+                        "grid transition-all duration-500 ease-in-out",
                         textOverlay.enabled ? "grid-rows-[1fr] opacity-100 mt-4" : "grid-rows-[0fr] opacity-0 mt-0"
                     )}
                 >
