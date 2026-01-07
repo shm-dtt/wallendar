@@ -278,10 +278,54 @@ function drawWallpaperCalendar(
   )}px ${safeBodyFamily}`;
   context.fillText("", width / 2 + shiftX, rowsTop + rowH * 6.1);
 
+  // Helper function to wrap text to fit within a maximum width
+  function wrapText(
+    text: string,
+    maxWidth: number,
+    context: CanvasRenderingContext2D,
+  ): string[] {
+    const paragraphs = text.split("\n");
+    const wrappedLines: string[] = [];
+
+    for (const paragraph of paragraphs) {
+      if (!paragraph.trim()) {
+        wrappedLines.push("");
+        continue;
+      }
+
+      const words = paragraph.split(" ");
+      let currentLine = "";
+
+      for (let i = 0; i < words.length; i++) {
+        const word = words[i];
+        const testLine = currentLine ? `${currentLine} ${word}` : word;
+        const metrics = context.measureText(testLine);
+        const testWidth = metrics.width;
+
+        if (testWidth > maxWidth && currentLine) {
+          // Line is too long, push current line and start a new one
+          wrappedLines.push(currentLine);
+          currentLine = word;
+        } else {
+          currentLine = testLine;
+        }
+      }
+
+      // Push the last line of the paragraph
+      if (currentLine) {
+        wrappedLines.push(currentLine);
+      }
+    }
+
+    return wrappedLines;
+  }
+
   // Text overlay with 9-position grid support
   if (opts.textOverlay?.enabled && opts.textOverlay.content) {
     context.globalAlpha = 1;
-    const overlayFontSize = Math.round(height * 0.04 * opts.textOverlay.fontSize * scale);
+    const overlayFontSize = Math.round(
+      height * 0.04 * opts.textOverlay.fontSize * scale,
+    );
 
     // Determine which font to use
     let overlayFontFamily: string;
@@ -305,35 +349,40 @@ function drawWallpaperCalendar(
     context.shadowBlur = Math.max(2, Math.round(height * 0.008));
 
     // Calculate position based on 9-zone grid
-    const paddingX = width * 0.05;   // Horizontal safe margin
-    const paddingY = height * 0.05;  // Vertical safe margin
+    const paddingX = width * 0.05; // Horizontal safe margin
+    const paddingY = height * 0.05; // Vertical safe margin
     const position = opts.textOverlay.position || "center";
-
-    // Split text by newlines for multi-line support
-    const lines = opts.textOverlay.content.split('\n');
-    const lineHeight = overlayFontSize * 1.2; // 1.2x line spacing
-    const totalHeight = lines.length * lineHeight;
 
     // Determine horizontal alignment and X position
     let x: number;
-    if (position.includes('left')) {
-      context.textAlign = 'left';
+    let maxTextWidth: number;
+
+    if (position.includes("left")) {
+      context.textAlign = "left";
       x = paddingX;
-    } else if (position.includes('right')) {
-      context.textAlign = 'right';
+      maxTextWidth = width - 2 * paddingX;
+    } else if (position.includes("right")) {
+      context.textAlign = "right";
       x = width - paddingX;
+      maxTextWidth = width - 2 * paddingX;
     } else {
-      context.textAlign = 'center';
+      context.textAlign = "center";
       x = width / 2;
+      maxTextWidth = width - 2 * paddingX;
     }
+
+    // Wrap text to fit within available width
+    const lines = wrapText(opts.textOverlay.content, maxTextWidth, context);
+    const lineHeight = overlayFontSize * 1.2; // 1.2x line spacing
+    const totalHeight = lines.length * lineHeight;
 
     // Determine vertical alignment and starting Y position
     // Use 'top' baseline for all positions to ensure consistent downward expansion (like month name)
-    context.textBaseline = 'top';
+    context.textBaseline = "top";
     let startY: number;
-    if (position.startsWith('top-')) {
+    if (position.startsWith("top-")) {
       startY = paddingY;
-    } else if (position.startsWith('bottom-')) {
+    } else if (position.startsWith("bottom-")) {
       startY = height - paddingY - totalHeight;
     } else {
       // middle-* or center
@@ -433,22 +482,20 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
           return blob;
         },
       };
-    },
-      [
-        month,
-        year,
-        weekStart,
-        headerFormat,
-        textColor,
-        fontFamily,
-        offsetX,
-        offsetY,
-        imageSrc,
-        viewMode,
-        calendarScale,
-        textOverlay,
-      ]
-    );
+    }, [
+      month,
+      year,
+      weekStart,
+      headerFormat,
+      textColor,
+      fontFamily,
+      offsetX,
+      offsetY,
+      imageSrc,
+      viewMode,
+      calendarScale,
+      textOverlay,
+    ]);
 
     function parseFamilies(input: string) {
       const str = (input || "").trim();
@@ -481,11 +528,11 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
 
         const loads: Promise<unknown>[] = [
           fonts?.load?.(`400 24px ${JSON.stringify(cleaned)}`) ??
-          Promise.resolve(),
+            Promise.resolve(),
           fonts?.load?.(`500 24px ${JSON.stringify(cleaned)}`) ??
-          Promise.resolve(),
+            Promise.resolve(),
           fonts?.load?.(`700 24px ${JSON.stringify(cleaned)}`) ??
-          Promise.resolve(),
+            Promise.resolve(),
         ];
 
         await Promise.allSettled(loads);
