@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { generateWallpaper } from "@/lib/server-canvas";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
+import { incrementCount } from "@/lib/redis";
 
 const DEFAULT_CONFIG = {
   weekStart: "sunday",
@@ -168,7 +169,10 @@ export async function POST(req: NextRequest) {
     // 4. Generate Wallpaper
     const resultBuffer = await generateWallpaper(imageBuffer, config as any);
 
-    // 5. Return Result
+    // 5. Track Usage
+    await incrementCount();
+
+    // 6. Return Result
     return new NextResponse(resultBuffer, {
       headers: {
         "Content-Type": "image/png",
