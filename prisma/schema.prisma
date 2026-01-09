@@ -82,6 +82,7 @@ model WallpaperUpload {
   year      Int
   s3Url     String
   s3Key     String   // Full S3 key path
+  customText String? // Optional text overlay content
   createdAt DateTime @default(now())
 
   @@unique([userId, month, year, s3Key])

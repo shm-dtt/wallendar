@@ -24,6 +24,14 @@ type Props = {
   viewMode?: ViewMode;
   calendarScale?: number;
   setTextColor: (color: string) => void;
+  textOverlay?: {
+    enabled: boolean;
+    content: string;
+    fontSize: number;
+    font: string;
+    useTypographyFont: boolean;
+    position: string;
+  };
 };
 
 // Day labels
@@ -269,6 +277,128 @@ function drawWallpaperCalendar(
     height * 0.018,
   )}px ${safeBodyFamily}`;
   context.fillText("", width / 2 + shiftX, rowsTop + rowH * 6.1);
+
+  // Helper function to wrap text to fit within a maximum width
+  function wrapText(
+    text: string,
+    maxWidth: number,
+    context: CanvasRenderingContext2D,
+  ): string[] {
+    const paragraphs = text.split("\n");
+    const wrappedLines: string[] = [];
+
+    for (const paragraph of paragraphs) {
+      if (!paragraph.trim()) {
+        wrappedLines.push("");
+        continue;
+      }
+
+      const words = paragraph.split(" ");
+      let currentLine = "";
+
+      for (let i = 0; i < words.length; i++) {
+        const word = words[i];
+        const testLine = currentLine ? `${currentLine} ${word}` : word;
+        const metrics = context.measureText(testLine);
+        const testWidth = metrics.width;
+
+        if (testWidth > maxWidth && currentLine) {
+          // Line is too long, push current line and start a new one
+          wrappedLines.push(currentLine);
+          currentLine = word;
+        } else {
+          currentLine = testLine;
+        }
+      }
+
+      // Push the last line of the paragraph
+      if (currentLine) {
+        wrappedLines.push(currentLine);
+      }
+    }
+
+    return wrappedLines;
+  }
+
+  // Text overlay with 9-position grid support
+  if (opts.textOverlay?.enabled && opts.textOverlay.content) {
+    context.globalAlpha = 1;
+    const overlayFontSize = Math.round(
+      height * 0.04 * opts.textOverlay.fontSize * scale,
+    );
+
+    // Determine which font to use
+    let overlayFontFamily: string;
+    let overlayFontWeight: string;
+
+    if (opts.textOverlay.useTypographyFont) {
+      // Use main typography font (month font)
+      overlayFontFamily = safeMonthFamily;
+      overlayFontWeight = monthWeight;
+    } else {
+      // Use custom overlay font
+      const customFont = opts.textOverlay.font || "Product Sans";
+      overlayFontFamily = sanitizeFamily(customFont);
+      overlayFontWeight = getFontWeight(customFont);
+    }
+
+    context.font = `${overlayFontWeight} ${overlayFontSize}px ${overlayFontFamily}`;
+    context.fillStyle = opts.textColor;
+    // Add shadow for better readability
+    context.shadowColor = "rgba(0,0,0,0.5)";
+    context.shadowBlur = Math.max(2, Math.round(height * 0.008));
+
+    // Calculate position based on 9-zone grid
+    const paddingX = width * 0.05; // Horizontal safe margin
+    const paddingY = height * 0.05; // Vertical safe margin
+    const position = opts.textOverlay.position || "center";
+
+    // Determine horizontal alignment and X position
+    let x: number;
+    let maxTextWidth: number;
+
+    if (position.includes("left")) {
+      context.textAlign = "left";
+      x = paddingX;
+      maxTextWidth = width - 2 * paddingX;
+    } else if (position.includes("right")) {
+      context.textAlign = "right";
+      x = width - paddingX;
+      maxTextWidth = width - 2 * paddingX;
+    } else {
+      context.textAlign = "center";
+      x = width / 2;
+      maxTextWidth = width - 2 * paddingX;
+    }
+
+    // Wrap text to fit within available width
+    const lines = wrapText(opts.textOverlay.content, maxTextWidth, context);
+    const lineHeight = overlayFontSize * 1.2; // 1.2x line spacing
+    const totalHeight = lines.length * lineHeight;
+
+    // Determine vertical alignment and starting Y position
+    // Use 'top' baseline for all positions to ensure consistent downward expansion (like month name)
+    context.textBaseline = "top";
+    let startY: number;
+    if (position.startsWith("top-")) {
+      startY = paddingY;
+    } else if (position.startsWith("bottom-")) {
+      startY = height - paddingY - totalHeight;
+    } else {
+      // middle-* or center
+      startY = (height - totalHeight) / 2;
+    }
+
+    // Draw each line
+    lines.forEach((line, index) => {
+      const y = startY + index * lineHeight;
+      context.fillText(line, x, y);
+    });
+
+    // Reset shadow
+    context.shadowColor = "rgba(0,0,0,0.25)";
+    context.shadowBlur = Math.max(1, Math.round(height * 0.004));
+  }
 }
 
 function drawWallpaper(
@@ -297,6 +427,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
       viewMode = "desktop",
       calendarScale = 1,
       setTextColor,
+      textOverlay,
     },
     ref,
   ) {
@@ -311,7 +442,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
         exportCanvas.width = w;
         exportCanvas.height = h;
 
-        const drawOpts = {
+        drawWallpaper(exportCanvas, {
           month,
           year,
           weekStart,
@@ -324,9 +455,8 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
           offsetY,
           viewMode,
           calendarScale,
-        };
-
-        drawWallpaper(exportCanvas, drawOpts);
+          textOverlay,
+        });
         return exportCanvas;
       };
 
@@ -364,6 +494,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
       imageSrc,
       viewMode,
       calendarScale,
+      textOverlay,
     ]);
 
     function parseFamilies(input: string) {
@@ -433,6 +564,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
         offsetY,
         viewMode,
         calendarScale,
+        textOverlay,
       };
 
       if (imgRef.current) {
@@ -575,6 +707,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
       viewMode,
       calendarScale,
       setTextColor,
+      textOverlay,
     ]);
 
     return (
