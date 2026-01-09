@@ -1,0 +1,105 @@
+# Wallendar API Reference
+
+Wallendar provides a REST API to programmatically generate calendar wallpapers.
+
+## Endpoint
+
+`POST /api/create`
+
+Generates a PNG wallpaper with a calendar overlay and optional text based on the provided configuration.
+
+## Request Format
+
+The endpoint accepts `multipart/form-data` with the following fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `image` | File or String | **Required.** The background image. Can be a file upload OR a direct URL string. |
+| `config` | JSON String | **Optional.** Configuration object for styling. Defaults used if omitted. |
+
+### Configuration Object
+
+The `config` JSON object supports the following properties:
+
+```json
+{
+  "month": 0,                // 0-11 (Jan-Dec). Default: Current month
+  "year": 2026,              // Year. Default: Current year
+  "weekStart": "sunday",     // "sunday" or "monday". Default: "sunday"
+  "headerFormat": "full",    // "full", "short", "numeric", etc. Default: "full"
+  "textColor": "#ffffff",    // Hex color. Default: "#ffffff"
+  "fontFamily": "Product Sans", // See Supported Fonts. Default: "Product Sans"
+  "offsetX": 0,              // Horizontal offset (-1 to 1). Default: 0
+  "offsetY": 0,              // Vertical offset (-1 to 1). Default: 0
+  "viewMode": "desktop",     // "desktop" or "mobile". Default: "desktop"
+  "calendarScale": 1,        // Scale factor (0.5 to 1.5). Default: 1
+  "textOverlay": {
+    "enabled": true,
+    "content": "Your text here",
+    "fontSize": 1,           // Relative size multiplier. Default: 1
+    "font": "Product Sans",
+    "useTypographyFont": true, // If true, uses same font as calendar
+    "position": "center"     // "center", "top-left", "bottom-right", etc.
+  }
+}
+```
+
+## Supported Fonts
+
+The API supports the following fonts (must match exactly):
+- `Product Sans` (Default)
+- `Montserrat`
+- `Doto`
+- `Crafty Girls`
+- `Freckle Face`
+- `Playwrite CA`
+- `Segoe Script`
+- `Instrument Serif`
+- `Ultra`
+
+## Usage Examples
+
+### 1. Basic Usage (Image URL + Defaults)
+
+Generates a calendar for the current month using an image URL.
+
+```bash
+curl -X POST https://your-domain.com/api/create \
+  -F "image=https://example.com/wallpaper.jpg" \
+  --output wallpaper.png
+```
+
+### 2. Custom Configuration
+
+Generates a specific month/year with custom styling.
+
+```bash
+curl -X POST https://your-domain.com/api/create \
+  -F "image=@/path/to/local/image.jpg" \
+  -F 'config={
+    "month": 11,
+    "year": 2025,
+    "textColor": "#FF0000",
+    "fontFamily": "Doto",
+    "weekStart": "monday"
+  }' \
+  --output holiday-wallpaper.png
+```
+
+### 3. Text Overlay
+
+Adds custom text to the wallpaper.
+
+```bash
+curl -X POST https://your-domain.com/api/create \
+  -F "image=https://example.com/bg.jpg" \
+  -F 'config={
+    "textOverlay": {
+      "enabled": true,
+      "content": "Stay Hard\nDon't give up",
+      "position": "bottom-right",
+      "fontSize": 1.2
+    }
+  }' \
+  --output motivational.png
+```

@@ -16,6 +16,23 @@ Transform your images into calendar desktop wallpapers. [Check it out.](https://
 - Move around the calendar block according to your wallpaper.
 - Get a LIVE preview of the changes and download the 4K wallpaper!!!
 - NEW: Share it with the world (in the Community section)
+- **API Access**: Generate wallpapers programmatically via the `/api/create` endpoint.
+
+## API Documentation
+
+Wallendar exposes a REST API to generate wallpapers server-side. You can upload an image or provide a URL, along with a configuration object to customize the calendar.
+
+**Endpoint**: `POST /api/create`
+
+See [API_REFERENCE.md](API_REFERENCE.md) for full documentation, including all configuration options and examples.
+
+### Quick Example
+
+```bash
+curl -X POST https://www.wallendar.shop/api/create \
+  -F "image=https://github.com/shm-dtt/wallendar/raw/main/public/samples/sample-bg1.jpg" \
+  --output wallpaper.png
+```
 
 ## Getting Started
 
@@ -51,7 +68,7 @@ npx prisma migrate dev
 npm run dev
 ```
 
-Visit `http://localhost:3000` to get started.
+Visit `https://www.wallendar.shop` to get started.
 
 ## Environment Variables
 
@@ -70,7 +87,7 @@ To enable GitHub and Google login:
 
 - `DATABASE_URL` - PostgreSQL connection string (e.g., `postgresql://user:password@localhost:5432/wallendar`)
 - `BETTER_AUTH_SECRET` - Secret key for Better Auth (generate with `openssl rand -base64 32`)
-- `BETTER_AUTH_URL` - Your application URL (e.g., `http://localhost:3000` for dev, `https://yourdomain.com` for production)
+- `BETTER_AUTH_URL` - Your application URL (e.g., `https://www.wallendar.shop` for dev, `https://yourdomain.com` for production)
 - `GITHUB_CLIENT_ID` - GitHub OAuth App client ID
 - `GITHUB_CLIENT_SECRET` - GitHub OAuth App client secret
 - `GOOGLE_CLIENT_ID` - Google OAuth App client ID
