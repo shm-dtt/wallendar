@@ -56,6 +56,11 @@ type WallpaperConfig = {
 const DOW_SUN = ["S", "M", "T", "W", "T", "F", "S"];
 const DOW_MON = ["M", "T", "W", "T", "F", "S", "S"];
 
+// Constants for image validation
+const MAX_WIDTH = 8192; // 8K
+const MAX_HEIGHT = 8192; // 8K
+const MAX_PIXELS = 50_000_000; // ~50MP
+
 function drawWallpaperBackground(
   ctx: CanvasRenderingContext2D,
   width: number,
@@ -364,6 +369,15 @@ export async function generateWallpaper(
   // Use image dimensions for high quality
   const width = image.width;
   const height = image.height;
+
+  // Validate Dimensions
+  if (width > MAX_WIDTH || height > MAX_HEIGHT) {
+    throw new Error(`Image dimensions exceed maximum limits (${MAX_WIDTH}x${MAX_HEIGHT})`);
+  }
+  
+  if (width * height > MAX_PIXELS) {
+    throw new Error(`Image resolution exceeds maximum limit (${MAX_PIXELS} pixels)`);
+  }
 
   const canvas = createCanvas(width, height);
   const ctx = canvas.getContext("2d");
