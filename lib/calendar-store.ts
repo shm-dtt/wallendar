@@ -99,6 +99,10 @@ interface CalendarState {
     position: TextOverlayPosition;
   };
 
+  // Date effects settings
+  showStrikethrough: boolean;
+  showHighlight: boolean;
+
   persistedAt?: number;
 
   // Actions
@@ -131,6 +135,10 @@ interface CalendarState {
   setTextOverlayFont: (font: string) => void;
   setTextOverlayUseTypographyFont: (useTypographyFont: boolean) => void;
   setTextOverlayPosition: (position: TextOverlayPosition) => void;
+
+  // Date effects actions
+  setShowStrikethrough: (enabled: boolean) => void;
+  setShowHighlight: (enabled: boolean) => void;
 
   // Uploaded fonts actions
   addUploadedFont: (font: { name: string; displayName: string }) => void;
@@ -181,6 +189,8 @@ export const useCalendarStore = create<CalendarState>()(
         useTypographyFont: true,
         position: "center",
       },
+      showStrikethrough: false,
+      showHighlight: true,
       persistedAt: undefined,
 
       // Actions
@@ -244,6 +254,9 @@ export const useCalendarStore = create<CalendarState>()(
         set((state) => ({
           textOverlay: { ...state.textOverlay, position },
         })),
+      setShowStrikethrough: (showStrikethrough) =>
+        set({ showStrikethrough }),
+      setShowHighlight: (showHighlight) => set({ showHighlight }),
       addUploadedFont: (font) =>
         set((state) => ({
           uploadedFonts: [...state.uploadedFonts, font],
@@ -275,6 +288,8 @@ export const useCalendarStore = create<CalendarState>()(
         persistedAt: Date.now(),
         calendarScale: state.calendarScale,
         textOverlay: state.textOverlay,
+        showStrikethrough: state.showStrikethrough,
+        showHighlight: state.showHighlight,
         uploadedFonts: state.uploadedFonts,
       }),
       merge: (persistedState, currentState) => {
@@ -283,6 +298,8 @@ export const useCalendarStore = create<CalendarState>()(
           persistedAt,
           calendarScale = currentState.calendarScale,
           textOverlay = currentState.textOverlay,
+          showStrikethrough = currentState.showStrikethrough,
+          showHighlight = currentState.showHighlight,
           uploadedFonts = currentState.uploadedFonts,
           ...rest
         } = persistedState as CalendarState;
@@ -295,6 +312,8 @@ export const useCalendarStore = create<CalendarState>()(
           ...rest,
           calendarScale,
           textOverlay,
+          showStrikethrough,
+          showHighlight,
           uploadedFonts,
           persistedAt: timestamp,
         };

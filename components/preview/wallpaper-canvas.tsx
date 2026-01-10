@@ -32,6 +32,8 @@ type Props = {
     useTypographyFont: boolean;
     position: string;
   };
+  showStrikethrough?: boolean;
+  showHighlight?: boolean;
 };
 
 // Day labels
@@ -153,6 +155,21 @@ function drawWallpaperCalendar(
     );
   }
 
+  // Helper to get contrasting circle color from text color
+  function getCircleColorFromTextColor(textColor: string): string {
+    // Parse hex color to RGB
+    const hex = textColor.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+
+    // Calculate relative luminance (simplified formula)
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+    // High opacity for visibility on dark backgrounds - 60%
+    return luminance > 0.5 ? "rgba(0, 0, 0, 0.6)" : "rgba(255, 255, 255, 0.6)";
+  }
+
   // Adjust proportions based on view mode
   const isMobile = opts.viewMode === "mobile";
   const scale = Math.max(0.5, Math.min(1.5, opts.calendarScale ?? 1));
@@ -261,6 +278,13 @@ function drawWallpaperCalendar(
   const rowsTop = dowY + Math.round(height * (isMobile ? 0.03 : 0.055) * scale);
   const rowH = Math.round(height * (isMobile ? 0.027 : 0.055) * scale);
 
+  // Pre-calculate current date info for performance and midnight-crossing safety
+  const now = new Date();
+  const todayYear = now.getFullYear();
+  const todayMonth = now.getMonth();
+  const todayDay = now.getDate();
+  const isCurrentMonth = opts.year === todayYear && opts.month === todayMonth;
+
   context.globalAlpha = 1;
   for (let d = 1; d <= totalDays; d++) {
     const idx = offset + (d - 1);
@@ -268,7 +292,71 @@ function drawWallpaperCalendar(
     const row = Math.floor(idx / 7);
     const x = startX + col * colW + colW / 2 + shiftX;
     const y = rowsTop + row * rowH;
+
+    // Only render effects if viewing current month
+    if (isCurrentMonth) {
+      const isToday = d === todayDay;
+
+      // 1. Draw highlight circle UNDER text (if today and enabled)
+      if (opts.showHighlight && isToday) {
+        const circleCenterY = y - (labelDaySize * 0.35); // Visual center adjustment
+        const circleRadius = labelDaySize * 0.7; // Slightly larger for "solid" look
+
+        // Use text color for the circle (Solid 100%) to ensure visibility against background
+        const circleColor = opts.textColor;
+
+        context.save();
+        context.fillStyle = circleColor;
+        context.beginPath();
+        context.arc(x, circleCenterY, circleRadius, 0, Math.PI * 2);
+        context.fill();
+        context.restore();
+      }
+    }
+
+    // 2. Draw date number
+    context.save(); // Save before changing fillStyle
+
+    // Determine text color
+    if (isCurrentMonth && d < todayDay && opts.showStrikethrough) {
+      // Past date: Unified 50% opacity
+      context.globalAlpha = 0.7;
+      context.fillStyle = opts.textColor;
+    } else if (isCurrentMonth && d === todayDay && opts.showHighlight) {
+      // Current date: Use contrasting color against the highlight circle
+      context.fillStyle = getCircleColorFromTextColor(opts.textColor).includes("0, 0, 0") ? "black" : "white";
+    } else {
+      // Normal date
+      context.fillStyle = opts.textColor;
+    }
+
     context.fillText(String(d), x, y);
+    context.restore(); // Restore context (opacity 1.0, fillStyle)
+
+    // 3. Draw horizontal strikethrough OVER text (if past and enabled)
+    if (isCurrentMonth && opts.showStrikethrough) {
+      const isPast = d < todayDay;
+      if (isPast) {
+        const textWidth = context.measureText(String(d)).width;
+        // Visual middle of the text - typically 40% up from baseline for digits
+        const lineY = y - (labelDaySize * 0.35);
+
+        // Fixed padding (10% of font size)
+        const padding = labelDaySize * 0.1;
+
+        context.save();
+        context.strokeStyle = opts.textColor;
+        context.lineWidth = Math.max(2, labelDaySize * 0.12); // Thick line
+        context.lineCap = "round"; // Smooth ends
+        context.globalAlpha = 0.7; // Match date opacity (Unified 70%)
+        context.beginPath();
+        // Horizontal line: Same Y, X extends by padding
+        context.moveTo(x - textWidth / 2 - padding, lineY);
+        context.lineTo(x + textWidth / 2 + padding, lineY);
+        context.stroke();
+        context.restore();
+      }
+    }
   }
 
   // Optional credit line kept blank intentionally, but spacing preserved
@@ -445,6 +533,8 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
       calendarScale = 1,
       setTextColor,
       textOverlay,
+      showStrikethrough,
+      showHighlight,
     },
     ref,
   ) {
@@ -473,6 +563,8 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
           viewMode,
           calendarScale,
           textOverlay,
+          showStrikethrough,
+          showHighlight,
         });
         return exportCanvas;
       };
@@ -512,6 +604,8 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
       viewMode,
       calendarScale,
       textOverlay,
+      showStrikethrough,
+      showHighlight,
     ]);
 
     function parseFamilies(input: string) {
@@ -545,11 +639,11 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
 
         const loads: Promise<unknown>[] = [
           fonts?.load?.(`400 24px ${JSON.stringify(cleaned)}`) ??
-            Promise.resolve(),
+          Promise.resolve(),
           fonts?.load?.(`500 24px ${JSON.stringify(cleaned)}`) ??
-            Promise.resolve(),
+          Promise.resolve(),
           fonts?.load?.(`700 24px ${JSON.stringify(cleaned)}`) ??
-            Promise.resolve(),
+          Promise.resolve(),
         ];
 
         await Promise.allSettled(loads);
@@ -582,6 +676,8 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
         viewMode,
         calendarScale,
         textOverlay,
+        showStrikethrough,
+        showHighlight,
       };
 
       if (imgRef.current) {
@@ -725,6 +821,8 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
       calendarScale,
       setTextColor,
       textOverlay,
+      showStrikethrough,
+      showHighlight,
     ]);
 
     return (

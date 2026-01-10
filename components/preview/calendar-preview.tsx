@@ -72,6 +72,8 @@ export const CalendarPreview = forwardRef<
 
   const isDownloading = useCalendarStore((state) => state.isDownloading);
   const textOverlay = useCalendarStore((state) => state.textOverlay);
+  const showStrikethrough = useCalendarStore((state) => state.showStrikethrough);
+  const showHighlight = useCalendarStore((state) => state.showHighlight);
 
   const effectiveFont = useMemo(() => {
     const baseFont =
@@ -204,6 +206,8 @@ export const CalendarPreview = forwardRef<
                 viewMode="desktop"
                 calendarScale={calendarScale}
                 textOverlay={textOverlay}
+                showStrikethrough={showStrikethrough}
+                showHighlight={showHighlight}
               />
             ) : (
               <div className="h-full w-full flex items-center justify-center text-muted-foreground">
@@ -242,6 +246,8 @@ export const CalendarPreview = forwardRef<
                 viewMode="mobile"
                 calendarScale={calendarScale}
                 textOverlay={textOverlay}
+                showStrikethrough={showStrikethrough}
+                showHighlight={showHighlight}
               />
             ) : (
               <div className="h-full w-full flex items-center justify-center text-muted-foreground">
