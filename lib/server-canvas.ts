@@ -1,6 +1,7 @@
 import { createCanvas, loadImage, registerFont } from "canvas";
 import path from "path";
 import { daysInMonth, firstDayOffset, formatMonthHeader, HeaderFormat } from "./calendar-utils";
+import { imageSize } from "image-size";
 
 // Register fonts
 const fontsDir = path.join(process.cwd(), "public", "fonts");
@@ -156,6 +157,7 @@ function drawWallpaperCalendar(
   const scale = Math.max(0.5, Math.min(1.5, calendarScale ?? 1));
 
   let monthSize = Math.round(height * (isMobile ? 0.03 : 0.05) * scale);
+  const minMonthSize = Math.round(monthSize * 0.5); // Allow shrinking to 50% of initial size
   const labelDaySize = Math.round(height * (isMobile ? 0.0115 : 0.02) * scale);
 
   const gridWidth = width * (isMobile ? 0.35 : 0.25) * scale;
@@ -229,7 +231,9 @@ function drawWallpaperCalendar(
   ctx.font = `${monthWeight} ${monthSize}px "${safeMonthFamily}"`;
   let measured = measureTrackedWidth(monthName, tracking);
   const maxMonthWidth = gridWidth * 0.96;
-  while (measured > maxMonthWidth && monthSize > Math.round(height * 0.06)) {
+  
+  // Adjusted shrink loop with dynamic minimum
+  while (measured > maxMonthWidth && monthSize > minMonthSize) {
     monthSize -= 2;
     tracking = monthSize * 0.055;
     ctx.font = `${monthWeight} ${monthSize}px "${safeMonthFamily}"`;
@@ -364,20 +368,32 @@ export async function generateWallpaper(
   imageBuffer: Buffer,
   config: WallpaperConfig
 ): Promise<Buffer> {
+  // Pre-validate dimensions using header-only check (no full decode)
+  try {
+    const dimensions = imageSize(imageBuffer);
+    if (!dimensions.width || !dimensions.height) {
+      throw new Error("Could not determine image dimensions");
+    }
+
+    if (dimensions.width > MAX_WIDTH || dimensions.height > MAX_HEIGHT) {
+      throw new Error(`Image dimensions exceed maximum limits (${MAX_WIDTH}x${MAX_HEIGHT})`);
+    }
+
+    if (dimensions.width * dimensions.height > MAX_PIXELS) {
+      throw new Error(`Image resolution exceeds maximum limit (${MAX_PIXELS} pixels)`);
+    }
+  } catch (e) {
+    // If checking dimensions fails (e.g. unknown format), or validation fails, propagate error
+    // If it's the "could not determine" error, you might want to allow loadImage to try or just fail.
+    // For security, we fail.
+    throw e;
+  }
+
+  // Safe to load
   const image = await loadImage(imageBuffer);
   
-  // Use image dimensions for high quality
   const width = image.width;
   const height = image.height;
-
-  // Validate Dimensions
-  if (width > MAX_WIDTH || height > MAX_HEIGHT) {
-    throw new Error(`Image dimensions exceed maximum limits (${MAX_WIDTH}x${MAX_HEIGHT})`);
-  }
-  
-  if (width * height > MAX_PIXELS) {
-    throw new Error(`Image resolution exceeds maximum limit (${MAX_PIXELS} pixels)`);
-  }
 
   const canvas = createCanvas(width, height);
   const ctx = canvas.getContext("2d");
