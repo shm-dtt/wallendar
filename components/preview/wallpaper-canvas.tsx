@@ -205,7 +205,6 @@ function drawWallpaperCalendar(
   context.textBaseline = "alphabetic";
   context.fillStyle = opts.textColor;
 
-  // context.shadowColor = "rgba(0,0,0,0.25)"
   context.shadowBlur = Math.max(1, Math.round(height * 0.004));
   context.shadowOffsetX = 0;
   context.shadowOffsetY = 0;
@@ -319,8 +318,8 @@ function drawWallpaperCalendar(
 
     // Determine text color
     if (isCurrentMonth && d < todayDay && opts.showStrikethrough) {
-      // Past date: Unified 50% opacity
-      context.globalAlpha = 0.7;
+      // Past date: Unified 40% opacity
+      context.globalAlpha = 0.4;
       context.fillStyle = opts.textColor;
     } else if (isCurrentMonth && d === todayDay && opts.showHighlight) {
       // Current date: Use contrasting color against the highlight circle
@@ -348,7 +347,7 @@ function drawWallpaperCalendar(
         context.strokeStyle = opts.textColor;
         context.lineWidth = Math.max(2, labelDaySize * 0.12); // Thick line
         context.lineCap = "round"; // Smooth ends
-        context.globalAlpha = 0.7; // Match date opacity (Unified 70%)
+        context.globalAlpha = 0.4; // Match date opacity (Unified 40%)
         context.beginPath();
         // Horizontal line: Same Y, X extends by padding
         context.moveTo(x - textWidth / 2 - padding, lineY);
