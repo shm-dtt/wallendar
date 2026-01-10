@@ -29,7 +29,7 @@ See [API_REFERENCE.md](API_REFERENCE.md) for full documentation, including all c
 ### Quick Example
 
 ```bash
-curl -X POST http://localhost:3000/api/create \
+curl -X POST https://wallendar.shop/api/create \
   -F "image=https://github.com/shm-dtt/wallendar/raw/main/public/samples/sample-bg1.jpg" \
   --output wallpaper.png
 ```
@@ -84,19 +84,6 @@ sudo apt-get install build-essential libcairo2-dev libpango1.0-dev
 **macOS:**
 ```bash
 brew install pkg-config cairo pango libpng jpeg giflib librsvg
-```
-
-**Docker (Node Alpine):**
-```dockerfile
-FROM node:18-alpine
-RUN apk add --no-cache \
-    build-base \
-    g++ \
-    cairo-dev \
-    jpeg-dev \
-    pango-dev \
-    giflib-dev
-# ... rest of your dockerfile
 ```
 
 ## Environment Variables
