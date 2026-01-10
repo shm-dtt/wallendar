@@ -47,8 +47,12 @@ function isPrivateIp(ip: string): boolean {
     if (ip === "::1") return true;
     // fc00::/7 (Unique Local)
     if (ip.toLowerCase().startsWith("fc") || ip.toLowerCase().startsWith("fd")) return true;
-    // fe80::/10 (Link Local)
-    if (ip.toLowerCase().startsWith("fe80")) return true;
+    
+    // fe80::/10 (Link Local) - covers fe80 through febf
+    // Normalize to handle mixed case and compressed zeros, but simple start check works for uncompressed prefix
+    // Better to check the first hextet properly
+    if (ip.match(/^fe[89ab][0-9a-f]/i)) return true;
+
     // ::ffff:127.0.0.1 (IPv4-mapped loopback)
     if (ip.toLowerCase().startsWith("::ffff:127.")) return true;
     // ::ffff:10.0.0.0/8
