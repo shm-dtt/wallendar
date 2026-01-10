@@ -70,7 +70,7 @@ function drawWallpaperBackground(
 ) {
   // Enable smoothing
   ctx.imageSmoothingEnabled = true;
-  ctx.quality = "best";
+  ctx.imageSmoothingQuality = "high";
 
   // Draw image cover with subtle vignette
   const scale = Math.max(width / image.width, height / image.height);
