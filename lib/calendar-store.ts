@@ -32,7 +32,7 @@ export type DownloadResolution = "hd" | "fhd" | "4k";
 
 export const getResolutionDimensions = (
   resolution: DownloadResolution,
-  viewMode: ViewMode
+  viewMode: ViewMode,
 ) => {
   if (viewMode === "mobile") {
     switch (resolution) {
@@ -300,8 +300,8 @@ export const useCalendarStore = create<CalendarState>()(
         };
       },
       version: 1,
-    }
-  )
+    },
+  ),
 );
 
 export const resolutionOptions = (viewMode: ViewMode) => [
@@ -321,3 +321,66 @@ export const resolutionOptions = (viewMode: ViewMode) => [
     description: viewMode === "mobile" ? "1440 x 2560" : "3840 x 2160",
   },
 ];
+
+/**
+ * Calculate maximum character limit for text overlay based on viewport.
+ * Smaller calendar scale = more space for text = higher limit.
+ * Uses piecewise linear interpolation for precise limits at all scales.
+ *
+ * Desktop viewport:
+ *   - Scale 0.5: 2000 chars
+ *   - Scale 0.75: 720 chars
+ *   - Scale 1.0: 300 chars
+ *   - Scale 1.25: 150 chars
+ *   - Scale 1.5: 92 chars
+ *
+ * Mobile viewport:
+ *   - Scale 0.5: 720 chars
+ *   - Scale 0.75: 280 chars
+ *   - Scale 1.0: 150 chars
+ *   - Scale 1.25: 75 chars
+ *   - Scale 1.5: 40 chars
+ *
+ * @param viewMode - Current viewport mode (desktop or mobile)
+ * @param calendarScale - Calendar scale factor (0.5 to 1.5)
+ * @returns Maximum allowed characters for text overlay
+ */
+export function getMaxTextOverlayLength(
+  viewMode: ViewMode,
+  calendarScale: number,
+): number {
+  // Clamp scale to valid range
+  const scale = Math.max(0.5, Math.min(1.5, calendarScale));
+
+  if (viewMode === "desktop") {
+    // Desktop: Piecewise linear interpolation
+    if (scale <= 0.75) {
+      // 0.5->2000, 0.75->720: slope = -5120
+      return Math.floor(2000 + (scale - 0.5) * -5120);
+    } else if (scale <= 1.0) {
+      // 0.75->720, 1.0->300: slope = -1680
+      return Math.floor(720 + (scale - 0.75) * -1680);
+    } else if (scale <= 1.25) {
+      // 1.0->300, 1.25->150: slope = -600
+      return Math.floor(300 + (scale - 1.0) * -600);
+    } else {
+      // 1.25->150, 1.5->92: slope = -232
+      return Math.floor(150 + (scale - 1.25) * -232);
+    }
+  } else {
+    // Mobile viewport: Piecewise linear interpolation
+    if (scale <= 0.75) {
+      // 0.5->720, 0.75->280: slope = -1760
+      return Math.floor(720 + (scale - 0.5) * -1760);
+    } else if (scale <= 1.0) {
+      // 0.75->280, 1.0->150: slope = -520
+      return Math.floor(280 + (scale - 0.75) * -520);
+    } else if (scale <= 1.25) {
+      // 1.0->150, 1.25->75: slope = -300
+      return Math.floor(150 + (scale - 1.0) * -300);
+    } else {
+      // 1.25->75, 1.5->40: slope = -140
+      return Math.floor(75 + (scale - 1.25) * -140);
+    }
+  }
+}
