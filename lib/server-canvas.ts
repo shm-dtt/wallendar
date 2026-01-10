@@ -53,6 +53,23 @@ export type WallpaperConfig = {
   };
 };
 
+export const VALID_HEADER_FORMATS: HeaderFormat[] = [
+  "full",
+  "short",
+  "numeric",
+  "numeric-full-year",
+  "numeric-short-year",
+  "short-short-year",
+  "short-full-year",
+];
+
+export class ImageValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ImageValidationError';
+  }
+}
+
 // Day labels
 const DOW_SUN = ["S", "M", "T", "W", "T", "F", "S"];
 const DOW_MON = ["M", "T", "W", "T", "F", "S", "S"];
@@ -372,21 +389,22 @@ export async function generateWallpaper(
   try {
     const dimensions = imageSize(imageBuffer);
     if (!dimensions.width || !dimensions.height) {
-      throw new Error("Could not determine image dimensions");
+      throw new ImageValidationError("Could not determine image dimensions");
     }
 
     if (dimensions.width > MAX_WIDTH || dimensions.height > MAX_HEIGHT) {
-      throw new Error(`Image dimensions exceed maximum limits (${MAX_WIDTH}x${MAX_HEIGHT})`);
+      throw new ImageValidationError(`Image dimensions exceed maximum limits (${MAX_WIDTH}x${MAX_HEIGHT})`);
     }
 
     if (dimensions.width * dimensions.height > MAX_PIXELS) {
-      throw new Error(`Image resolution exceeds maximum limit (${MAX_PIXELS} pixels)`);
+      throw new ImageValidationError(`Image resolution exceeds maximum limit (${MAX_PIXELS} pixels)`);
     }
   } catch (e) {
-    // If checking dimensions fails (e.g. unknown format), or validation fails, propagate error
-    // If it's the "could not determine" error, you might want to allow loadImage to try or just fail.
-    // For security, we fail.
-    throw e;
+    // Propagate ImageValidationError as-is, otherwise wrap or rethrow
+    if (e instanceof ImageValidationError) throw e;
+    
+    // If we can't determine dimensions (unsupported format), fail safe
+    throw new ImageValidationError("Invalid image data");
   }
 
   // Safe to load
