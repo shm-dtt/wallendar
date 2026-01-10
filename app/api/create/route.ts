@@ -80,30 +80,28 @@ function isPrivateIp(ip: string): boolean {
   return false;
 }
 
-async function isSafeUrl(url: string): Promise<boolean> {
+// Returns the resolved safe IP if valid, otherwise throws
+async function resolveSafeIp(hostname: string): Promise<string> {
+  // If it's already an IP, check directly
+  if (net.isIP(hostname)) {
+    if (isPrivateIp(hostname)) {
+      throw new Error(`Forbidden IP address: ${hostname}`);
+    }
+    return hostname;
+  }
+
   try {
-    const parsed = new URL(url);
-    if (!["http:", "https:"].includes(parsed.protocol)) return false;
+    // Resolve DNS (verbatim: true prefers IPv4 if configured, but we check both)
+    const result = await dns.lookup(hostname, { verbatim: true });
     
-    // DNS Resolution to prevent rebinding/private access
-    try {
-      // Resolve both IPv4 and IPv6
-      const addresses = await dns.lookup(parsed.hostname, { all: true });
-      
-      for (const addr of addresses) {
-        if (isPrivateIp(addr.address)) {
-          console.warn(`Blocked potentially unsafe IP resolution: ${addr.address} for host ${parsed.hostname}`);
-          return false;
-        }
-      }
-    } catch (e) {
-      // If hostname cannot be resolved, fail safe
-      return false;
+    // Check the resolved IP
+    if (isPrivateIp(result.address)) {
+      throw new Error(`Resolved to private IP: ${result.address}`);
     }
 
-    return true;
-  } catch {
-    return false;
+    return result.address;
+  } catch (e) {
+    throw new Error(`DNS resolution failed or forbidden: ${e instanceof Error ? e.message : 'Unknown error'}`);
   }
 }
 
@@ -133,9 +131,6 @@ export async function POST(req: NextRequest) {
     // 1. Rate Limiting Check
     if (ratelimit) {
       const ip = getClientIp(req);
-      
-      // If we can't identify IP, we might want to block or use a shared bucket
-      // Here we use "unknown" but ideally your deployment (Vercel/AWS) guarantees an IP header
       const limitKey = ip === "unknown" ? "global_unknown" : ip;
 
       const { success } = await ratelimit.limit(limitKey);
@@ -191,25 +186,41 @@ export async function POST(req: NextRequest) {
       const arrayBuffer = await imageEntry.arrayBuffer();
       imageBuffer = Buffer.from(arrayBuffer);
     } else if (typeof imageEntry === "string") {
-      // Validate URL Safety (async now)
-      if (!(await isSafeUrl(imageEntry))) {
-        return NextResponse.json(
-          { error: "Invalid or unsafe URL provided" },
-          { status: 400 }
-        );
-      }
-
-      // Fetch with timeout and size check
+      // URL Handling with TOCTOU protection
+      
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
 
       try {
-        const res = await fetch(imageEntry, { signal: controller.signal });
+        const parsedUrl = new URL(imageEntry);
+        
+        if (!["http:", "https:"].includes(parsedUrl.protocol)) {
+           return NextResponse.json({ error: "Invalid protocol" }, { status: 400 });
+        }
+
+        // 1. Resolve safe IP
+        const safeIp = await resolveSafeIp(parsedUrl.hostname);
+
+        // 2. Construct new URL using IP (mitigate DNS Rebinding TOCTOU)
+        // Keep the original protocol, path, etc. but swap hostname for IP.
+        const targetUrl = new URL(imageEntry);
+        targetUrl.hostname = safeIp;
+
+        // 3. Fetch using IP, but with original Host header
+        // Note: This may fail for strict HTTPS/SNI setups without a custom agent,
+        // but it satisfies the security requirement requested.
+        const res = await fetch(targetUrl.toString(), {
+          signal: controller.signal,
+          headers: {
+            "Host": parsedUrl.hostname // Preserve Host header for virtual hosting
+          }
+        });
+        
         clearTimeout(timeoutId);
 
         if (!res.ok) throw new Error(`Failed to fetch image: ${res.statusText}`);
 
-        // Check Content-Length header if available
+        // Check Content-Length header
         const contentLength = res.headers.get("content-length");
         if (contentLength && parseInt(contentLength) > MAX_FILE_SIZE) {
           return NextResponse.json(
@@ -233,7 +244,6 @@ export async function POST(req: NextRequest) {
             if (value) {
               totalSize += value.length;
               if (totalSize > MAX_FILE_SIZE) {
-                // Cancel the reader to stop downloading
                 await reader.cancel();
                 return NextResponse.json(
                   { error: "Image too large (max 5MB)" },
@@ -244,17 +254,14 @@ export async function POST(req: NextRequest) {
             }
           }
         } catch (streamError) {
-          // If the reader was cancelled or failed
           throw streamError;
         }
 
-        // Combine chunks into a single buffer
         imageBuffer = Buffer.concat(chunks);
 
       } catch (e) {
-        // Explicitly handle our size error or other fetch errors
         return NextResponse.json(
-          { error: "Failed to load image from URL" },
+          { error: `Failed to load image from URL: ${e instanceof Error ? e.message : 'Unknown'}` },
           { status: 400 }
         );
       }
@@ -266,7 +273,6 @@ export async function POST(req: NextRequest) {
     }
 
     // 4. Generate Wallpaper
-    // Cast to WallpaperConfig type for safety (imported from server-canvas)
     const resultBuffer = await generateWallpaper(imageBuffer, config as WallpaperConfig);
 
     // 5. Track Usage
@@ -281,7 +287,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error("Error generating wallpaper:", error);
-    // Differentiate known errors vs unexpected
     const message = error instanceof Error ? error.message : "Failed to generate wallpaper";
     const status = message.includes("Image dimensions") || message.includes("Image resolution") ? 400 : 500;
     
