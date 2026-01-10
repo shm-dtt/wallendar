@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateWallpaper } from "@/lib/server-canvas";
+import { generateWallpaper, WallpaperConfig } from "@/lib/server-canvas";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { incrementCount } from "@/lib/redis";
@@ -218,18 +218,41 @@ export async function POST(req: NextRequest) {
           );
         }
 
-        const arrayBuffer = await res.arrayBuffer();
+        // Streaming download with byte counting
+        if (!res.body) throw new Error("No response body");
         
-        // Validate Actual Buffer Size
-        if (arrayBuffer.byteLength > MAX_FILE_SIZE) {
-          return NextResponse.json(
-            { error: "Image too large (max 5MB)" },
-            { status: 400 }
-          );
+        const chunks: Uint8Array[] = [];
+        let totalSize = 0;
+        const reader = res.body.getReader();
+
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            
+            if (value) {
+              totalSize += value.length;
+              if (totalSize > MAX_FILE_SIZE) {
+                // Cancel the reader to stop downloading
+                await reader.cancel();
+                return NextResponse.json(
+                  { error: "Image too large (max 5MB)" },
+                  { status: 400 }
+                );
+              }
+              chunks.push(value);
+            }
+          }
+        } catch (streamError) {
+          // If the reader was cancelled or failed
+          throw streamError;
         }
 
-        imageBuffer = Buffer.from(arrayBuffer);
+        // Combine chunks into a single buffer
+        imageBuffer = Buffer.concat(chunks);
+
       } catch (e) {
+        // Explicitly handle our size error or other fetch errors
         return NextResponse.json(
           { error: "Failed to load image from URL" },
           { status: 400 }
@@ -243,7 +266,8 @@ export async function POST(req: NextRequest) {
     }
 
     // 4. Generate Wallpaper
-    const resultBuffer = await generateWallpaper(imageBuffer, config as any);
+    // Cast to WallpaperConfig type for safety (imported from server-canvas)
+    const resultBuffer = await generateWallpaper(imageBuffer, config as WallpaperConfig);
 
     // 5. Track Usage
     await incrementCount();

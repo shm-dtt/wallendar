@@ -103,3 +103,27 @@ curl -X POST https://your-domain.com/api/create \
   }' \
   --output motivational.png
 ```
+
+## Limits
+
+| Constraint | Value |
+|------------|-------|
+| Rate Limit | 5 requests per minute per IP |
+| Max Image Size | 5MB |
+| Request Timeout | 8 seconds (for URL fetches) |
+
+## Error Responses
+
+Errors return JSON with an `error` field:
+
+```json
+{
+  "error": "Description of the error"
+}
+```
+
+| Status | Meaning |
+|--------|---------|
+| 400 | Bad request (missing image, invalid URL, file too large) |
+| 429 | Rate limit exceeded |
+| 500 | Server error during generation |

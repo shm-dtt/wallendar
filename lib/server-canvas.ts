@@ -31,7 +31,7 @@ register("Ultra.ttf", "Ultra");
 register("ProductSans.ttf", "ui-sans-serif");
 register("ProductSans.ttf", "system-ui");
 
-type WallpaperConfig = {
+export type WallpaperConfig = {
   month: number;
   year: number;
   weekStart: "sunday" | "monday";
