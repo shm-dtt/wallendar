@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
 
     const formData = await req.formData();
     const imageEntry = formData.get("image");
-    const configStr = formData.get("config") as string;
+    const configEntry = formData.get("config");
 
     if (!imageEntry) {
       return NextResponse.json(
@@ -42,9 +42,18 @@ export async function POST(req: NextRequest) {
     };
 
     let userConfig = {};
-    if (configStr) {
+    
+    // Explicitly check config entry existence and type
+    if (configEntry !== null) {
+      if (typeof configEntry !== "string") {
+        return NextResponse.json(
+          { error: "Config must be a JSON string" },
+          { status: 400 }
+        );
+      }
+      
       try {
-        userConfig = JSON.parse(configStr);
+        userConfig = JSON.parse(configEntry);
       } catch (e) {
         return NextResponse.json(
           { error: "Invalid config JSON" },
