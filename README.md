@@ -116,6 +116,10 @@ For production download and publishing tracking:
 - `UPSTASH_REDIS_REST_URL` - Redis URL from Upstash
 - `UPSTASH_REDIS_REST_TOKEN` - Redis token from Upstash
 
+### Rate Limiting
+
+- `TRUST_PROXY` - Set to `true` if deploying behind a proxy (like Vercel) to ensure correct IP rate limiting.
+
 **Note**: The app will work without Redis, OAuth, and S3 in development mode, but these are required for full functionality in production.
 
 ---

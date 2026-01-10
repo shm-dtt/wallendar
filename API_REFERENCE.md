@@ -64,7 +64,7 @@ The API supports the following fonts (must match exactly):
 Generates a calendar for the current month using an image URL.
 
 ```bash
-curl -X POST https://your-domain.com/api/create \
+curl -X POST https://wallendar.shop/api/create \
   -F "image=https://example.com/wallpaper.jpg" \
   --output wallpaper.png
 ```
@@ -74,7 +74,7 @@ curl -X POST https://your-domain.com/api/create \
 Generates a specific month/year with custom styling.
 
 ```bash
-curl -X POST https://your-domain.com/api/create \
+curl -X POST https://wallendar.shop/api/create \
   -F "image=@/path/to/local/image.jpg" \
   -F 'config={
     "month": 11,
@@ -91,7 +91,7 @@ curl -X POST https://your-domain.com/api/create \
 Adds custom text to the wallpaper.
 
 ```bash
-curl -X POST https://your-domain.com/api/create \
+curl -X POST https://wallendar.shop/api/create \
   -F "image=https://example.com/bg.jpg" \
   -F 'config={
     "textOverlay": {
@@ -111,6 +111,8 @@ curl -X POST https://your-domain.com/api/create \
 | Rate Limit | 5 requests per minute per IP |
 | Max Image Size | 5MB |
 | Request Timeout | 8 seconds (for URL fetches) |
+
+> **Note on Rate Limiting**: Ensure `TRUST_PROXY=true` is set in your environment variables if deploying behind a proxy (like Vercel) to enable correct IP detection.
 
 ## Error Responses
 
