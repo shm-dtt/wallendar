@@ -1,4 +1,5 @@
 import { createCanvas, loadImage, registerFont } from "canvas";
+import type { CanvasRenderingContext2D } from "canvas";
 import path from "path";
 import { daysInMonth, firstDayOffset, formatMonthHeader, HeaderFormat } from "./calendar-utils";
 import { imageSize } from "image-size";
