@@ -59,8 +59,7 @@ export async function POST(req: NextRequest) {
   try {
     // 1. Rate Limiting Check
     if (ratelimit) {
-      // getClientIp returns string (defaulting to 127.0.0.1 if TRUST_PROXY is false/headers missing)
-      // or we can strictly reject "unknown" if we wanted, but the new logic handles defaults safely.
+      // Securely retrieve client IP based on TRUST_PROXY configuration
       const ip = getClientIp(req);
       
       const { success } = await ratelimit.limit(ip);
@@ -139,14 +138,14 @@ export async function POST(req: NextRequest) {
            return NextResponse.json({ error: "Invalid protocol" }, { status: 400 });
         }
 
-        // 1. Resolve safe IP
+        // 1. Resolve safe IP to prevent SSRF
         const safeIp = await resolveSafeIp(parsedUrl.hostname);
 
         // 2. Construct new URL using IP (mitigate DNS Rebinding TOCTOU)
         const targetUrl = new URL(imageEntry);
         targetUrl.hostname = safeIp;
 
-        // 3. Fetch using IP, but with original Host header
+        // 3. Fetch using IP, but with original Host header for virtual hosting support
         const res = await fetch(targetUrl.toString(), {
           signal: controller.signal,
           headers: {
@@ -158,13 +157,13 @@ export async function POST(req: NextRequest) {
 
         if (!res.ok) throw new Error(`Failed to fetch image: ${res.statusText}`);
 
-        // FIX 3: Content-Type Validation
+        // Validate Content-Type to ensure it is an image
         const contentType = res.headers.get("content-type");
         if (!contentType || !contentType.startsWith("image/")) {
           throw new Error("URL must point to a valid image file");
         }
 
-        // Check Content-Length header
+        // Check Content-Length header for early rejection
         const contentLength = res.headers.get("content-length");
         if (contentLength && parseInt(contentLength) > MAX_FILE_SIZE) {
           return NextResponse.json(
@@ -173,7 +172,7 @@ export async function POST(req: NextRequest) {
           );
         }
 
-        // Streaming download with byte counting
+        // Streaming download with byte counting to prevent memory exhaustion
         if (!res.body) throw new Error("No response body");
         
         const chunks: Uint8Array[] = [];
@@ -204,10 +203,9 @@ export async function POST(req: NextRequest) {
         imageBuffer = Buffer.concat(chunks);
 
       } catch (e) {
-        // FIX 4: Generic Error Messages
+        // Log detailed error server-side but return generic error to client
         console.error("Image URL fetch error:", e);
         
-        // Handle DNS errors explicitly if they bubble up here, or mostly fetch errors
         return NextResponse.json(
           { error: "Failed to load image from the provided URL. Please ensure the URL is valid and accessible." },
           { status: 400 }
@@ -235,11 +233,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error("Error generating wallpaper:", error);
-    
-    // Check for DNS errors that might have bubbled up from resolveSafeIp before fetch
-    // resolveSafeIp throws errors which are caught here if they happen outside the fetch block?
-    // Wait, resolveSafeIp is called inside the `if (typeof imageEntry === "string")` block which has its own try/catch.
-    // So this catch block is for logic outside that or inside generateWallpaper.
     
     let status = 500;
     let message = "Failed to generate wallpaper";
