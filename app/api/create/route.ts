@@ -100,6 +100,13 @@ export async function POST(req: NextRequest) {
 
         // 1. Resolve safe IP to prevent SSRF
         const safeIp = await resolveSafeIp(parsedUrl.hostname);
+        
+        if (!safeIp) {
+           return NextResponse.json(
+             { error: "Invalid or inaccessible host" }, 
+             { status: 400 }
+           );
+        }
 
         // 2. Construct new URL using IP (mitigate DNS Rebinding TOCTOU)
         const targetUrl = new URL(imageEntry);
@@ -115,7 +122,10 @@ export async function POST(req: NextRequest) {
         
         clearTimeout(timeoutId);
 
-        if (!res.ok) throw new Error(`Failed to fetch image: ${res.statusText}`);
+        if (!res.ok) {
+          console.error(`Upstream image fetch failed: ${res.status} ${res.statusText}`);
+          throw new Error("Failed to fetch image from remote server");
+        }
 
         // Validate Content-Type to ensure it is an image
         const contentType = res.headers.get("content-type");
@@ -166,6 +176,16 @@ export async function POST(req: NextRequest) {
         // Log detailed error server-side but return generic error to client
         console.error("Image URL fetch error:", e);
         
+        // If we already sent a response (e.g. invalid host), don't overwrite it
+        // This check is implicit because NextResponse.json returns from the function, 
+        // but if e is caught from the main block, we need to return a generic error.
+        
+        // If the error is not a NextResponse, wrap it
+        if (e instanceof Response || (typeof e === 'object' && e !== null && 'status' in e)) {
+             // It's a next response we returned earlier (unlikely in this structure but good safety)
+             throw e; 
+        }
+
         return NextResponse.json(
           { error: "Failed to load image from the provided URL. Please ensure the URL is valid and accessible." },
           { status: 400 }
