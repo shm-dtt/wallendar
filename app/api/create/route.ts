@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateWallpaper, WallpaperConfig } from "@/lib/server-canvas";
+import { generateWallpaper, WallpaperConfig, VALID_HEADER_FORMATS, ImageValidationError } from "@/lib/server-canvas";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { incrementCount } from "@/lib/redis";
@@ -57,6 +57,14 @@ function isPrivateIp(ip: string): boolean {
     if (ip.toLowerCase().startsWith("::ffff:192.168.")) return true;
     // ::ffff:172.16.0.0/12
     if (ip.match(/^::ffff:172\.(1[6-9]|2[0-9]|3[0-1])\./i)) return true;
+    
+    // IPv4-mapped Multicast (224.0.0.0 - 239.255.255.255)
+    // ::ffff:224.x.x.x to ::ffff:239.x.x.x
+    if (ip.match(/^::ffff:(22[4-9]|23[0-9])\./i)) return true;
+    // IPv4-mapped Reserved/Future (240.0.0.0 - 255.255.255.255)
+    // ::ffff:240.x.x.x to ::ffff:255.x.x.x
+    if (ip.match(/^::ffff:(24[0-9]|25[0-5])\./i)) return true;
+
     return false;
   }
 
@@ -74,6 +82,12 @@ function isPrivateIp(ip: string): boolean {
     if (ip.startsWith("169.254.")) return true;
     // 0.0.0.0/8 (Current network)
     if (ip.startsWith("0.")) return true;
+    
+    // Multicast (224.0.0.0 - 239.255.255.255)
+    if (ip.match(/^(22[4-9]|23[0-9])\./)) return true;
+    // Reserved/Future/Broadcast (240.0.0.0 - 255.255.255.255)
+    if (ip.match(/^(24[0-9]|25[0-5])\./)) return true;
+
     return false;
   }
   
@@ -129,8 +143,8 @@ function validateConfig(config: any): config is WallpaperConfig {
   if (typeof config.year !== "number" || config.year < 1000 || config.year > 9999) return false;
   if (!["sunday", "monday"].includes(config.weekStart)) return false;
   
-  // HeaderFormat check (simplified for now, ideally check strict enum values)
-  if (typeof config.headerFormat !== "string") return false;
+  // Strict HeaderFormat check
+  if (typeof config.headerFormat !== "string" || !VALID_HEADER_FORMATS.includes(config.headerFormat)) return false;
   
   if (typeof config.textColor !== "string") return false;
   if (typeof config.fontFamily !== "string") return false;
@@ -327,8 +341,19 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error("Error generating wallpaper:", error);
-    const message = error instanceof Error ? error.message : "Failed to generate wallpaper";
-    const status = message.includes("Image dimensions") || message.includes("Image resolution") ? 400 : 500;
+    
+    let status = 500;
+    let message = "Failed to generate wallpaper";
+    
+    if (error instanceof ImageValidationError) {
+      status = 400;
+      message = error.message;
+    } else if (error instanceof Error) {
+      // Don't expose internal error details in production
+      message = process.env.NODE_ENV === 'production' 
+        ? "Failed to generate wallpaper" 
+        : error.message;
+    }
     
     return NextResponse.json(
       { error: message },
