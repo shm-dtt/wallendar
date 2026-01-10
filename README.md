@@ -29,7 +29,7 @@ See [API_REFERENCE.md](API_REFERENCE.md) for full documentation, including all c
 ### Quick Example
 
 ```bash
-curl -X POST https://www.wallendar.shop/api/create \
+curl -X POST http://localhost:3000/api/create \
   -F "image=https://github.com/shm-dtt/wallendar/raw/main/public/samples/sample-bg1.jpg" \
   --output wallpaper.png
 ```
@@ -68,7 +68,36 @@ npx prisma migrate dev
 npm run dev
 ```
 
-Visit `https://www.wallendar.shop` to get started.
+Visit `http://localhost:3000` to get started.
+
+## Deployment
+
+### Native Dependencies
+
+This project uses `node-canvas` for server-side image generation. This library relies on native system dependencies (`Cairo`, `Pango`) that must be installed on the deployment environment.
+
+**Debian/Ubuntu/Vercel:**
+```bash
+sudo apt-get install build-essential libcairo2-dev libpango1.0-dev
+```
+
+**macOS:**
+```bash
+brew install pkg-config cairo pango libpng jpeg giflib librsvg
+```
+
+**Docker (Node Alpine):**
+```dockerfile
+FROM node:18-alpine
+RUN apk add --no-cache \
+    build-base \
+    g++ \
+    cairo-dev \
+    jpeg-dev \
+    pango-dev \
+    giflib-dev
+# ... rest of your dockerfile
+```
 
 ## Environment Variables
 
@@ -87,7 +116,7 @@ To enable GitHub and Google login:
 
 - `DATABASE_URL` - PostgreSQL connection string (e.g., `postgresql://user:password@localhost:5432/wallendar`)
 - `BETTER_AUTH_SECRET` - Secret key for Better Auth (generate with `openssl rand -base64 32`)
-- `BETTER_AUTH_URL` - Your application URL (e.g., `https://www.wallendar.shop` for dev, `https://yourdomain.com` for production)
+- `BETTER_AUTH_URL` - Your application URL (e.g., `http://localhost:3000` for dev, `https://yourdomain.com` for production)
 - `GITHUB_CLIENT_ID` - GitHub OAuth App client ID
 - `GITHUB_CLIENT_SECRET` - GitHub OAuth App client secret
 - `GOOGLE_CLIENT_ID` - Google OAuth App client ID
