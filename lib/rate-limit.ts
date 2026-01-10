@@ -33,7 +33,7 @@ if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) 
 export function getClientIp(request: NextRequest): string {
   if (!TRUST_PROXY) {
     // When not behind trusted proxy, use direct connection IP only
-    return request.ip || "127.0.0.1";
+    return (request as any).ip || "127.0.0.1";
   }
   
   // Only trust headers when explicitly configured
@@ -41,5 +41,5 @@ export function getClientIp(request: NextRequest): string {
   if (forwarded) {
     return forwarded.split(",")[0].trim();
   }
-  return request.headers.get("x-real-ip") || request.ip || "127.0.0.1";
+  return request.headers.get("x-real-ip") || (request as any).ip || "127.0.0.1";
 }
