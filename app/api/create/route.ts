@@ -91,10 +91,8 @@ async function resolveSafeIp(hostname: string): Promise<string> {
   }
 
   try {
-    // Resolve DNS (verbatim: true prefers IPv4 if configured, but we check both)
     const result = await dns.lookup(hostname, { verbatim: true });
     
-    // Check the resolved IP
     if (isPrivateIp(result.address)) {
       throw new Error(`Resolved to private IP: ${result.address}`);
     }
@@ -105,12 +103,11 @@ async function resolveSafeIp(hostname: string): Promise<string> {
   }
 }
 
-function getClientIp(req: NextRequest): string {
+function getClientIp(req: NextRequest): string | null {
   // 1. Check x-forwarded-for
   const forwardedFor = req.headers.get("x-forwarded-for");
   if (forwardedFor) {
     const ips = forwardedFor.split(",").map((ip) => ip.trim());
-    // The first IP is the original client
     if (ips[0] && net.isIP(ips[0])) {
       return ips[0];
     }
@@ -122,8 +119,37 @@ function getClientIp(req: NextRequest): string {
     return realIp;
   }
 
-  // 3. Fallback (safe default for rate limiter key if absolutely nothing found)
-  return "unknown"; 
+  return null;
+}
+
+function validateConfig(config: any): config is WallpaperConfig {
+  if (typeof config !== "object" || config === null) return false;
+
+  if (typeof config.month !== "number" || config.month < 0 || config.month > 11) return false;
+  if (typeof config.year !== "number" || config.year < 1000 || config.year > 9999) return false;
+  if (!["sunday", "monday"].includes(config.weekStart)) return false;
+  
+  // HeaderFormat check (simplified for now, ideally check strict enum values)
+  if (typeof config.headerFormat !== "string") return false;
+  
+  if (typeof config.textColor !== "string") return false;
+  if (typeof config.fontFamily !== "string") return false;
+  if (typeof config.offsetX !== "number") return false;
+  if (typeof config.offsetY !== "number") return false;
+  if (!["desktop", "mobile"].includes(config.viewMode)) return false;
+  if (typeof config.calendarScale !== "number" || config.calendarScale <= 0) return false;
+
+  if (config.textOverlay) {
+    if (typeof config.textOverlay !== "object") return false;
+    if (typeof config.textOverlay.enabled !== "boolean") return false;
+    if (typeof config.textOverlay.content !== "string") return false;
+    if (typeof config.textOverlay.fontSize !== "number") return false;
+    if (typeof config.textOverlay.font !== "string") return false;
+    if (typeof config.textOverlay.useTypographyFont !== "boolean") return false;
+    if (typeof config.textOverlay.position !== "string") return false;
+  }
+
+  return true;
 }
 
 export async function POST(req: NextRequest) {
@@ -131,9 +157,15 @@ export async function POST(req: NextRequest) {
     // 1. Rate Limiting Check
     if (ratelimit) {
       const ip = getClientIp(req);
-      const limitKey = ip === "unknown" ? "global_unknown" : ip;
+      
+      if (!ip) {
+        return NextResponse.json(
+          { error: "Unable to identify client IP for rate limiting." },
+          { status: 400 }
+        );
+      }
 
-      const { success } = await ratelimit.limit(limitKey);
+      const { success } = await ratelimit.limit(ip);
       if (!success) {
         return NextResponse.json(
           { error: "Too many requests. Please try again later." },
@@ -166,11 +198,22 @@ export async function POST(req: NextRequest) {
       try {
         userConfig = JSON.parse(configStr);
       } catch (e) {
-        console.warn("Invalid config JSON, using defaults");
+        return NextResponse.json(
+          { error: "Invalid config JSON" },
+          { status: 400 }
+        );
       }
     }
 
-    const config = { ...defaults, ...userConfig };
+    const mergedConfig = { ...defaults, ...userConfig };
+
+    // Validate Config Type
+    if (!validateConfig(mergedConfig)) {
+      return NextResponse.json(
+        { error: "Invalid configuration parameters" },
+        { status: 400 }
+      );
+    }
 
     // 3. Prepare Image Buffer & Validate Size/Safety
     let imageBuffer: Buffer;
@@ -202,17 +245,14 @@ export async function POST(req: NextRequest) {
         const safeIp = await resolveSafeIp(parsedUrl.hostname);
 
         // 2. Construct new URL using IP (mitigate DNS Rebinding TOCTOU)
-        // Keep the original protocol, path, etc. but swap hostname for IP.
         const targetUrl = new URL(imageEntry);
         targetUrl.hostname = safeIp;
 
         // 3. Fetch using IP, but with original Host header
-        // Note: This may fail for strict HTTPS/SNI setups without a custom agent,
-        // but it satisfies the security requirement requested.
         const res = await fetch(targetUrl.toString(), {
           signal: controller.signal,
           headers: {
-            "Host": parsedUrl.hostname // Preserve Host header for virtual hosting
+            "Host": parsedUrl.hostname
           }
         });
         
@@ -273,7 +313,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 4. Generate Wallpaper
-    const resultBuffer = await generateWallpaper(imageBuffer, config as WallpaperConfig);
+    const resultBuffer = await generateWallpaper(imageBuffer, mergedConfig);
 
     // 5. Track Usage
     await incrementCount();
