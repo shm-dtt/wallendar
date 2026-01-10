@@ -3,6 +3,8 @@ import { Redis } from "@upstash/redis";
 import { NextRequest } from "next/server";
 import net from "node:net";
 
+const TRUST_PROXY = process.env.TRUST_PROXY === "true";
+
 // Initialize Rate Limiter
 export let ratelimit: Ratelimit | null = null;
 
@@ -16,21 +18,29 @@ if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) 
   });
 }
 
-export function getClientIp(req: NextRequest): string | null {
-  // 1. Check x-forwarded-for
-  const forwardedFor = req.headers.get("x-forwarded-for");
-  if (forwardedFor) {
-    const ips = forwardedFor.split(",").map((ip) => ip.trim());
-    if (ips[0] && net.isIP(ips[0])) {
-      return ips[0];
-    }
+/**
+ * Extracts client IP address from request.
+ * 
+ * SECURITY: Set TRUST_PROXY=true environment variable ONLY when deployed
+ * behind a properly configured reverse proxy (Vercel, CloudFlare, nginx)
+ * that strips/overrides x-forwarded-for and x-real-ip headers.
+ * 
+ * Without trusted proxy configuration, these headers can be spoofed to
+ * bypass rate limiting.
+ * 
+ * @param request - Next.js request object
+ * @returns Client IP address
+ */
+export function getClientIp(request: NextRequest): string {
+  if (!TRUST_PROXY) {
+    // When not behind trusted proxy, use direct connection IP only
+    return request.ip || "127.0.0.1";
   }
-
-  // 2. Check x-real-ip
-  const realIp = req.headers.get("x-real-ip");
-  if (realIp && net.isIP(realIp)) {
-    return realIp;
+  
+  // Only trust headers when explicitly configured
+  const forwarded = request.headers.get("x-forwarded-for");
+  if (forwarded) {
+    return forwarded.split(",")[0].trim();
   }
-
-  return null;
+  return request.headers.get("x-real-ip") || request.ip || "127.0.0.1";
 }

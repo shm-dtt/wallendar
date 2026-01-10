@@ -13,6 +13,9 @@ export function isPrivateIp(ip: string): boolean {
     // fe80::/10 (Link Local) - covers fe80 through febf
     if (ip.match(/^fe[89ab][0-9a-f]/i)) return true;
 
+    // ff00::/8 (Multicast)
+    if (ip.toLowerCase().startsWith("ff")) return true;
+
     // ::ffff:127.0.0.1 (IPv4-mapped loopback)
     if (ip.toLowerCase().startsWith("::ffff:127.")) return true;
     // ::ffff:10.0.0.0/8
@@ -67,7 +70,15 @@ export async function resolveSafeIp(hostname: string): Promise<string> {
   }
 
   try {
-    const result = await dns.lookup(hostname, { verbatim: true });
+    const DNS_TIMEOUT = 5000; // 5 second timeout
+    
+    const lookupPromise = dns.lookup(hostname, { verbatim: true });
+    
+    const timeoutPromise = new Promise<dns.LookupAddress>((_, reject) =>
+      setTimeout(() => reject(new Error("DNS lookup timeout")), DNS_TIMEOUT)
+    );
+    
+    const result = await Promise.race([lookupPromise, timeoutPromise]);
     
     if (isPrivateIp(result.address)) {
       throw new Error(`Resolved to private IP: ${result.address}`);

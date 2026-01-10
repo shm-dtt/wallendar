@@ -59,15 +59,10 @@ export async function POST(req: NextRequest) {
   try {
     // 1. Rate Limiting Check
     if (ratelimit) {
+      // getClientIp returns string (defaulting to 127.0.0.1 if TRUST_PROXY is false/headers missing)
+      // or we can strictly reject "unknown" if we wanted, but the new logic handles defaults safely.
       const ip = getClientIp(req);
       
-      if (!ip) {
-        return NextResponse.json(
-          { error: "Unable to identify client IP for rate limiting." },
-          { status: 400 }
-        );
-      }
-
       const { success } = await ratelimit.limit(ip);
       if (!success) {
         return NextResponse.json(
@@ -163,6 +158,12 @@ export async function POST(req: NextRequest) {
 
         if (!res.ok) throw new Error(`Failed to fetch image: ${res.statusText}`);
 
+        // FIX 3: Content-Type Validation
+        const contentType = res.headers.get("content-type");
+        if (!contentType || !contentType.startsWith("image/")) {
+          throw new Error("URL must point to a valid image file");
+        }
+
         // Check Content-Length header
         const contentLength = res.headers.get("content-length");
         if (contentLength && parseInt(contentLength) > MAX_FILE_SIZE) {
@@ -203,8 +204,12 @@ export async function POST(req: NextRequest) {
         imageBuffer = Buffer.concat(chunks);
 
       } catch (e) {
+        // FIX 4: Generic Error Messages
+        console.error("Image URL fetch error:", e);
+        
+        // Handle DNS errors explicitly if they bubble up here, or mostly fetch errors
         return NextResponse.json(
-          { error: `Failed to load image from URL: ${e instanceof Error ? e.message : 'Unknown'}` },
+          { error: "Failed to load image from the provided URL. Please ensure the URL is valid and accessible." },
           { status: 400 }
         );
       }
@@ -230,6 +235,11 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error("Error generating wallpaper:", error);
+    
+    // Check for DNS errors that might have bubbled up from resolveSafeIp before fetch
+    // resolveSafeIp throws errors which are caught here if they happen outside the fetch block?
+    // Wait, resolveSafeIp is called inside the `if (typeof imageEntry === "string")` block which has its own try/catch.
+    // So this catch block is for logic outside that or inside generateWallpaper.
     
     let status = 500;
     let message = "Failed to generate wallpaper";
