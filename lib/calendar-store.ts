@@ -190,7 +190,7 @@ export const useCalendarStore = create<CalendarState>()(
         position: "center",
       },
       showStrikethrough: false,
-      showHighlight: true,
+      showHighlight: false,
       persistedAt: undefined,
 
       // Actions
