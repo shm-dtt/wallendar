@@ -18,7 +18,6 @@ const register = (file: string, family: string, weight?: string) => {
 // Register all available fonts
 // We register them with standard weights unless they are specific variants
 register("ProductSans.ttf", "Product Sans");
-register("ProductSans.ttf", "Product Sans", "400"); // Explicit fallback
 register("Montserrat.ttf", "Montserrat", "500"); // Used as 500 in code
 register("Doto.ttf", "Doto", "700"); // Used as 700 in code
 register("CraftyGirls.ttf", "Crafty Girls");
@@ -27,10 +26,6 @@ register("PlaywriteCA.ttf", "Playwrite CA");
 register("SegoeScript.TTF", "Segoe Script");
 register("InstrumentSerif.ttf", "Instrument Serif");
 register("Ultra.ttf", "Ultra");
-
-// Also register standard system fallbacks to avoid crashes if something is missing
-register("ProductSans.ttf", "ui-sans-serif");
-register("ProductSans.ttf", "system-ui");
 
 export type WallpaperConfig = {
   month: number;
@@ -77,7 +72,7 @@ const DOW_MON = ["M", "T", "W", "T", "F", "S", "S"];
 // Constants for image validation
 const MAX_WIDTH = 8192; // 8K
 const MAX_HEIGHT = 8192; // 8K
-const MAX_PIXELS = 50_000_000; // ~50MP
+const MAX_PIXELS = 70_000_000; // ~70MP (enough for 8K * 8K)
 
 function drawWallpaperBackground(
   ctx: CanvasRenderingContext2D,
@@ -201,10 +196,8 @@ function drawWallpaperCalendar(
   ctx.shadowBlur = Math.max(1, Math.round(height * 0.004));
   ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 0;
-  // Canvas in node needs explicit shadow color usually, but client defaults to transparent black?
-  // Client code: context.shadowColor = "rgba(0,0,0,0.25)" commented out?
-  // Wait, line 191 in client code is commented out. But line 348 sets it for overlay.
-  // We'll set a default shadow color just in case blur is used.
+  
+  // Set explicit shadow color for node-canvas
   ctx.shadowColor = "rgba(0,0,0,0.25)";
 
   const monthName = formatMonthHeader(month, year, headerFormat);
