@@ -60,11 +60,11 @@ export function isPrivateIp(ip: string): boolean {
 }
 
 // Returns the resolved safe IP if valid, otherwise throws
-export async function resolveSafeIp(hostname: string): Promise<string> {
+export async function resolveSafeIp(hostname: string): Promise<string | null> {
   // If it's already an IP, check directly
   if (net.isIP(hostname)) {
     if (isPrivateIp(hostname)) {
-      throw new Error(`Forbidden IP address: ${hostname}`);
+      return null;
     }
     return hostname;
   }
@@ -72,20 +72,32 @@ export async function resolveSafeIp(hostname: string): Promise<string> {
   try {
     const DNS_TIMEOUT = 5000; // 5 second timeout
     
-    const lookupPromise = dns.lookup(hostname, { verbatim: true });
+    let timeoutId: NodeJS.Timeout;
     
-    const timeoutPromise = new Promise<dns.LookupAddress>((_, reject) =>
-      setTimeout(() => reject(new Error("DNS lookup timeout")), DNS_TIMEOUT)
+    const lookupPromise = new Promise<string>((resolve, reject) => {
+      // dns.lookup calls getaddrinfo (system resolver)
+      // Using { verbatim: true } usually prefers IPv4 but order isn't guaranteed
+      // We resolve strictly one address to pin
+      dns.lookup(hostname, { verbatim: true })
+        .then(result => resolve(result.address))
+        .catch(reject);
+    });
+    
+    const timeoutPromise = new Promise<string>((_, reject) =>
+      timeoutId = setTimeout(() => reject(new Error("DNS lookup timeout")), DNS_TIMEOUT)
     );
     
-    const result = await Promise.race([lookupPromise, timeoutPromise]);
+    const address = await Promise.race([lookupPromise, timeoutPromise]);
+    clearTimeout(timeoutId!);
     
-    if (isPrivateIp(result.address)) {
-      throw new Error(`Resolved to private IP: ${result.address}`);
+    if (isPrivateIp(address)) {
+      return null;
     }
 
-    return result.address;
+    return address;
   } catch (e) {
-    throw new Error(`DNS resolution failed or forbidden: ${e instanceof Error ? e.message : 'Unknown error'}`);
+    // Log full error server-side, return null to caller (generic error)
+    console.error("DNS resolution failed:", e);
+    return null;
   }
 }

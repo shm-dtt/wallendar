@@ -1,7 +1,6 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { NextRequest } from "next/server";
-import net from "node:net";
 
 const TRUST_PROXY = process.env.TRUST_PROXY === "true";
 

@@ -110,10 +110,8 @@ function sanitizeFamily(fam: string) {
     return "Product Sans";
   }
   
-  // Remove CSS variable syntax
   const cleaned = fam.replace(/var\([^)]*\)\s*,?/g, "").trim();
   
-  // Validate against allowed characters (alphanumeric, spaces, hyphens, underscores)
   if (!/^[a-zA-Z0-9\s\-_]+$/.test(cleaned)) {
     console.warn(`Invalid font family characters detected: ${fam}`);
     return "Product Sans";
@@ -122,11 +120,15 @@ function sanitizeFamily(fam: string) {
   return cleaned;
 }
 
+function getFontWeight(family: string) {
+  if (family.includes("Montserrat")) return "500";
+  if (family.includes("Doto")) return "700";
+  return "400";
+}
+
 function drawBackground(ctx: CanvasRenderingContext2D, width: number, height: number, img: any): void {
-  // Draw the image
   ctx.drawImage(img, 0, 0, width, height);
   
-  // Draw vignette
   const vignetteGradient = ctx.createRadialGradient(
     width / 2, height / 2, 0,
     width / 2, height / 2, Math.max(width, height) * VIGNETTE_GRADIENT_MID
@@ -136,7 +138,6 @@ function drawBackground(ctx: CanvasRenderingContext2D, width: number, height: nu
   ctx.fillStyle = vignetteGradient;
   ctx.fillRect(0, 0, width, height);
   
-  // Draw bottom fade
   const fadeHeight = height * BOTTOM_FADE_HEIGHT_RATIO;
   const fadeGradient = ctx.createLinearGradient(0, height - fadeHeight, 0, height);
   fadeGradient.addColorStop(0, `rgba(0,0,0,0)`);
@@ -150,34 +151,21 @@ function calculateLayout(width: number, height: number, config: WallpaperConfig)
   const viewMode = config.viewMode || (isMobile ? "mobile" : "desktop");
   const scale = config.calendarScale || 1;
   
-  // Original logic was dynamic based on viewport percentages
-  // We'll map the new constants to respect the original design intent while using clean constants
-  
-  // Original: gridWidth = width * (isMobile ? 0.35 : 0.25) * scale
-  // The proposed refactor used fixed widths, but dynamic is better for wallpaper generation
-  // We will adapt the refactor suggestion to be dynamic to match pixel-perfect requirement
-  
-  const baseSize = Math.min(width, height) * scale;
   const calW = width * (isMobile ? 0.35 : 0.25) * scale;
   
-  return { isMobile, viewMode, scale, baseSize, calW };
+  return { isMobile, viewMode, scale, calW };
 }
 
 function drawMonthHeader(
   ctx: CanvasRenderingContext2D,
   config: WallpaperConfig,
   calW: number,
-  calH: number, // Approximate height context
+  calH: number,
   yPos: number
 ): number {
   const { month, year, headerFormat, textColor, fontFamily } = config;
   const monthName = formatMonthHeader(month, year, headerFormat);
   
-  // Original logic used explicit scaling percentages
-  // monthSize = height * (isMobile ? 0.03 : 0.05) * scale
-  // We'll stick to the proven scaling logic from the original code but refactored
-  
-  // Helper to measure tracked width for fit-to-grid logic
   function measureTrackedWidth(text: string, trackingPx: number) {
     const chars = Array.from(text);
     const widths = chars.map((ch) => ctx.measureText(ch).width);
@@ -187,7 +175,6 @@ function drawMonthHeader(
     );
   }
 
-  // Helper: drawTrackedCentered
   function drawTrackedCentered(
     text: string,
     x: number,
@@ -208,14 +195,9 @@ function drawMonthHeader(
     }
   }
 
-  // Determine font weight
   const family = sanitizeFamily(fontFamily);
-  let weight = "400";
-  if (family.includes("Montserrat")) weight = "500";
-  if (family.includes("Doto")) weight = "700";
+  const weight = getFontWeight(family);
 
-  // Sizing logic from original (critical for visual parity)
-  // calH here passes as 'height' from original context
   const isMobile = config.viewMode === "mobile";
   const scale = config.calendarScale;
   
@@ -237,7 +219,6 @@ function drawMonthHeader(
     measured = measureTrackedWidth(monthName, tracking);
   }
   
-  // X is center of grid (calW is just grid width, not canvas width, so we draw at 0 relative to translation)
   drawTrackedCentered(monthName, 0, yPos, tracking);
   
   return yPos; 
@@ -261,25 +242,23 @@ function drawDayLabels(
   
   const labelDaySize = Math.round(calH * (isMobile ? 0.0115 : 0.02) * scale);
   const family = sanitizeFamily(config.fontFamily);
-  
-  let weight = "400";
-  if (family.includes("Montserrat")) weight = "500";
-  if (family.includes("Doto")) weight = "700";
+  const weight = getFontWeight(family);
 
   ctx.font = `${weight} ${labelDaySize}px "${family}"`;
   ctx.fillStyle = config.textColor;
   ctx.textAlign = "center";
   
-  // Calculate relative top spacing
   const spacing = Math.round(calH * (isMobile ? 0.05 : 0.08) * scale);
   const drawY = yPos + spacing;
 
   const startX = -calW / 2 + colW / 2;
 
+  ctx.save();
+  ctx.globalAlpha = 0.8;
   dayLabels.forEach((label, i) => {
-    ctx.globalAlpha = 0.8;
     ctx.fillText(label, startX + i * colW, drawY);
   });
+  ctx.restore();
   
   return drawY;
 }
@@ -300,10 +279,7 @@ function drawDateGrid(
   
   const labelDaySize = Math.round(calH * (isMobile ? 0.0115 : 0.02) * scale);
   const family = sanitizeFamily(fontFamily);
-  
-  let weight = "400";
-  if (family.includes("Montserrat")) weight = "500";
-  if (family.includes("Doto")) weight = "700";
+  const weight = getFontWeight(family);
 
   ctx.font = `${weight} ${labelDaySize}px "${family}"`;
   ctx.fillStyle = textColor;
@@ -340,9 +316,7 @@ function drawTextOverlay(
   const overlayFontSize = Math.round(height * 0.04 * fontSize * scale);
 
   let overlayFamily = useTypographyFont ? sanitizeFamily(config.fontFamily) : sanitizeFamily(font);
-  let weight = "400";
-  if (overlayFamily.includes("Montserrat")) weight = "500";
-  if (overlayFamily.includes("Doto")) weight = "700";
+  const weight = getFontWeight(overlayFamily);
 
   ctx.font = `${weight} ${overlayFontSize}px "${overlayFamily}"`;
   ctx.fillStyle = config.textColor;
@@ -369,7 +343,6 @@ function drawTextOverlay(
     maxTextWidth = width - 2 * paddingX;
   }
 
-  // Word wrapping
   const paragraphs = content.split("\n");
   const lines: string[] = [];
 
@@ -412,7 +385,6 @@ function drawTextOverlay(
     ctx.fillText(line, x, startY + index * lineHeight);
   });
   
-  // Reset shadow
   ctx.shadowColor = "rgba(0,0,0,0.25)";
   ctx.shadowBlur = Math.max(1, Math.round(height * 0.004));
 }
@@ -423,11 +395,11 @@ function drawWallpaperCalendar(
   height: number,
   config: WallpaperConfig
 ): void {
-  const { month, year, weekStart, headerFormat, textColor, fontFamily, offsetX = 0, offsetY = 0, viewMode = "desktop", calendarScale = 1 } = config;
+  const { offsetX = 0, offsetY = 0, viewMode = "desktop", calendarScale = 1 } = config;
 
   ctx.textAlign = "center";
   ctx.textBaseline = "alphabetic";
-  ctx.fillStyle = textColor;
+  ctx.fillStyle = config.textColor;
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
   
@@ -436,41 +408,33 @@ function drawWallpaperCalendar(
   ctx.shadowOffsetY = 0;
   ctx.shadowColor = "rgba(0,0,0,0.25)";
 
-  const isMobile = viewMode === "mobile";
-  const scale = Math.max(0.5, Math.min(1.5, calendarScale));
+  const layout = calculateLayout(width, height, config);
+  const { isMobile, calW } = layout;
   
-  // Calculate Grid Layout
-  const gridWidth = width * (isMobile ? 0.35 : 0.25) * scale;
-  
-  // Positioning
   const normX = Math.max(-1, Math.min(1, offsetX));
   let normY = Math.max(-1, Math.min(1, offsetY));
   
-  const verticalScaleAdjustment = (scale - 1) * -0.5;
+  const verticalScaleAdjustment = (calendarScale - 1) * -0.5;
   normY += verticalScaleAdjustment;
   normY = Math.max(-1, Math.min(1, normY));
 
-  const startX = width / 2; // Center of canvas
+  const startX = width / 2;
   const startY = height * (isMobile ? 0.4 : 0.34);
   
-  const shiftX = normX * ((width - gridWidth) / 2);
+  const shiftX = normX * ((width - calW) / 2);
   const shiftY = normY * (height * 0.3);
 
-  // Apply translation for calendar grid
   ctx.save();
   ctx.translate(startX + shiftX, startY + shiftY);
   
-  // Draw Components
-  // Note: We pass 'height' as context for scaling percentages
-  let currentY = 0; // Relative to translated origin
+  let currentY = 0;
   
-  currentY = drawMonthHeader(ctx, config, gridWidth, height, currentY);
-  currentY = drawDayLabels(ctx, config, gridWidth, height, currentY, weekStart);
-  drawDateGrid(ctx, config, gridWidth, height, currentY);
+  currentY = drawMonthHeader(ctx, config, calW, height, currentY);
+  currentY = drawDayLabels(ctx, config, calW, height, currentY, config.weekStart);
+  drawDateGrid(ctx, config, calW, height, currentY);
   
   ctx.restore();
 
-  // Draw Overlay
   drawTextOverlay(ctx, config, width, height);
 }
 
@@ -498,20 +462,13 @@ export async function generateWallpaper(
 
   const image = await loadImage(imageBuffer);
   
-  // Resize logic: If image is larger than 4K, we might want to scale it down?
-  // The prompt says "Reduce Image Size Limits" which we enforced above.
-  // But if we want to process it efficiently, we use the image dimensions.
-  
   const width = image.width;
   const height = image.height;
 
   const canvas = createCanvas(width, height);
   const ctx = canvas.getContext("2d");
 
-  // Draw Background
   drawBackground(ctx, width, height, image);
-  
-  // Draw Calendar
   drawWallpaperCalendar(ctx, width, height, config);
 
   return canvas.toBuffer("image/png");
