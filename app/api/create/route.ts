@@ -207,7 +207,9 @@ export async function POST(req: NextRequest) {
     await incrementCount();
 
     // 6. Return Result
-    return new NextResponse(resultBuffer, {
+    // Cast resultBuffer to BodyInit to satisfy TypeScript strictness
+    // Node.js Buffers are compatible at runtime
+    return new NextResponse(resultBuffer as unknown as BodyInit, {
       headers: {
         "Content-Type": "image/png",
         "Content-Disposition": `attachment; filename="wallendar-${Date.now()}.png"`,
