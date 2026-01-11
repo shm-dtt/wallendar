@@ -3,6 +3,7 @@ import { S3Client } from "@aws-sdk/client-s3";
 import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { sanitizeFilename } from "@/lib/sanitize";
 
 const s3Client = new S3Client({
   region: process.env.AWS_REGION,
@@ -59,9 +60,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate unique filename with month-year folder structure
+    // FIX: Sanitize the user-provided filename to prevent path traversal
+    const safeFilename = sanitizeFilename(originalFilename);
     const monthYearFolder = `${month}-${year}`;
     const timestamp = Date.now();
-    const s3Key = `wallpapers/${session.user.id}/${monthYearFolder}/${timestamp}-${originalFilename || "wallpaper.png"}`;
+    const s3Key = `wallpapers/${session.user.id}/${monthYearFolder}/${timestamp}-${safeFilename}`;
 
     // Generate presigned POST URL
     // Note: The file field name in the form must match what S3 expects
@@ -110,4 +113,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
