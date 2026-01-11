@@ -4,17 +4,29 @@ import { incrementCount } from "@/lib/redis";
 import { ratelimit, getClientIp } from "@/lib/rate-limit";
 import { resolveSafeIp } from "@/lib/ip-utils";
 import { validateConfig, DEFAULT_CONFIG, MAX_FILE_SIZE } from "@/lib/api-validation";
-import https from "node:https";
+import { logger } from "@/lib/logger";
+import { randomUUID } from "crypto";
 
 export async function POST(req: NextRequest) {
+  const requestId = randomUUID();
+  const startTime = Date.now();
+  
+  // Basic request logging (no sensitive data)
+  logger.info("Wallpaper generation request started", { 
+    requestId,
+    method: req.method,
+    url: req.url,
+    userAgent: req.headers.get("user-agent")
+  });
+
   try {
     // 1. Rate Limiting Check
     if (ratelimit) {
-      // Securely retrieve client IP based on TRUST_PROXY configuration
       const ip = getClientIp(req);
-      
       const { success } = await ratelimit.limit(ip);
+      
       if (!success) {
+        logger.warn("Rate limit exceeded", { requestId, ip });
         return NextResponse.json(
           { error: "Too many requests. Please try again later." },
           { status: 429 }
@@ -27,6 +39,7 @@ export async function POST(req: NextRequest) {
     const configEntry = formData.get("config");
 
     if (!imageEntry) {
+      logger.warn("Missing image in request", { requestId });
       return NextResponse.json(
         { error: "Missing image (file or URL)" },
         { status: 400 }
@@ -43,9 +56,9 @@ export async function POST(req: NextRequest) {
 
     let userConfig = {};
     
-    // Explicitly check config entry existence and type
     if (configEntry !== null) {
       if (typeof configEntry !== "string") {
+        logger.warn("Invalid config format (not string)", { requestId });
         return NextResponse.json(
           { error: "Config must be a JSON string" },
           { status: 400 }
@@ -55,6 +68,7 @@ export async function POST(req: NextRequest) {
       try {
         userConfig = JSON.parse(configEntry);
       } catch (e) {
+        logger.warn("Invalid config JSON", { requestId });
         return NextResponse.json(
           { error: "Invalid config JSON" },
           { status: 400 }
@@ -64,8 +78,8 @@ export async function POST(req: NextRequest) {
 
     const mergedConfig = { ...defaults, ...userConfig };
 
-    // Validate Config Type
     if (!validateConfig(mergedConfig)) {
+      logger.warn("Invalid configuration parameters", { requestId, config: mergedConfig });
       return NextResponse.json(
         { error: "Invalid configuration parameters" },
         { status: 400 }
@@ -76,10 +90,10 @@ export async function POST(req: NextRequest) {
     let imageBuffer: Buffer;
 
     if (imageEntry instanceof File) {
-      // Validate File Size
       if (imageEntry.size > MAX_FILE_SIZE) {
+        logger.warn("Image file too large", { requestId, size: imageEntry.size, limit: MAX_FILE_SIZE });
         return NextResponse.json(
-          { error: "Image too large (max 5MB)" },
+          { error: `Image too large (max ${MAX_FILE_SIZE / 1024 / 1024}MB)` },
           { status: 400 }
         );
       }
@@ -87,7 +101,6 @@ export async function POST(req: NextRequest) {
       imageBuffer = Buffer.from(arrayBuffer);
     } else if (typeof imageEntry === "string") {
       // URL Handling with TOCTOU protection
-      
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
 
@@ -95,24 +108,23 @@ export async function POST(req: NextRequest) {
         const parsedUrl = new URL(imageEntry);
         
         if (!["http:", "https:"].includes(parsedUrl.protocol)) {
+           logger.warn("Invalid image URL protocol", { requestId, protocol: parsedUrl.protocol });
            return NextResponse.json({ error: "Invalid protocol" }, { status: 400 });
         }
 
-        // 1. Resolve safe IP to prevent SSRF
         const safeIp = await resolveSafeIp(parsedUrl.hostname);
         
         if (!safeIp) {
+           logger.warn("Invalid or inaccessible host", { requestId, hostname: parsedUrl.hostname });
            return NextResponse.json(
              { error: "Invalid or inaccessible host" }, 
              { status: 400 }
            );
         }
 
-        // 2. Construct new URL using IP (mitigate DNS Rebinding TOCTOU)
         const targetUrl = new URL(imageEntry);
         targetUrl.hostname = safeIp;
 
-        // 3. Fetch using IP, but with original Host header for virtual hosting support
         const res = await fetch(targetUrl.toString(), {
           signal: controller.signal,
           headers: {
@@ -123,26 +135,25 @@ export async function POST(req: NextRequest) {
         clearTimeout(timeoutId);
 
         if (!res.ok) {
-          console.error(`Upstream image fetch failed: ${res.status} ${res.statusText}`);
+          logger.warn("Upstream image fetch failed", { requestId, status: res.status, url: imageEntry });
           throw new Error("Failed to fetch image from remote server");
         }
 
-        // Validate Content-Type to ensure it is an image
         const contentType = res.headers.get("content-type");
         if (!contentType || !contentType.startsWith("image/")) {
+          logger.warn("Invalid upstream content type", { requestId, contentType });
           throw new Error("URL must point to a valid image file");
         }
 
-        // Check Content-Length header for early rejection
         const contentLength = res.headers.get("content-length");
         if (contentLength && parseInt(contentLength) > MAX_FILE_SIZE) {
+          logger.warn("Upstream image too large (header)", { requestId, contentLength });
           return NextResponse.json(
-            { error: "Image too large (max 5MB)" },
+            { error: `Image too large (max ${MAX_FILE_SIZE / 1024 / 1024}MB)` },
             { status: 400 }
           );
         }
 
-        // Streaming download with byte counting to prevent memory exhaustion
         if (!res.body) throw new Error("No response body");
         
         const chunks: Uint8Array[] = [];
@@ -158,8 +169,9 @@ export async function POST(req: NextRequest) {
               totalSize += value.length;
               if (totalSize > MAX_FILE_SIZE) {
                 await reader.cancel();
+                logger.warn("Upstream image too large (stream)", { requestId, totalSize });
                 return NextResponse.json(
-                  { error: "Image too large (max 5MB)" },
+                  { error: `Image too large (max ${MAX_FILE_SIZE / 1024 / 1024}MB)` },
                   { status: 400 }
                 );
               }
@@ -173,19 +185,11 @@ export async function POST(req: NextRequest) {
         imageBuffer = Buffer.concat(chunks);
 
       } catch (e) {
-        // Log detailed error server-side but return generic error to client
-        console.error("Image URL fetch error:", e);
-        
-        // If we already sent a response (e.g. invalid host), don't overwrite it
-        // This check is implicit because NextResponse.json returns from the function, 
-        // but if e is caught from the main block, we need to return a generic error.
-        
-        // If the error is not a NextResponse, wrap it
         if (e instanceof Response || (typeof e === 'object' && e !== null && 'status' in e)) {
-             // It's a next response we returned earlier (unlikely in this structure but good safety)
              throw e; 
         }
 
+        logger.error("Image URL fetch error", { requestId, error: e instanceof Error ? e.message : "Unknown error" });
         return NextResponse.json(
           { error: "Failed to load image from the provided URL. Please ensure the URL is valid and accessible." },
           { status: 400 }
@@ -194,6 +198,7 @@ export async function POST(req: NextRequest) {
         clearTimeout(timeoutId);
       }
     } else {
+      logger.warn("Invalid image format", { requestId });
       return NextResponse.json(
         { error: "Invalid image format" },
         { status: 400 }
@@ -206,26 +211,30 @@ export async function POST(req: NextRequest) {
     // 5. Track Usage
     await incrementCount();
 
+    const duration = Date.now() - startTime;
+    logger.info("Wallpaper generated successfully", { requestId, durationMs: duration, size: resultBuffer.length });
+
     // 6. Return Result
-    // Cast resultBuffer to BodyInit to satisfy TypeScript strictness
-    // Node.js Buffers are compatible at runtime
     return new NextResponse(resultBuffer as unknown as BodyInit, {
       headers: {
         "Content-Type": "image/png",
         "Content-Disposition": `attachment; filename="wallendar-${Date.now()}.png"`,
       },
     });
+
   } catch (error) {
-    console.error("Error generating wallpaper:", error);
-    
+    const duration = Date.now() - startTime;
     let status = 500;
     let message = "Failed to generate wallpaper";
     
     if (error instanceof ImageValidationError) {
       status = 400;
       message = error.message;
+      logger.warn("Image validation error", { requestId, error: message, durationMs: duration });
     } else if (error instanceof Error) {
-      // Don't expose internal error details in production
+      // Log full stack trace for internal errors
+      logger.error("Internal server error", { requestId, error: error.message, stack: error.stack, durationMs: duration });
+      
       message = process.env.NODE_ENV === 'production' 
         ? "Failed to generate wallpaper" 
         : error.message;
