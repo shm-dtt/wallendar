@@ -4,13 +4,21 @@ import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 
-const s3Client = new S3Client({
-  region: process.env.AWS_REGION,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-  },
-});
+// Lazy initialization of S3 Client to prevent build crashes when env vars are missing
+let s3Client: S3Client | null = null;
+
+function getS3Client() {
+  if (!s3Client) {
+    s3Client = new S3Client({
+      region: process.env.AWS_REGION,
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+      },
+    });
+  }
+  return s3Client;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -63,9 +71,12 @@ export async function POST(request: NextRequest) {
     const timestamp = Date.now();
     const s3Key = `wallpapers/${session.user.id}/${monthYearFolder}/${timestamp}-${originalFilename || "wallpaper.png"}`;
 
+    // Initialize client only when needed
+    const client = getS3Client();
+
     // Generate presigned POST URL
     // Note: The file field name in the form must match what S3 expects
-    const { url, fields } = await createPresignedPost(s3Client, {
+    const { url, fields } = await createPresignedPost(client, {
       Bucket: bucket,
       Key: s3Key,
       Conditions: [
@@ -110,4 +121,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
