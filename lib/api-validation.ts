@@ -1,6 +1,6 @@
 import { WallpaperConfig, VALID_HEADER_FORMATS } from "@/lib/server-canvas";
 
-export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+export const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
 export const DEFAULT_CONFIG = {
   weekStart: "sunday",

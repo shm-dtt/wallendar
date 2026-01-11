@@ -1,7 +1,10 @@
 import { createCanvas, loadImage, registerFont } from "canvas";
-import type { CanvasRenderingContext2D } from "canvas";
+// Use an alias to avoid conflict with the DOM interface
+import type { CanvasRenderingContext2D as NodeCanvasRenderingContext2D } from "canvas";
 import path from "path";
-import { daysInMonth, firstDayOffset, formatMonthHeader, HeaderFormat } from "./calendar-utils";
+// Import HeaderFormat from calendar-store directly to avoid intermediate export issues
+import { HeaderFormat } from "./calendar-store";
+import { daysInMonth, firstDayOffset, formatMonthHeader } from "./calendar-utils";
 import { imageSize } from "image-size";
 
 // Register fonts
@@ -127,7 +130,7 @@ function getFontWeight(family: string) {
   return "400";
 }
 
-function drawBackground(ctx: CanvasRenderingContext2D, width: number, height: number, img: any): void {
+function drawBackground(ctx: NodeCanvasRenderingContext2D, width: number, height: number, img: any): void {
   ctx.drawImage(img, 0, 0, width, height);
   
   const vignetteGradient = ctx.createRadialGradient(
@@ -158,7 +161,7 @@ function calculateLayout(width: number, height: number, config: WallpaperConfig)
 }
 
 function drawMonthHeader(
-  ctx: CanvasRenderingContext2D,
+  ctx: NodeCanvasRenderingContext2D,
   config: WallpaperConfig,
   calW: number,
   calH: number,
@@ -226,7 +229,7 @@ function drawMonthHeader(
 }
 
 function drawDayLabels(
-  ctx: CanvasRenderingContext2D,
+  ctx: NodeCanvasRenderingContext2D,
   config: WallpaperConfig,
   calW: number,
   calH: number,
@@ -265,7 +268,7 @@ function drawDayLabels(
 }
 
 function drawDateGrid(
-  ctx: CanvasRenderingContext2D,
+  ctx: NodeCanvasRenderingContext2D,
   config: WallpaperConfig,
   calW: number,
   calH: number,
@@ -303,7 +306,7 @@ function drawDateGrid(
 }
 
 function drawTextOverlay(
-  ctx: CanvasRenderingContext2D,
+  ctx: NodeCanvasRenderingContext2D,
   config: WallpaperConfig,
   width: number,
   height: number
@@ -391,7 +394,7 @@ function drawTextOverlay(
 }
 
 function drawWallpaperCalendar(
-  ctx: CanvasRenderingContext2D,
+  ctx: NodeCanvasRenderingContext2D,
   width: number,
   height: number,
   config: WallpaperConfig
@@ -402,7 +405,9 @@ function drawWallpaperCalendar(
   ctx.textBaseline = "alphabetic";
   ctx.fillStyle = config.textColor;
   ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = "high";
+  // Type assertion used here because imageSmoothingQuality is supported at runtime
+  // by node-canvas but is missing from its Type Definitions
+  (ctx as any).imageSmoothingQuality = "high";
   
   ctx.shadowBlur = Math.max(1, Math.round(height * 0.004));
   ctx.shadowOffsetX = 0;
