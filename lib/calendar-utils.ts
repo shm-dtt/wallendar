@@ -1,5 +1,7 @@
 import { HeaderFormat } from "@/lib/calendar-store";
 
+export type { HeaderFormat };
+
 export function daysInMonth(year: number, monthIndex: number) {
   return new Date(year, monthIndex + 1, 0).getDate();
 }
@@ -74,7 +76,7 @@ export const gallery: string[] = [
   "/images/wallpaper5.png",
   "/images/wallpaper6.png",
   "/images/wallpaper7.webp",
-];
+  ];
 
 export const monthNames: string[] = [
   "Jan",
