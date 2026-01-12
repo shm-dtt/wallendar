@@ -215,7 +215,7 @@ export async function POST(req: NextRequest) {
     logger.info("Wallpaper generated successfully", { requestId, durationMs: duration, size: resultBuffer.length });
 
     // 6. Return Result
-    return new NextResponse(resultBuffer as unknown as BodyInit, {
+    return new NextResponse(new Uint8Array(resultBuffer), {
       headers: {
         "Content-Type": "image/png",
         "Content-Disposition": `attachment; filename="wallendar-${Date.now()}.png"`,
