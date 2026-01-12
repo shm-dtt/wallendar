@@ -3,6 +3,7 @@ import { S3Client } from "@aws-sdk/client-s3";
 import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { sanitizeFilename } from "@/lib/sanitize";
 
 // Lazy initialization of S3 Client to prevent build crashes when env vars are missing
 let s3Client: S3Client | null = null;
@@ -67,9 +68,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate unique filename with month-year folder structure
+    // FIX: Sanitize the user-provided filename to prevent path traversal
+    const safeFilename = sanitizeFilename(originalFilename);
     const monthYearFolder = `${month}-${year}`;
     const timestamp = Date.now();
-    const s3Key = `wallpapers/${session.user.id}/${monthYearFolder}/${timestamp}-${originalFilename || "wallpaper.png"}`;
+    const s3Key = `wallpapers/${session.user.id}/${monthYearFolder}/${timestamp}-${safeFilename}`;
 
     // Initialize client only when needed
     const client = getS3Client();
