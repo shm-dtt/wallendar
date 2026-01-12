@@ -1,4 +1,5 @@
 import { BackgroundSettings } from "@/components/controls/background";
+import { DateEffectsSettings } from "@/components/controls/date-effects";
 import { MonthSettings } from "@/components/controls/month";
 import { PositionSettings } from "@/components/controls/position";
 import { ScaleSettings } from "@/components/controls/scale";
@@ -7,7 +8,7 @@ import { TypographySettings } from "@/components/controls/typography";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, CaseSensitive, Image, Move, Scaling, Type } from "lucide-react";
+import { Calendar, CaseSensitive, CheckCircle2, Image, Move, Scaling, Type } from "lucide-react";
 export function CalendarControls() {
   return (
     <>
@@ -22,6 +23,8 @@ export function CalendarControls() {
           <PositionSettings />
           <Separator className="my-4" />
           <ScaleSettings />
+          <Separator className="my-4" />
+          <DateEffectsSettings />
           <Separator className="my-4" />
           <TextOverlaySettings />
         </div>
@@ -44,6 +47,9 @@ export function CalendarControls() {
             <TabsTrigger value="scale">
               <Scaling />
             </TabsTrigger>
+            <TabsTrigger value="dateeffects">
+              <CheckCircle2 />
+            </TabsTrigger>
             <TabsTrigger value="textoverlay">
               <Type />
             </TabsTrigger>
@@ -63,6 +69,9 @@ export function CalendarControls() {
             </TabsContent>
             <TabsContent value="scale">
               <ScaleSettings />
+            </TabsContent>
+            <TabsContent value="dateeffects">
+              <DateEffectsSettings />
             </TabsContent>
             <TabsContent value="textoverlay">
               <TextOverlaySettings />
