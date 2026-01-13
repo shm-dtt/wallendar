@@ -59,7 +59,7 @@ export function MonthSettings() {
         <h2 className="font-semibold text-sm">Calendar</h2>
       </div>
 
-      <div className="flex gap-4 flex-wrap">
+      <div className="flex gap-3 flex-wrap">
         {/* Column 1: Date, Month & Year */}
         <div className="space-y-1">
           <Label htmlFor="day" className="text-sm">
@@ -74,7 +74,7 @@ export function MonthSettings() {
               max={maxDays}
               value={useCustomDate ? customDay : ""}
               onChange={handleDayChange}
-              className="w-[70px] text-center"
+              className="w-[52px] text-center"
             />
             <Select
               value={month !== null ? String(month) : ""}
@@ -100,7 +100,7 @@ export function MonthSettings() {
               }
               min={1900}
               max={9999}
-              className="text-sm w-[100px]"
+              className="text-sm w-[112px]"
             />
           </ButtonGroup>
         </div>
@@ -143,7 +143,7 @@ export function MonthSettings() {
             value={headerFormat || ""}
             onValueChange={(v) => setHeaderFormat(v as HeaderFormat)}
           >
-            <SelectTrigger id="headerFormat" className="w-[130px]">
+            <SelectTrigger id="headerFormat" className="w-[105px]">
               <SelectValue placeholder="Full" />
             </SelectTrigger>
             <SelectContent>
