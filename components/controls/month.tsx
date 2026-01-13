@@ -34,6 +34,32 @@ export function MonthSettings() {
   // Helper for max days
   const maxDays = new Date(year, (month || 0) + 1, 0).getDate();
 
+  // Helper to get max days for a given month/year
+  const getMaxDays = (m: number, y: number) => new Date(y, m + 1, 0).getDate();
+
+  // Clamp customDay when month changes
+  const handleMonthChange = (newMonth: number) => {
+    setMonth(newMonth);
+    if (useCustomDate) {
+      const newMaxDays = getMaxDays(newMonth, year);
+      if (customDay > newMaxDays) {
+        setCustomDay(newMaxDays);
+      }
+    }
+  };
+
+  // Clamp customDay when year changes
+  const handleYearChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newYear = Number(e.target.value || new Date().getFullYear());
+    setYear(newYear);
+    if (useCustomDate) {
+      const newMaxDays = getMaxDays(month || 0, newYear);
+      if (customDay > newMaxDays) {
+        setCustomDay(newMaxDays);
+      }
+    }
+  };
+
   const handleDayChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     // If empty, disable custom date
@@ -78,7 +104,7 @@ export function MonthSettings() {
             />
             <Select
               value={month !== null ? String(month) : ""}
-              onValueChange={(v) => setMonth(Number(v))}
+              onValueChange={(v) => handleMonthChange(Number(v))}
             >
               <SelectTrigger id="month">
                 <SelectValue placeholder="MMM" />
@@ -95,9 +121,7 @@ export function MonthSettings() {
               id="year"
               type="number"
               value={year}
-              onChange={(e) =>
-                setYear(Number(e.target.value || new Date().getFullYear()))
-              }
+              onChange={handleYearChange}
               min={1900}
               max={9999}
               className="text-sm w-[112px]"
