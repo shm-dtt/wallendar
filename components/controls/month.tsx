@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -24,8 +25,17 @@ export function MonthSettings() {
   const headerFormat = useCalendarStore((state) => state.headerFormat);
   const setHeaderFormat = useCalendarStore((state) => state.setHeaderFormat);
 
+  // New State
+  const useCustomDate = useCalendarStore((state) => state.useCustomDate);
+  const setUseCustomDate = useCalendarStore((state) => state.setUseCustomDate);
+  const customDay = useCalendarStore((state) => state.customDay);
+  const setCustomDay = useCalendarStore((state) => state.setCustomDay);
+
+  // Helper for max days
+  const maxDays = new Date(year, (month || 0) + 1, 0).getDate();
+
   return (
-    <div className="py-1">
+    <div className="py-1 space-y-4">
       <div className="items-center gap-2 mb-3 hidden lg:flex">
         <Calendar className="w-4 h-4 text-primary" />
         <h2 className="font-semibold text-sm">Calendar</h2>
@@ -66,26 +76,24 @@ export function MonthSettings() {
           </ButtonGroup>
         </div>
 
-        <DateEffectsSettings />
-
         <div className="space-y-1">
           <Label className="text-sm">Start week on</Label>
-            <ButtonGroup>
-              <Button
-                variant={weekStart === "sunday" ? "default" : "outline"}
-                onClick={() => setWeekStart("sunday")}
-                className="cursor-pointer"
-              >
-                Sun
-              </Button>
-              <Button
-                variant={weekStart === "monday" ? "default" : "outline"}
-                onClick={() => setWeekStart("monday")}
-                className="cursor-pointer"
-              >
-                Mon
-              </Button>
-            </ButtonGroup>
+          <ButtonGroup>
+            <Button
+              variant={weekStart === "sunday" ? "default" : "outline"}
+              onClick={() => setWeekStart("sunday")}
+              className="cursor-pointer"
+            >
+              Sun
+            </Button>
+            <Button
+              variant={weekStart === "monday" ? "default" : "outline"}
+              onClick={() => setWeekStart("monday")}
+              className="cursor-pointer"
+            >
+              Mon
+            </Button>
+          </ButtonGroup>
         </div>
 
         <div className="space-y-1">
@@ -109,6 +117,44 @@ export function MonthSettings() {
           </Select>
         </div>
       </div>
+
+      <div className="flex items-center space-x-2">
+        <Switch
+          id="custom-date-mode"
+          checked={useCustomDate}
+          onCheckedChange={setUseCustomDate}
+        />
+        <Label htmlFor="custom-date-mode" className="text-sm font-medium">
+          Date Settings
+        </Label>
+      </div>
+
+      {useCustomDate && (
+        <div className="flex gap-4 flex-wrap items-end animate-in fade-in slide-in-from-top-1 duration-200">
+          <div className="space-y-1">
+            <Label htmlFor="custom-day" className="text-sm">
+              Day
+            </Label>
+            <Input
+              id="custom-day"
+              type="number"
+              min={1}
+              max={maxDays}
+              value={customDay}
+              onChange={(e) => {
+                let val = parseInt(e.target.value);
+                if (isNaN(val)) val = 1;
+                if (val < 1) val = 1;
+                if (val > maxDays) val = maxDays;
+                setCustomDay(val);
+              }}
+              className="w-20"
+            />
+          </div>
+
+          <DateEffectsSettings />
+        </div>
+      )}
     </div>
   );
 }
