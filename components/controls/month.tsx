@@ -12,6 +12,7 @@ import { Calendar } from "lucide-react";
 import { HeaderFormat, useCalendarStore } from "@/lib/calendar-store";
 import { monthNames, headerFormatOptions } from "@/lib/calendar-utils";
 import { ButtonGroup } from "@/components/ui/button-group";
+import { DateEffectsSettings } from "./date-effects";
 
 export function MonthSettings() {
   const month = useCalendarStore((state) => state.month);
@@ -64,6 +65,8 @@ export function MonthSettings() {
             />
           </ButtonGroup>
         </div>
+
+        <DateEffectsSettings />
 
         <div className="space-y-1">
           <Label className="text-sm">Start week on</Label>
