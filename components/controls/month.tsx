@@ -60,58 +60,60 @@ export function MonthSettings() {
       </div>
 
       <div className="flex gap-4 flex-wrap">
+        {/* Column 1: Date, Month & Year */}
         <div className="space-y-1">
-          <Label htmlFor="date-group" className="text-sm">
-            Date
+          <Label htmlFor="day" className="text-sm">
+            Date, Month & Year
           </Label>
-          <div className="flex gap-2">
-            <ButtonGroup>
-              <Input
-                id="day"
-                type="number"
-                placeholder="DD"
-                min={1}
-                max={maxDays}
-                value={useCustomDate ? customDay : ""}
-                onChange={handleDayChange}
-                className="w-[60px] text-center"
-              />
-              <Select
-                value={month !== null ? String(month) : ""}
-                onValueChange={(v) => setMonth(Number(v))}
-              >
-                <SelectTrigger id="month">
-                  <SelectValue placeholder="MMM" />
-                </SelectTrigger>
-                <SelectContent>
-                  {monthNames.map((m, idx) => (
-                    <SelectItem key={m} value={String(idx)}>
-                      {m}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Input
-                id="year"
-                type="number"
-                value={year}
-                onChange={(e) =>
-                  setYear(Number(e.target.value || new Date().getFullYear()))
-                }
-                min={1900}
-                max={9999}
-                className="text-sm w-[80px]"
-              />
-            </ButtonGroup>
-
-            {useCustomDate && (
-              <div className="animate-in fade-in slide-in-from-left-2 duration-300">
-                <DateEffectsSettings />
-              </div>
-            )}
-          </div>
+          <ButtonGroup>
+            <Input
+              id="day"
+              type="number"
+              placeholder="DD"
+              min={1}
+              max={maxDays}
+              value={useCustomDate ? customDay : ""}
+              onChange={handleDayChange}
+              className="w-[70px] text-center"
+            />
+            <Select
+              value={month !== null ? String(month) : ""}
+              onValueChange={(v) => setMonth(Number(v))}
+            >
+              <SelectTrigger id="month">
+                <SelectValue placeholder="MMM" />
+              </SelectTrigger>
+              <SelectContent>
+                {monthNames.map((m, idx) => (
+                  <SelectItem key={m} value={String(idx)}>
+                    {m}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Input
+              id="year"
+              type="number"
+              value={year}
+              onChange={(e) =>
+                setYear(Number(e.target.value || new Date().getFullYear()))
+              }
+              min={1900}
+              max={9999}
+              className="text-sm w-[100px]"
+            />
+          </ButtonGroup>
         </div>
 
+        {/* Column 2: Date Effects (Conditional) */}
+        {useCustomDate && (
+          <div className="space-y-1 animate-in fade-in slide-in-from-left-2 duration-300">
+            <Label className="text-sm">Date Effects</Label>
+            <DateEffectsSettings />
+          </div>
+        )}
+
+        {/* Column 3: Start Week */}
         <div className="space-y-1">
           <Label className="text-sm">Start week on</Label>
           <ButtonGroup>
@@ -132,6 +134,7 @@ export function MonthSettings() {
           </ButtonGroup>
         </div>
 
+        {/* Column 4: Format */}
         <div className="space-y-1">
           <Label htmlFor="headerFormat" className="text-sm">
             Format
