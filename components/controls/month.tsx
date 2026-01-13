@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -30,12 +29,31 @@ export function MonthSettings() {
   const setUseCustomDate = useCalendarStore((state) => state.setUseCustomDate);
   const customDay = useCalendarStore((state) => state.customDay);
   const setCustomDay = useCalendarStore((state) => state.setCustomDay);
+  const setShowHighlight = useCalendarStore((state) => state.setShowHighlight);
 
   // Helper for max days
   const maxDays = new Date(year, (month || 0) + 1, 0).getDate();
 
+  const handleDayChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    // If empty, disable custom date
+    if (val === "") {
+      setUseCustomDate(false);
+      return;
+    }
+    const num = parseInt(val);
+    if (!isNaN(num) && num >= 1 && num <= maxDays) {
+      if (!useCustomDate) {
+        // Auto-enable highlight if not already set
+        setShowHighlight(true);
+      }
+      setUseCustomDate(true);
+      setCustomDay(num);
+    }
+  };
+
   return (
-    <div className="py-1 space-y-4">
+    <div className="py-1">
       <div className="items-center gap-2 mb-3 hidden lg:flex">
         <Calendar className="w-4 h-4 text-primary" />
         <h2 className="font-semibold text-sm">Calendar</h2>
@@ -43,37 +61,55 @@ export function MonthSettings() {
 
       <div className="flex gap-4 flex-wrap">
         <div className="space-y-1">
-          <Label htmlFor="month-year" className="text-sm">
-            Month & Year
+          <Label htmlFor="date-group" className="text-sm">
+            Date
           </Label>
-          <ButtonGroup>
-            <Select
-              value={month !== null ? String(month) : ""}
-              onValueChange={(v) => setMonth(Number(v))}
-            >
-              <SelectTrigger id="month">
-                <SelectValue placeholder="MMM" />
-              </SelectTrigger>
-              <SelectContent>
-                {monthNames.map((m, idx) => (
-                  <SelectItem key={m} value={String(idx)}>
-                    {m}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Input
-              id="year"
-              type="number"
-              value={year}
-              onChange={(e) =>
-                setYear(Number(e.target.value || new Date().getFullYear()))
-              }
-              min={1900}
-              max={9999}
-              className="text-sm"
-            />
-          </ButtonGroup>
+          <div className="flex gap-2">
+            <ButtonGroup>
+              <Input
+                id="day"
+                type="number"
+                placeholder="DD"
+                min={1}
+                max={maxDays}
+                value={useCustomDate ? customDay : ""}
+                onChange={handleDayChange}
+                className="w-[60px] text-center"
+              />
+              <Select
+                value={month !== null ? String(month) : ""}
+                onValueChange={(v) => setMonth(Number(v))}
+              >
+                <SelectTrigger id="month">
+                  <SelectValue placeholder="MMM" />
+                </SelectTrigger>
+                <SelectContent>
+                  {monthNames.map((m, idx) => (
+                    <SelectItem key={m} value={String(idx)}>
+                      {m}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Input
+                id="year"
+                type="number"
+                value={year}
+                onChange={(e) =>
+                  setYear(Number(e.target.value || new Date().getFullYear()))
+                }
+                min={1900}
+                max={9999}
+                className="text-sm w-[80px]"
+              />
+            </ButtonGroup>
+
+            {useCustomDate && (
+              <div className="animate-in fade-in slide-in-from-left-2 duration-300">
+                <DateEffectsSettings />
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="space-y-1">
@@ -117,44 +153,6 @@ export function MonthSettings() {
           </Select>
         </div>
       </div>
-
-      <div className="flex items-center space-x-2">
-        <Switch
-          id="custom-date-mode"
-          checked={useCustomDate}
-          onCheckedChange={setUseCustomDate}
-        />
-        <Label htmlFor="custom-date-mode" className="text-sm font-medium">
-          Date Settings
-        </Label>
-      </div>
-
-      {useCustomDate && (
-        <div className="flex gap-4 flex-wrap items-end animate-in fade-in slide-in-from-top-1 duration-200">
-          <div className="space-y-1">
-            <Label htmlFor="custom-day" className="text-sm">
-              Day
-            </Label>
-            <Input
-              id="custom-day"
-              type="number"
-              min={1}
-              max={maxDays}
-              value={customDay}
-              onChange={(e) => {
-                let val = parseInt(e.target.value);
-                if (isNaN(val)) val = 1;
-                if (val < 1) val = 1;
-                if (val > maxDays) val = maxDays;
-                setCustomDay(val);
-              }}
-              className="w-20"
-            />
-          </div>
-
-          <DateEffectsSettings />
-        </div>
-      )}
     </div>
   );
 }
