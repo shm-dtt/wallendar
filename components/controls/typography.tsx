@@ -46,7 +46,7 @@ export function TypographySettings() {
       <div className="space-y-3">
         <div className="space-y-2">
           <Label className="text-sm">Text Color & Font</Label>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-3">
             <ModernColorPicker
               value={textColor}
               onChange={handleColorChange}
@@ -61,7 +61,7 @@ export function TypographySettings() {
               }
             />
 
-            <div className="flex-1 w-full basis-full">
+            <div className="flex-1">
               <FontPicker
                 value={fontFamily}
                 onChange={handleFontChange}
