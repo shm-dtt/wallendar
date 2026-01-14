@@ -8,11 +8,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar } from "lucide-react";
+import { Calendar, Circle, Strikethrough } from "lucide-react";
 import { HeaderFormat, useCalendarStore } from "@/lib/calendar-store";
 import { monthNames, headerFormatOptions } from "@/lib/calendar-utils";
 import { ButtonGroup } from "@/components/ui/button-group";
-import { DateEffectsSettings } from "./date-effects";
 
 export function MonthSettings() {
   const month = useCalendarStore((state) => state.month);
@@ -29,7 +28,10 @@ export function MonthSettings() {
   const setUseCustomDate = useCalendarStore((state) => state.setUseCustomDate);
   const customDay = useCalendarStore((state) => state.customDay);
   const setCustomDay = useCalendarStore((state) => state.setCustomDay);
+  const showHighlight = useCalendarStore((state) => state.showHighlight);
   const setShowHighlight = useCalendarStore((state) => state.setShowHighlight);
+  const showStrikethrough = useCalendarStore((state) => state.showStrikethrough);
+  const setShowStrikethrough = useCalendarStore((state) => state.setShowStrikethrough);
 
   // Helper for max days
   const maxDays = new Date(year, (month || 0) + 1, 0).getDate();
@@ -77,6 +79,13 @@ export function MonthSettings() {
       setCustomDay(num);
     }
   };
+
+  // Calculate today's date for the tooltip
+  const today = new Date();
+  const formattedToday = today.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
 
   return (
     <div className="py-1">
@@ -129,13 +138,32 @@ export function MonthSettings() {
           </ButtonGroup>
         </div>
 
-        {/* Column 2: Date Effects (Conditional) */}
-        {useCustomDate && (
-          <div className="space-y-1 animate-in fade-in slide-in-from-left-2 duration-300">
-            <Label className="text-sm">Date Effects</Label>
-            <DateEffectsSettings />
-          </div>
-        )}
+        {/* Column 2: Effect Controls */}
+        <div className="space-y-1">
+          <Label className="text-sm">Effect</Label>
+          <ButtonGroup>
+            <Button
+              variant={showHighlight ? "default" : "outline"}
+              onClick={() => setShowHighlight(!showHighlight)}
+              title={
+                useCustomDate
+                  ? "Highlight custom date"
+                  : `Highlight current date (${formattedToday})`
+              }
+              className="px-3"
+            >
+              <Circle className="w-4 h-4" />
+            </Button>
+            <Button
+              variant={showStrikethrough ? "default" : "outline"}
+              onClick={() => setShowStrikethrough(!showStrikethrough)}
+              title="Strikethrough past dates"
+              className="px-3"
+            >
+              <Strikethrough className="w-4 h-4" />
+            </Button>
+          </ButtonGroup>
+        </div>
 
         {/* Column 3: Start Week */}
         <div className="space-y-1">
@@ -167,7 +195,7 @@ export function MonthSettings() {
             value={headerFormat || ""}
             onValueChange={(v) => setHeaderFormat(v as HeaderFormat)}
           >
-            <SelectTrigger id="headerFormat" className="w-[105px]">
+            <SelectTrigger id="headerFormat" className="w-[128px]">
               <SelectValue placeholder="Full" />
             </SelectTrigger>
             <SelectContent>
