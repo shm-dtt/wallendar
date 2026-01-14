@@ -94,7 +94,7 @@ export function MonthSettings() {
         <h2 className="font-semibold text-sm">Calendar</h2>
       </div>
 
-      <div className="flex gap-3 flex-wrap">
+      <div className="flex gap-6 flex-wrap">
         {/* Column 1: Date, Month & Year */}
         <div className="space-y-1">
           <Label htmlFor="day" className="text-sm">
@@ -140,7 +140,7 @@ export function MonthSettings() {
 
         {/* Column 2: Effect Controls */}
         <div className="space-y-1">
-          <Label className="text-sm">Effect</Label>
+          <Label className="text-sm">Date Effect</Label>
           <ButtonGroup>
             <Button
               variant={showHighlight ? "default" : "outline"}
