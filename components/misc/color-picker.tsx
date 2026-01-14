@@ -395,7 +395,7 @@ export const ModernColorPicker: React.FC<ModernColorPickerProps> = ({
       {isOpen && (
         <div
           ref={dropdownRef}
-          className="absolute bottom-full left-0 mb-2 md:bottom-auto md:left-full md:top-1/2 md:-translate-y-1/2 md:ml-2 p-3 bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-xl z-50 min-w-[260px] md:min-w-[320px]"
+          className="absolute bottom-full left-0 mb-2 md:bottom-auto md:left-full md:top-1/2 md:-translate-y-1/2 md:ml-2 p-3 bg-white dark:bg-zinc-950 rounded-xl border border-gray-200 dark:border-gray-700 shadow-xl z-50 min-w-[260px] md:min-w-[320px]"
         >
           <div className="space-y-4">
             <ColorArea

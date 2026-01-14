@@ -16,7 +16,8 @@ interface FontPickerProps {
     label?: string;
     placeholder?: string;
     allowUpload?: boolean;
-    showUploadedFonts?: boolean; // Show the list of uploaded fonts below the upload button
+    showUploadedFonts?: boolean;
+    variant?: "default" | "select-only" | "upload-only";
 }
 
 export function FontPicker({
@@ -26,18 +27,17 @@ export function FontPicker({
     label,
     placeholder = "Product Sans",
     allowUpload = false,
-    showUploadedFonts = true // Default to true for backward compatibility
+    showUploadedFonts = true,
+    variant = "default"
 }: FontPickerProps) {
     const [installedFonts, setInstalledFonts] = useState<{ name: string, displayName: string }[]>([]);
     const [isUploading, setIsUploading] = useState(false);
     const fontInputRef = useRef<HTMLInputElement | null>(null);
 
-    // Global uploaded fonts from store
     const uploadedFonts = useCalendarStore((state) => state.uploadedFonts);
     const addUploadedFont = useCalendarStore((state) => state.addUploadedFont);
     const removeUploadedFont = useCalendarStore((state) => state.removeUploadedFont);
 
-    // Load preinstalled fonts on mount
     useEffect(() => {
         const fonts = localFonts;
         let canceled = false;
@@ -68,14 +68,12 @@ export function FontPicker({
         };
     }, []);
 
-    // Re-register uploaded fonts from localStorage on mount
     useEffect(() => {
         uploadedFonts.forEach((font) => {
             const fontFaces = Array.from(document.fonts.values()) as FontFace[];
             const isLoaded = fontFaces.some(face => face.family === font.name);
             if (!isLoaded) {
                 // Font binary data is not persisted, will need re-upload
-                // We keep the font in the list but it won't render until re-uploaded
             }
         });
     }, [uploadedFonts]);
@@ -90,7 +88,6 @@ export function FontPicker({
             const arrayBuffer = await file.arrayBuffer();
             const fileName = file.name.replace(/\.(ttf|otf|woff2?)$/i, "") || "CustomFont";
 
-            // Check if font already exists
             const existingFont = uploadedFonts.find(font => font.displayName === fileName);
             if (existingFont) {
                 onChange(existingFont.name);
@@ -101,7 +98,6 @@ export function FontPicker({
                 return;
             }
 
-            // Create unique name
             const timestamp = Date.now();
             const uniqueName = `${fileName}_${timestamp}`;
 
@@ -114,7 +110,6 @@ export function FontPicker({
             addUploadedFont(newFont);
             onChange(uniqueName);
 
-            // Clear input
             if (fontInputRef.current) {
                 fontInputRef.current.value = "";
             }
@@ -128,7 +123,6 @@ export function FontPicker({
     };
 
     const handleRemoveFont = (fontName: string) => {
-        // Remove from document.fonts
         const fontFaces = Array.from(document.fonts.values()) as FontFace[];
         fontFaces.forEach(face => {
             if (face.family === fontName) {
@@ -136,53 +130,55 @@ export function FontPicker({
             }
         });
 
-        // Remove from store
         removeUploadedFont(fontName);
 
-        // Reset selection if this font was selected
-        // Only change to Product Sans if the removed font exists in available fonts
         if (value === fontName) {
             const defaultFont = installedFonts.length > 0 ? installedFonts[0].name : "Product Sans";
             onChange(defaultFont);
         }
     };
 
+    const showSelect = variant === "default" || variant === "select-only";
+    const showUpload = (allowUpload && (variant === "default" || variant === "upload-only"));
+
     return (
         <div className="space-y-2">
             {label && <Label className="text-sm">{label}</Label>}
 
-            <Select
-                value={value || "Product Sans"}
-                onValueChange={onChange}
-                disabled={disabled}
-            >
-                <SelectTrigger className={`w-full ${disabled ? 'opacity-50 pointer-events-none' : ''}`}>
-                    <SelectValue placeholder={placeholder} />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectGroup>
-                        <SelectLabel>Default Fonts</SelectLabel>
-                        {installedFonts.map((font) => (
-                            <SelectItem key={font.name} value={font.name}>
-                                {font.displayName}
-                            </SelectItem>
-                        ))}
-                    </SelectGroup>
-
-                    {uploadedFonts.length > 0 && (
+            {showSelect && (
+                <Select
+                    value={value || "Product Sans"}
+                    onValueChange={onChange}
+                    disabled={disabled}
+                >
+                    <SelectTrigger className={`w-full ${disabled ? 'opacity-50 pointer-events-none' : ''}`}>
+                        <SelectValue placeholder={placeholder} />
+                    </SelectTrigger>
+                    <SelectContent>
                         <SelectGroup>
-                            <SelectLabel>Custom Fonts</SelectLabel>
-                            {uploadedFonts.map((font) => (
+                            <SelectLabel>Default Fonts</SelectLabel>
+                            {installedFonts.map((font) => (
                                 <SelectItem key={font.name} value={font.name}>
                                     {font.displayName}
                                 </SelectItem>
                             ))}
                         </SelectGroup>
-                    )}
-                </SelectContent>
-            </Select>
 
-            {allowUpload && (
+                        {uploadedFonts.length > 0 && (
+                            <SelectGroup>
+                                <SelectLabel>Custom Fonts</SelectLabel>
+                                {uploadedFonts.map((font) => (
+                                    <SelectItem key={font.name} value={font.name}>
+                                        {font.displayName}
+                                    </SelectItem>
+                                ))}
+                            </SelectGroup>
+                        )}
+                    </SelectContent>
+                </Select>
+            )}
+
+            {showUpload && (
                 <>
                     <div className="relative">
                         <Input

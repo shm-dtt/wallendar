@@ -18,11 +18,9 @@ export function TypographySettings() {
 
   const handleColorChange = (color: string) => {
     // This will be called during dragging/interaction
-    // We can choose to update immediately or not
   }
 
   const handleColorChangeComplete = (color: string) => {
-    // This will be called when user finishes selecting color
     setTextColor(color)
   }
 
@@ -65,9 +63,19 @@ export function TypographySettings() {
               <FontPicker
                 value={fontFamily}
                 onChange={handleFontChange}
-                allowUpload={true}
+                variant="select-only"
               />
             </div>
+          </div>
+          
+          {/* Custom Font Upload - Separate Row */}
+          <div>
+            <FontPicker
+                value={fontFamily}
+                onChange={handleFontChange}
+                allowUpload={true}
+                variant="upload-only"
+            />
           </div>
         </div>
 
