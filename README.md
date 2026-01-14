@@ -16,6 +16,23 @@ Transform your images into calendar desktop wallpapers. [Check it out.](https://
 - Move around the calendar block according to your wallpaper.
 - Get a LIVE preview of the changes and download the 4K wallpaper!!!
 - NEW: Share it with the world (in the Community section)
+- **API Access**: Generate wallpapers programmatically via the `/api/create` endpoint.
+
+## API Documentation
+
+Wallendar exposes a REST API to generate wallpapers server-side. You can upload an image or provide a URL, along with a configuration object to customize the calendar.
+
+**Endpoint**: `POST /api/create`
+
+See [API_REFERENCE.md](API_REFERENCE.md) for full documentation, including all configuration options and examples.
+
+### Quick Example
+
+```bash
+curl -X POST https://wallendar.shop/api/create \
+  -F "image=https://github.com/shm-dtt/wallendar/raw/main/public/samples/sample-bg1.jpg" \
+  --output wallpaper.png
+```
 
 ## Getting Started
 
@@ -53,6 +70,22 @@ npm run dev
 
 Visit `http://localhost:3000` to get started.
 
+## Deployment
+
+### Native Dependencies
+
+This project uses `node-canvas` for server-side image generation. This library relies on native system dependencies (`Cairo`, `Pango`) that must be installed on the deployment environment.
+
+**Debian/Ubuntu/Vercel:**
+```bash
+sudo apt-get install build-essential libcairo2-dev libpango1.0-dev
+```
+
+**macOS:**
+```bash
+brew install pkg-config cairo pango libpng jpeg giflib librsvg
+```
+
 ## Environment Variables
 
 Copy `env.example` to `.env.local` and fill in the following variables:
@@ -82,6 +115,10 @@ For production download and publishing tracking:
 
 - `UPSTASH_REDIS_REST_URL` - Redis URL from Upstash
 - `UPSTASH_REDIS_REST_TOKEN` - Redis token from Upstash
+
+### Rate Limiting
+
+- `TRUST_PROXY` - Set to `true` if deploying behind a proxy (like Vercel) to ensure correct IP rate limiting.
 
 **Note**: The app will work without Redis, OAuth, and S3 in development mode, but these are required for full functionality in production.
 
