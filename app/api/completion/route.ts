@@ -1,4 +1,6 @@
 import { createGroq } from '@ai-sdk/groq';
+import { Ratelimit } from '@upstash/ratelimit';
+import { Redis } from '@upstash/redis';
 import { streamText } from 'ai';
 
 // Initialize Groq client  
@@ -6,8 +8,57 @@ const groq = createGroq({
     apiKey: process.env.GROQ_API_KEY,
 });
 
+// Rate limit initialization moved inside handler to prevent build-time/runtime crashes if keys are missing
+
 export async function POST(req: Request) {
     try {
+
+
+        // --- Rate Limiting Strategy ---
+        // 1. Identification: Use IP address
+        let ip = req.headers.get("x-forwarded-for") ?? "127.0.0.1";
+
+        // Handle comma-separated IPs (e.g. "client, proxy1, proxy2")
+        if (ip.includes(",")) {
+            ip = ip.split(",")[0].trim();
+        }
+
+        const isDev = process.env.NODE_ENV === 'development';
+        const hasRedis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN;
+
+        if (hasRedis) {
+            // Initialize Ratelimit only when needed and keys are present
+            const ratelimit = new Ratelimit({
+                redis: Redis.fromEnv(),
+                limiter: Ratelimit.slidingWindow(5, "60 s"),
+                analytics: true,
+                prefix: "@upstash/ratelimit",
+            });
+
+            const { success, limit, remaining, reset } = await ratelimit.limit(ip);
+
+            if (!success) {
+                console.warn(`[API] Rate limit exceeded for IP: ${ip}`);
+                return new Response("Too Many Requests", {
+                    status: 429,
+                    headers: {
+                        "X-RateLimit-Limit": limit.toString(),
+                        "X-RateLimit-Remaining": remaining.toString(),
+                        "X-RateLimit-Reset": reset.toString(),
+                    }
+                });
+            }
+        } else if (!isDev) {
+            // We are in PRODUCTION but keys are missing! 
+            // Return a 500 error to stay secure.
+            console.error("[API] Critical: Rate limiting unavailable in production. Redis credentials missing.");
+            return new Response("Security Configuration Error: Rate limiting is required in production.", { status: 500 });
+        } else {
+            console.warn("[API] Rate limiting disabled (missing Redis credentials) - allowing request in DEV mode");
+        }
+        // ------------------------------
+
+
         // Parse and validate JSON request
         let body;
         try {
