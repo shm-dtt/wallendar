@@ -19,6 +19,9 @@ export const DEFAULT_CONFIG = {
     useTypographyFont: true,
     position: "center",
   },
+  showStrikethrough: false,
+  showHighlight: false,
+  // date is optional, defaults to undefined (auto-detect)
 };
 
 const VALID_FONTS = [
@@ -89,10 +92,26 @@ export function validateConfig(config: any): config is WallpaperConfig {
     // Font whitelist (unless useTypographyFont is true, but we validate strictly anyway)
     if (typeof config.textOverlay.font !== "string" || !VALID_FONTS.includes(config.textOverlay.font)) return false;
     
+    // useTypographyFont
     if (typeof config.textOverlay.useTypographyFont !== "boolean") return false;
     
     // Position enum
     if (typeof config.textOverlay.position !== "string" || !VALID_POSITIONS.includes(config.textOverlay.position)) return false;
+  }
+
+  // NEW: Date effects validation
+  if (config.showStrikethrough !== undefined && typeof config.showStrikethrough !== "boolean") return false;
+  if (config.showHighlight !== undefined && typeof config.showHighlight !== "boolean") return false;
+
+  if (config.date !== undefined && config.date !== null) {
+    if (typeof config.date !== "number" || !Number.isInteger(config.date)) return false;
+    
+    // Check range 1-31 first
+    if (config.date < 1 || config.date > 31) return false;
+
+    // Strict check: day must exist in that specific month/year
+    const maxDays = new Date(config.year, config.month + 1, 0).getDate();
+    if (config.date > maxDays) return false;
   }
 
   return true;
