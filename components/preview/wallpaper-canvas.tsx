@@ -34,6 +34,8 @@ type Props = {
   };
   showStrikethrough?: boolean;
   showHighlight?: boolean;
+  useCustomDate?: boolean;
+  customDay?: number;
 };
 
 // Day labels
@@ -158,7 +160,7 @@ function drawWallpaperCalendar(
   // Helper to get contrasting circle color from text color
   function getCircleColorFromTextColor(textColor: string): string {
     // Parse hex color to RGB
-    const hex = textColor.replace('#', '');
+    const hex = textColor.replace("#", "");
     const r = parseInt(hex.substring(0, 2), 16);
     const g = parseInt(hex.substring(2, 4), 16);
     const b = parseInt(hex.substring(4, 6), 16);
@@ -279,10 +281,17 @@ function drawWallpaperCalendar(
 
   // Pre-calculate current date info for performance and midnight-crossing safety
   const now = new Date();
-  const todayYear = now.getFullYear();
-  const todayMonth = now.getMonth();
-  const todayDay = now.getDate();
-  const isCurrentMonth = opts.year === todayYear && opts.month === todayMonth;
+  let todayYear = now.getFullYear();
+  let todayMonth = now.getMonth();
+  let todayDay = now.getDate();
+  let isCurrentMonth = opts.year === todayYear && opts.month === todayMonth;
+
+  if (opts.useCustomDate) {
+    todayYear = opts.year;
+    todayMonth = opts.month;
+    todayDay = opts.customDay || 1;
+    isCurrentMonth = true;
+  }
 
   context.globalAlpha = 1;
   for (let d = 1; d <= totalDays; d++) {
@@ -298,7 +307,7 @@ function drawWallpaperCalendar(
 
       // 1. Draw highlight circle UNDER text (if today and enabled)
       if (opts.showHighlight && isToday) {
-        const circleCenterY = y - (labelDaySize * 0.35); // Visual center adjustment
+        const circleCenterY = y - labelDaySize * 0.35; // Visual center adjustment
         const circleRadius = labelDaySize * 0.7; // Slightly larger for "solid" look
 
         // Use text color for the circle (Solid 100%) to ensure visibility against background
@@ -323,7 +332,9 @@ function drawWallpaperCalendar(
       context.fillStyle = opts.textColor;
     } else if (isCurrentMonth && d === todayDay && opts.showHighlight) {
       // Current date: Use contrasting color against the highlight circle
-      context.fillStyle = getCircleColorFromTextColor(opts.textColor).includes("0, 0, 0") ? "black" : "white";
+      context.fillStyle = getCircleColorFromTextColor(opts.textColor).includes("0, 0, 0")
+        ? "black"
+        : "white";
     } else {
       // Normal date
       context.fillStyle = opts.textColor;
@@ -338,7 +349,7 @@ function drawWallpaperCalendar(
       if (isPast) {
         const textWidth = context.measureText(String(d)).width;
         // Visual middle of the text - typically 40% up from baseline for digits
-        const lineY = y - (labelDaySize * 0.35);
+        const lineY = y - labelDaySize * 0.35;
 
         // Fixed padding (10% of font size)
         const padding = labelDaySize * 0.1;
@@ -360,9 +371,7 @@ function drawWallpaperCalendar(
 
   // Optional credit line kept blank intentionally, but spacing preserved
   context.globalAlpha = 0.8;
-  context.font = `${bodyWeight} ${Math.round(
-    height * 0.018,
-  )}px ${safeBodyFamily}`;
+  context.font = `${bodyWeight} ${Math.round(height * 0.018)}px ${safeBodyFamily}`;
   context.fillText("", width / 2 + shiftX, rowsTop + rowH * 6.1);
 
   // Helper function to wrap text to fit within a maximum width
@@ -395,13 +404,16 @@ function drawWallpaperCalendar(
           }
           // Truncate long word with ellipsis
           let truncated = word;
-          while (context.measureText(truncated + "...").width > maxWidth && truncated.length > 0) {
+          while (
+            context.measureText(truncated + "...").width > maxWidth &&
+            truncated.length > 0
+          ) {
             truncated = truncated.slice(0, -1);
           }
           wrappedLines.push(truncated + "...");
           continue;
         }
-        
+
         const testLine = currentLine ? `${currentLine} ${word}` : word;
         const metrics = context.measureText(testLine);
         const testWidth = metrics.width;
@@ -481,7 +493,7 @@ function drawWallpaperCalendar(
     const totalHeight = lines.length * lineHeight;
 
     // Determine vertical alignment and starting Y position
-    // Use 'top' baseline for consistent downward expansion in multi-line text
+    // Use "top" baseline for consistent downward expansion in multi-line text
     context.textBaseline = "top";
     let startY: number;
     if (position.startsWith("top-")) {
@@ -534,6 +546,8 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
       textOverlay,
       showStrikethrough,
       showHighlight,
+      useCustomDate,
+      customDay,
     },
     ref,
   ) {
@@ -542,70 +556,78 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
     const prevImageSrcRef = useRef<string | undefined>(undefined);
     const prevFontKeyRef = useRef<string | undefined>(undefined);
 
-    useImperativeHandle(ref, () => {
-      const renderToCanvas = (w: number, h: number) => {
-        const exportCanvas = document.createElement("canvas");
-        exportCanvas.width = w;
-        exportCanvas.height = h;
+    useImperativeHandle(
+      ref,
+      () => {
+        const renderToCanvas = (w: number, h: number) => {
+          const exportCanvas = document.createElement("canvas");
+          exportCanvas.width = w;
+          exportCanvas.height = h;
 
-        drawWallpaper(exportCanvas, {
-          month,
-          year,
-          weekStart,
-          headerFormat,
-          textColor,
-          fontFamily,
-          image: imgRef.current || undefined,
-          scaleForExport: true,
-          offsetX,
-          offsetY,
-          viewMode,
-          calendarScale,
-          textOverlay,
-          showStrikethrough,
-          showHighlight,
-        });
-        return exportCanvas;
-      };
+          drawWallpaper(exportCanvas, {
+            month,
+            year,
+            weekStart,
+            headerFormat,
+            textColor,
+            fontFamily,
+            image: imgRef.current || undefined,
+            scaleForExport: true,
+            offsetX,
+            offsetY,
+            viewMode,
+            calendarScale,
+            textOverlay,
+            showStrikethrough,
+            showHighlight,
+            useCustomDate,
+            customDay,
+          });
+          return exportCanvas;
+        };
 
-      return {
-        downloadPNG: (w: number, h: number) => {
-          const exportCanvas = renderToCanvas(w, h);
-          const link = document.createElement("a");
-          const modeSuffix = viewMode === "mobile" ? "-mobile" : "";
-          link.download = `calendar-${year}-${String(month + 1).padStart(
-            2,
-            "0",
-          )}${modeSuffix}.png`;
-          link.href = exportCanvas.toDataURL("image/png");
-          link.click();
-          exportCanvas.remove();
-        },
-        exportPNGBlob: async (w: number, h: number) => {
-          const exportCanvas = renderToCanvas(w, h);
-          const blob = await new Promise<Blob | null>((resolve) =>
-            exportCanvas.toBlob((value) => resolve(value), "image/png"),
-          );
-          exportCanvas.remove();
-          return blob;
-        },
-      };
-    }, [
-      month,
-      year,
-      weekStart,
-      headerFormat,
-      textColor,
-      fontFamily,
-      offsetX,
-      offsetY,
-      imageSrc,
-      viewMode,
-      calendarScale,
-      textOverlay,
-      showStrikethrough,
-      showHighlight,
-    ]);
+        return {
+          downloadPNG: (w: number, h: number) => {
+            const exportCanvas = renderToCanvas(w, h);
+            const link = document.createElement("a");
+            const modeSuffix = viewMode === "mobile" ? "-mobile" : "";
+            link.download = `calendar-${year}-${String(month + 1).padStart(
+              2,
+              "0",
+            )}${modeSuffix}.png`;
+            link.href = exportCanvas.toDataURL("image/png");
+            link.click();
+            exportCanvas.remove();
+          },
+          exportPNGBlob: async (w: number, h: number) => {
+            const exportCanvas = renderToCanvas(w, h);
+            const blob = await new Promise<Blob | null>((resolve) =>
+              exportCanvas.toBlob((value) => resolve(value), "image/png"),
+            );
+            exportCanvas.remove();
+            return blob;
+          },
+        };
+      },
+      [
+        month,
+        year,
+        weekStart,
+        headerFormat,
+        textColor,
+        fontFamily,
+        offsetX,
+        offsetY,
+        imageSrc,
+        viewMode,
+        calendarScale,
+        textOverlay,
+        showStrikethrough,
+        showHighlight,
+        useCustomDate,
+        customDay,
+      ],
+    );
 
     function parseFamilies(input: string) {
       const str = (input || "").trim();
@@ -623,7 +645,7 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
     async function ensureFontsLoaded(familyString: string) {
       try {
         const firstToken = (familyString.split(",")[0] || "").trim();
-        const cleaned = firstToken.replace(/^\"|\"$/g, "");
+        const cleaned = firstToken.replace(/^"|"$/g, "");
         if (!cleaned) return;
 
         // Narrowly type the Font Loading API to avoid `any`
@@ -638,11 +660,11 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
 
         const loads: Promise<unknown>[] = [
           fonts?.load?.(`400 24px ${JSON.stringify(cleaned)}`) ??
-          Promise.resolve(),
+            Promise.resolve(),
           fonts?.load?.(`500 24px ${JSON.stringify(cleaned)}`) ??
-          Promise.resolve(),
+            Promise.resolve(),
           fonts?.load?.(`700 24px ${JSON.stringify(cleaned)}`) ??
-          Promise.resolve(),
+            Promise.resolve(),
         ];
 
         await Promise.allSettled(loads);
@@ -677,6 +699,8 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
         textOverlay,
         showStrikethrough,
         showHighlight,
+        useCustomDate,
+        customDay,
       };
 
       if (imgRef.current) {
@@ -822,6 +846,8 @@ const WallpaperCanvas = forwardRef<WallpaperCanvasHandle, Props>(
       textOverlay,
       showStrikethrough,
       showHighlight,
+      useCustomDate,
+      customDay,
     ]);
 
     return (

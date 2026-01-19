@@ -102,6 +102,8 @@ interface CalendarState {
   // Date effects settings
   showStrikethrough: boolean;
   showHighlight: boolean;
+  useCustomDate: boolean;
+  customDay: number;
 
   persistedAt?: number;
 
@@ -139,6 +141,8 @@ interface CalendarState {
   // Date effects actions
   setShowStrikethrough: (enabled: boolean) => void;
   setShowHighlight: (enabled: boolean) => void;
+  setUseCustomDate: (val: boolean) => void;
+  setCustomDay: (val: number) => void;
 
   // Uploaded fonts actions
   addUploadedFont: (font: { name: string; displayName: string }) => void;
@@ -191,6 +195,8 @@ export const useCalendarStore = create<CalendarState>()(
       },
       showStrikethrough: false,
       showHighlight: false,
+      useCustomDate: false,
+      customDay: new Date().getDate(),
       persistedAt: undefined,
 
       // Actions
@@ -257,6 +263,8 @@ export const useCalendarStore = create<CalendarState>()(
       setShowStrikethrough: (showStrikethrough) =>
         set({ showStrikethrough }),
       setShowHighlight: (showHighlight) => set({ showHighlight }),
+      setUseCustomDate: (useCustomDate) => set({ useCustomDate }),
+      setCustomDay: (customDay) => set({ customDay }),
       addUploadedFont: (font) =>
         set((state) => ({
           uploadedFonts: [...state.uploadedFonts, font],
@@ -290,6 +298,8 @@ export const useCalendarStore = create<CalendarState>()(
         textOverlay: state.textOverlay,
         showStrikethrough: state.showStrikethrough,
         showHighlight: state.showHighlight,
+        useCustomDate: state.useCustomDate,
+        customDay: state.customDay,
         uploadedFonts: state.uploadedFonts,
       }),
       merge: (persistedState, currentState) => {
@@ -300,6 +310,8 @@ export const useCalendarStore = create<CalendarState>()(
           textOverlay = currentState.textOverlay,
           showStrikethrough = currentState.showStrikethrough,
           showHighlight = currentState.showHighlight,
+          useCustomDate = currentState.useCustomDate,
+          customDay = currentState.customDay,
           uploadedFonts = currentState.uploadedFonts,
           ...rest
         } = persistedState as CalendarState;
@@ -314,6 +326,8 @@ export const useCalendarStore = create<CalendarState>()(
           textOverlay,
           showStrikethrough,
           showHighlight,
+          useCustomDate,
+          customDay,
           uploadedFonts,
           persistedAt: timestamp,
         };

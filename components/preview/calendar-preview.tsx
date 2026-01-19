@@ -74,6 +74,10 @@ export const CalendarPreview = forwardRef<
   const textOverlay = useCalendarStore((state) => state.textOverlay);
   const showStrikethrough = useCalendarStore((state) => state.showStrikethrough);
   const showHighlight = useCalendarStore((state) => state.showHighlight);
+  
+  // Custom Date props
+  const useCustomDate = useCalendarStore((state) => state.useCustomDate);
+  const customDay = useCalendarStore((state) => state.customDay);
 
   const effectiveFont = useMemo(() => {
     const baseFont =
@@ -208,6 +212,8 @@ export const CalendarPreview = forwardRef<
                 textOverlay={textOverlay}
                 showStrikethrough={showStrikethrough}
                 showHighlight={showHighlight}
+                useCustomDate={useCustomDate}
+                customDay={customDay}
               />
             ) : (
               <div className="h-full w-full flex items-center justify-center text-muted-foreground">
@@ -248,6 +254,8 @@ export const CalendarPreview = forwardRef<
                 textOverlay={textOverlay}
                 showStrikethrough={showStrikethrough}
                 showHighlight={showHighlight}
+                useCustomDate={useCustomDate}
+                customDay={customDay}
               />
             ) : (
               <div className="h-full w-full flex items-center justify-center text-muted-foreground">
