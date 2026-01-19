@@ -43,8 +43,8 @@ The `config` JSON object supports the following properties:
     "font": "Product Sans",
     "useTypographyFont": true, // If true, uses same font as calendar
     "position": "center"     // "center", "top-left", "bottom-right", etc.
-  },
-}
+   }
+ }
 ```
 
 ## Supported Fonts

@@ -4,7 +4,11 @@ import type { CanvasRenderingContext2D as NodeCanvasRenderingContext2D } from "c
 import path from "path";
 // Import HeaderFormat from calendar-store directly to avoid intermediate export issues
 import { HeaderFormat } from "./calendar-store";
-import { daysInMonth, firstDayOffset, formatMonthHeader } from "./calendar-utils";
+import {
+    daysInMonth,
+    firstDayOffset,
+    formatMonthHeader,
+} from "./calendar-utils";
 import { imageSize } from "image-size";
 
 // Register fonts
@@ -12,11 +16,11 @@ const fontsDir = path.join(process.cwd(), "public", "fonts");
 
 // Helper to safely register fonts
 const register = (file: string, family: string, weight?: string) => {
-  try {
-    registerFont(path.join(fontsDir, file), { family, weight });
-  } catch (e) {
-    console.error(`Failed to register font ${family}:`, e);
-  }
+    try {
+        registerFont(path.join(fontsDir, file), { family, weight });
+    } catch (e) {
+        console.error(`Failed to register font ${family}:`, e);
+    }
 };
 
 // Register all available fonts
@@ -72,502 +76,573 @@ const MAX_HEIGHT = 4096;
 const MAX_PIXELS = 16_000_000;
 
 export type WallpaperConfig = {
-  month: number;
-  year: number;
-  weekStart: "sunday" | "monday";
-  headerFormat: HeaderFormat;
-  textColor: string;
-  fontFamily: string;
-  offsetX: number;
-  offsetY: number;
-  viewMode: "desktop" | "mobile";
-  calendarScale: number;
-  textOverlay?: {
-    enabled: boolean;
-    content: string;
-    fontSize: number;
-    font: string;
-    useTypographyFont: boolean;
-    position: string;
-  };
-  // Date effects
-  showStrikethrough: boolean;
-  showHighlight: boolean;
-  date?: number; // 1-31, optional. If omitted, defaults to current date.
+    month: number;
+    year: number;
+    weekStart: "sunday" | "monday";
+    headerFormat: HeaderFormat;
+    textColor: string;
+    fontFamily: string;
+    offsetX: number;
+    offsetY: number;
+    viewMode: "desktop" | "mobile";
+    calendarScale: number;
+    textOverlay?: {
+        enabled: boolean;
+        content: string;
+        fontSize: number;
+        font: string;
+        useTypographyFont: boolean;
+        position: string;
+    };
+    // Date effects
+    showStrikethrough: boolean;
+    showHighlight: boolean;
+    date?: number; // 1-31, optional. If omitted, defaults to current date.
 };
 
 export const VALID_HEADER_FORMATS: HeaderFormat[] = [
-  "full",
-  "short",
-  "numeric",
-  "numeric-full-year",
-  "numeric-short-year",
-  "short-short-year",
-  "short-full-year",
+    "full",
+    "short",
+    "numeric",
+    "numeric-full-year",
+    "numeric-short-year",
+    "short-short-year",
+    "short-full-year",
 ];
 
 export class ImageValidationError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'ImageValidationError';
-  }
+    constructor(message: string) {
+        super(message);
+        this.name = "ImageValidationError";
+    }
 }
 
 function sanitizeFamily(fam: string) {
-  if (!fam || typeof fam !== "string") {
-    return "Product Sans";
-  }
-  
-  const cleaned = fam.replace(/var\([^)]*\)\s*,?/g, "").trim();
-  
-  if (!/^[a-zA-Z0-9\s\-_]+$/.test(cleaned)) {
-    console.warn(`Invalid font family characters detected: ${fam}`);
-    return "Product Sans";
-  }
-  
-  return cleaned;
+    if (!fam || typeof fam !== "string") {
+        return "Product Sans";
+    }
+
+    const cleaned = fam.replace(/var\([^)]*\)\s*,?/g, "").trim();
+
+    if (!/^[a-zA-Z0-9\s\-_]+$/.test(cleaned)) {
+        console.warn(`Invalid font family characters detected: ${fam}`);
+        return "Product Sans";
+    }
+
+    return cleaned;
 }
 
 function getFontWeight(family: string) {
-  if (family.includes("Montserrat")) return "500";
-  if (family.includes("Doto")) return "700";
-  return "400";
+    if (family.includes("Montserrat")) return "500";
+    if (family.includes("Doto")) return "700";
+    return "400";
 }
 
 // Helper to get contrasting circle color from text color
 function getCircleColorFromTextColor(textColor: string): string {
-  // Parse hex color to RGB
-  const hex = textColor.replace("#", "");
-  const r = parseInt(hex.substring(0, 2), 16);
-  const g = parseInt(hex.substring(2, 4), 16);
-  const b = parseInt(hex.substring(4, 6), 16);
+    // Parse hex color to RGB - normalize to 6-char format
+    let hex = textColor.replace("#", "");
+    // Handle 3-char shorthand (e.g., "FFF" -> "FFFFFF")
+    if (hex.length === 3) {
+        hex = hex
+            .split("")
+            .map((c) => c + c)
+            .join("");
+    }
+    // Truncate if 8-char with alpha
+    hex = hex.substring(0, 6);
+    const r = parseInt(hex.substring(0, 2), 16) || 0;
+    const g = parseInt(hex.substring(2, 4), 16) || 0;
+    const b = parseInt(hex.substring(4, 6), 16) || 0;
 
-  // Calculate relative luminance (simplified formula)
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    // Calculate relative luminance (simplified formula)
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
 
-  // High opacity for visibility on dark backgrounds - 60%
-  return luminance > 0.5 ? "rgba(0, 0, 0, 0.6)" : "rgba(255, 255, 255, 0.6)";
+    // High opacity for visibility on dark backgrounds - 60%
+    return luminance > 0.5 ? "rgba(0, 0, 0, 0.6)" : "rgba(255, 255, 255, 0.6)";
 }
 
-function drawBackground(ctx: NodeCanvasRenderingContext2D, width: number, height: number, img: any): void {
-  ctx.drawImage(img, 0, 0, width, height);
-  
-  const vignetteGradient = ctx.createRadialGradient(
-    width / 2, height / 2, 0,
-    width / 2, height / 2, Math.max(width, height) * VIGNETTE_GRADIENT_MID
-  );
-  vignetteGradient.addColorStop(VIGNETTE_GRADIENT_START, `rgba(0,0,0,${VIGNETTE_OPACITY_CENTER})`);
-  vignetteGradient.addColorStop(VIGNETTE_GRADIENT_END, `rgba(0,0,0,${VIGNETTE_OPACITY_EDGE})`);
-  ctx.fillStyle = vignetteGradient;
-  ctx.fillRect(0, 0, width, height);
-  
-  const fadeHeight = height * BOTTOM_FADE_HEIGHT_RATIO;
-  const fadeGradient = ctx.createLinearGradient(0, height - fadeHeight, 0, height);
-  fadeGradient.addColorStop(0, `rgba(0,0,0,0)`);
-  fadeGradient.addColorStop(1, `rgba(0,0,0,${BOTTOM_FADE_OPACITY})`);
-  ctx.fillStyle = fadeGradient;
-  ctx.fillRect(0, height - fadeHeight, width, fadeHeight);
+function drawBackground(
+    ctx: NodeCanvasRenderingContext2D,
+    width: number,
+    height: number,
+    img: any,
+): void {
+    ctx.drawImage(img, 0, 0, width, height);
+
+    const vignetteGradient = ctx.createRadialGradient(
+        width / 2,
+        height / 2,
+        0,
+        width / 2,
+        height / 2,
+        Math.max(width, height) * VIGNETTE_GRADIENT_MID,
+    );
+    vignetteGradient.addColorStop(
+        VIGNETTE_GRADIENT_START,
+        `rgba(0,0,0,${VIGNETTE_OPACITY_CENTER})`,
+    );
+    vignetteGradient.addColorStop(
+        VIGNETTE_GRADIENT_END,
+        `rgba(0,0,0,${VIGNETTE_OPACITY_EDGE})`,
+    );
+    ctx.fillStyle = vignetteGradient;
+    ctx.fillRect(0, 0, width, height);
+
+    const fadeHeight = height * BOTTOM_FADE_HEIGHT_RATIO;
+    const fadeGradient = ctx.createLinearGradient(
+        0,
+        height - fadeHeight,
+        0,
+        height,
+    );
+    fadeGradient.addColorStop(0, `rgba(0,0,0,0)`);
+    fadeGradient.addColorStop(1, `rgba(0,0,0,${BOTTOM_FADE_OPACITY})`);
+    ctx.fillStyle = fadeGradient;
+    ctx.fillRect(0, height - fadeHeight, width, fadeHeight);
 }
 
-function calculateLayout(width: number, height: number, config: WallpaperConfig) {
-  const isMobile = width <= MOBILE_WIDTH_THRESHOLD;
-  const viewMode = config.viewMode || (isMobile ? "mobile" : "desktop");
-  const scale = config.calendarScale || 1;
-  
-  const calW = width * (isMobile ? 0.35 : 0.25) * scale;
-  
-  return { isMobile, viewMode, scale, calW };
+function calculateLayout(
+    width: number,
+    height: number,
+    config: WallpaperConfig,
+) {
+    const isMobile = width <= MOBILE_WIDTH_THRESHOLD;
+    const viewMode = config.viewMode || (isMobile ? "mobile" : "desktop");
+    const scale = config.calendarScale || 1;
+
+    const calW = width * (isMobile ? 0.35 : 0.25) * scale;
+
+    return { isMobile, viewMode, scale, calW };
 }
 
 function drawMonthHeader(
-  ctx: NodeCanvasRenderingContext2D,
-  config: WallpaperConfig,
-  calW: number,
-  calH: number,
-  yPos: number
+    ctx: NodeCanvasRenderingContext2D,
+    config: WallpaperConfig,
+    calW: number,
+    calH: number,
+    yPos: number,
 ): number {
-  const { month, year, headerFormat, textColor, fontFamily } = config;
-  const monthName = formatMonthHeader(month, year, headerFormat);
-  
-  function measureTrackedWidth(text: string, trackingPx: number) {
-    const chars = Array.from(text);
-    const widths = chars.map((ch) => ctx.measureText(ch).width);
-    return (
-      widths.reduce((a, b) => a + b, 0) +
-      trackingPx * Math.max(0, chars.length - 1)
-    );
-  }
+    const { month, year, headerFormat, textColor, fontFamily } = config;
+    const monthName = formatMonthHeader(month, year, headerFormat);
 
-  function drawTrackedCentered(
-    text: string,
-    x: number,
-    y: number,
-    trackingPx: number
-  ) {
-    const chars = Array.from(text);
-    const widths = chars.map((ch) => ctx.measureText(ch).width);
-    const total =
-      widths.reduce((a, b) => a + b, 0) +
-      trackingPx * Math.max(0, chars.length - 1);
-    let cursor = x - total / 2;
-    for (let i = 0; i < chars.length; i++) {
-      const ch = chars[i];
-      const w = widths[i];
-      ctx.fillText(ch, cursor + w / 2, y);
-      cursor += w + trackingPx;
+    function measureTrackedWidth(text: string, trackingPx: number) {
+        const chars = Array.from(text);
+        const widths = chars.map((ch) => ctx.measureText(ch).width);
+        return (
+            widths.reduce((a, b) => a + b, 0) +
+            trackingPx * Math.max(0, chars.length - 1)
+        );
     }
-  }
 
-  const family = sanitizeFamily(fontFamily);
-  const weight = getFontWeight(family);
+    function drawTrackedCentered(
+        text: string,
+        x: number,
+        y: number,
+        trackingPx: number,
+    ) {
+        const chars = Array.from(text);
+        const widths = chars.map((ch) => ctx.measureText(ch).width);
+        const total =
+            widths.reduce((a, b) => a + b, 0) +
+            trackingPx * Math.max(0, chars.length - 1);
+        let cursor = x - total / 2;
+        for (let i = 0; i < chars.length; i++) {
+            const ch = chars[i];
+            const w = widths[i];
+            ctx.fillText(ch, cursor + w / 2, y);
+            cursor += w + trackingPx;
+        }
+    }
 
-  const isMobile = config.viewMode === "mobile";
-  const scale = config.calendarScale;
-  
-  let monthSize = Math.round(calH * (isMobile ? 0.03 : 0.05) * scale);
-  const minMonthSize = Math.round(monthSize * 0.5);
+    const family = sanitizeFamily(fontFamily);
+    const weight = getFontWeight(family);
 
-  let tracking = monthSize * 0.055;
-  ctx.font = `${weight} ${monthSize}px "${family}"`;
-  ctx.fillStyle = textColor;
-  ctx.textAlign = "center";
-  
-  let measured = measureTrackedWidth(monthName, tracking);
-  const maxMonthWidth = calW * 0.96;
-  
-  while (measured > maxMonthWidth && monthSize > minMonthSize) {
-    monthSize -= 2;
-    tracking = monthSize * 0.055;
+    const isMobile = config.viewMode === "mobile";
+    const scale = config.calendarScale;
+
+    let monthSize = Math.round(calH * (isMobile ? 0.03 : 0.05) * scale);
+    const minMonthSize = Math.round(monthSize * 0.5);
+
+    let tracking = monthSize * 0.055;
     ctx.font = `${weight} ${monthSize}px "${family}"`;
-    measured = measureTrackedWidth(monthName, tracking);
-  }
-  
-  drawTrackedCentered(monthName, 0, yPos, tracking);
-  
-  return yPos; 
+    ctx.fillStyle = textColor;
+    ctx.textAlign = "center";
+
+    let measured = measureTrackedWidth(monthName, tracking);
+    const maxMonthWidth = calW * 0.96;
+
+    while (measured > maxMonthWidth && monthSize > minMonthSize) {
+        monthSize -= 2;
+        tracking = monthSize * 0.055;
+        ctx.font = `${weight} ${monthSize}px "${family}"`;
+        measured = measureTrackedWidth(monthName, tracking);
+    }
+
+    drawTrackedCentered(monthName, 0, yPos, tracking);
+
+    return yPos;
 }
 
 function drawDayLabels(
-  ctx: NodeCanvasRenderingContext2D,
-  config: WallpaperConfig,
-  calW: number,
-  calH: number,
-  yPos: number,
-  weekStart: "sunday" | "monday"
+    ctx: NodeCanvasRenderingContext2D,
+    config: WallpaperConfig,
+    calW: number,
+    calH: number,
+    yPos: number,
+    weekStart: "sunday" | "monday",
 ): number {
-  const dayLabels = weekStart === "sunday" 
-    ? ["S", "M", "T", "W", "T", "F", "S"]
-    : ["M", "T", "W", "T", "F", "S", "S"];
-    
-  const colW = calW / 7;
-  const isMobile = config.viewMode === "mobile";
-  const scale = config.calendarScale;
-  
-  const labelDaySize = Math.round(calH * (isMobile ? 0.0115 : 0.02) * scale);
-  const family = sanitizeFamily(config.fontFamily);
-  const weight = getFontWeight(family);
+    const dayLabels =
+        weekStart === "sunday"
+            ? ["S", "M", "T", "W", "T", "F", "S"]
+            : ["M", "T", "W", "T", "F", "S", "S"];
 
-  ctx.font = `${weight} ${labelDaySize}px "${family}"`;
-  ctx.fillStyle = config.textColor;
-  ctx.textAlign = "center";
-  
-  const spacing = Math.round(calH * (isMobile ? 0.05 : 0.08) * scale);
-  const drawY = yPos + spacing;
+    const colW = calW / 7;
+    const isMobile = config.viewMode === "mobile";
+    const scale = config.calendarScale;
 
-  const startX = -calW / 2 + colW / 2;
+    const labelDaySize = Math.round(calH * (isMobile ? 0.0115 : 0.02) * scale);
+    const family = sanitizeFamily(config.fontFamily);
+    const weight = getFontWeight(family);
 
-  ctx.save();
-  ctx.globalAlpha = 0.8;
-  dayLabels.forEach((label, i) => {
-    ctx.fillText(label, startX + i * colW, drawY);
-  });
-  ctx.restore();
-  
-  return drawY;
+    ctx.font = `${weight} ${labelDaySize}px "${family}"`;
+    ctx.fillStyle = config.textColor;
+    ctx.textAlign = "center";
+
+    const spacing = Math.round(calH * (isMobile ? 0.05 : 0.08) * scale);
+    const drawY = yPos + spacing;
+
+    const startX = -calW / 2 + colW / 2;
+
+    ctx.save();
+    ctx.globalAlpha = 0.8;
+    dayLabels.forEach((label, i) => {
+        ctx.fillText(label, startX + i * colW, drawY);
+    });
+    ctx.restore();
+
+    return drawY;
 }
 
 function drawDateGrid(
-  ctx: NodeCanvasRenderingContext2D,
-  config: WallpaperConfig,
-  calW: number,
-  calH: number,
-  yPos: number
+    ctx: NodeCanvasRenderingContext2D,
+    config: WallpaperConfig,
+    calW: number,
+    calH: number,
+    yPos: number,
 ): void {
-  const { month, year, weekStart, textColor, fontFamily, showHighlight, showStrikethrough, date } = config;
-  const isMobile = config.viewMode === "mobile";
-  const scale = config.calendarScale;
+    const {
+        month,
+        year,
+        weekStart,
+        textColor,
+        fontFamily,
+        showHighlight,
+        showStrikethrough,
+        date,
+    } = config;
+    const isMobile = config.viewMode === "mobile";
+    const scale = config.calendarScale;
 
-  const totalDays = daysInMonth(year, month);
-  const offset = firstDayOffset(year, month, weekStart);
-  
-  const labelDaySize = Math.round(calH * (isMobile ? 0.0115 : 0.02) * scale);
-  const family = sanitizeFamily(fontFamily);
-  const weight = getFontWeight(family);
+    const totalDays = daysInMonth(year, month);
+    const offset = firstDayOffset(year, month, weekStart);
 
-  ctx.font = `${weight} ${labelDaySize}px "${family}"`;
-  ctx.fillStyle = textColor;
-  ctx.globalAlpha = 1;
+    const labelDaySize = Math.round(calH * (isMobile ? 0.0115 : 0.02) * scale);
+    const family = sanitizeFamily(fontFamily);
+    const weight = getFontWeight(family);
 
-  const colW = calW / 7;
-  const rowsTop = yPos + Math.round(calH * (isMobile ? 0.03 : 0.055) * scale);
-  const rowH = Math.round(calH * (isMobile ? 0.027 : 0.055) * scale);
-  
-  const startX = -calW / 2 + colW / 2;
+    ctx.font = `${weight} ${labelDaySize}px "${family}"`;
+    ctx.fillStyle = textColor;
+    ctx.globalAlpha = 1;
 
-  // Determine today's date
-  let todayDay = date;
-  if (todayDay === undefined) {
-    const now = new Date();
-    // Only default to today if month/year match current date
-    if (now.getMonth() === month && now.getFullYear() === year) {
-        todayDay = now.getDate();
-    } else {
-        // If config.date is missing and not current month, we effectively disable "today" effects
-        todayDay = -1; 
-    }
-  }
+    const colW = calW / 7;
+    const rowsTop = yPos + Math.round(calH * (isMobile ? 0.03 : 0.055) * scale);
+    const rowH = Math.round(calH * (isMobile ? 0.027 : 0.055) * scale);
 
-  for (let d = 1; d <= totalDays; d++) {
-    const idx = offset + (d - 1);
-    const col = idx % 7;
-    const row = Math.floor(idx / 7);
-    const x = startX + col * colW;
-    const y = rowsTop + row * rowH;
+    const startX = -calW / 2 + colW / 2;
 
-    const isToday = d === todayDay;
-
-    // 1. Draw highlight circle UNDER text (if today and enabled)
-    if (showHighlight && isToday) {
-      const circleCenterY = y - labelDaySize * 0.35; // Visual center adjustment
-      const circleRadius = labelDaySize * 0.7; // Slightly larger for "solid" look
-
-      // Use text color for the circle (Solid 100%) to ensure visibility against background
-      const circleColor = textColor;
-
-      ctx.save();
-      ctx.fillStyle = circleColor;
-      ctx.beginPath();
-      ctx.arc(x, circleCenterY, circleRadius, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
+    // Determine today's date
+    let todayDay = date;
+    if (todayDay === undefined) {
+        const now = new Date();
+        // Only default to today if month/year match current date
+        if (now.getMonth() === month && now.getFullYear() === year) {
+            todayDay = now.getDate();
+        } else {
+            // If config.date is missing and not current month, we effectively disable "today" effects
+            todayDay = -1;
+        }
     }
 
-    // 2. Draw date number
-    ctx.save(); // Save before changing fillStyle
+    for (let d = 1; d <= totalDays; d++) {
+        const idx = offset + (d - 1);
+        const col = idx % 7;
+        const row = Math.floor(idx / 7);
+        const x = startX + col * colW;
+        const y = rowsTop + row * rowH;
 
-    // Determine text color
-    if (d < todayDay && showStrikethrough) {
-      // Past date: Unified 40% opacity
-      ctx.globalAlpha = 0.4;
-      ctx.fillStyle = textColor;
-    } else if (isToday && showHighlight) {
-      // Current date: Use contrasting color against the highlight circle
-      ctx.fillStyle = getCircleColorFromTextColor(textColor).includes("0, 0, 0")
-        ? "black"
-        : "white";
-    } else {
-      // Normal date
-      ctx.fillStyle = textColor;
+        const isToday = d === todayDay;
+
+        // 1. Draw highlight circle UNDER text (if today and enabled)
+        if (showHighlight && isToday) {
+            const circleCenterY = y - labelDaySize * 0.35; // Visual center adjustment
+            const circleRadius = labelDaySize * 0.7; // Slightly larger for "solid" look
+
+            // Use text color for the circle (Solid 100%) to ensure visibility against background
+            const circleColor = textColor;
+
+            ctx.save();
+            ctx.fillStyle = circleColor;
+            ctx.beginPath();
+            ctx.arc(x, circleCenterY, circleRadius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        // 2. Draw date number
+        ctx.save(); // Save before changing fillStyle
+
+        // Determine text color
+        if (d < todayDay && showStrikethrough) {
+            // Past date: Unified 40% opacity
+            ctx.globalAlpha = 0.4;
+            ctx.fillStyle = textColor;
+        } else if (isToday && showHighlight) {
+            // Current date: Use contrasting color against the highlight circle
+            ctx.fillStyle = getCircleColorFromTextColor(textColor).includes(
+                "0, 0, 0",
+            )
+                ? "black"
+                : "white";
+        } else {
+            // Normal date
+            ctx.fillStyle = textColor;
+        }
+
+        ctx.fillText(String(d), x, y);
+        ctx.restore(); // Restore context (opacity 1.0, fillStyle)
+
+        // 3. Draw horizontal strikethrough OVER text (if past and enabled)
+        if (showStrikethrough && d < todayDay) {
+            const textWidth = ctx.measureText(String(d)).width;
+            // Visual middle of the text - typically 40% up from baseline for digits
+            const lineY = y - labelDaySize * 0.35;
+
+            // Fixed padding (10% of font size)
+            const padding = labelDaySize * 0.1;
+
+            ctx.save();
+            ctx.strokeStyle = textColor;
+            ctx.lineWidth = Math.max(2, labelDaySize * 0.12); // Thick line
+            ctx.lineCap = "round"; // Smooth ends
+            ctx.globalAlpha = 0.4; // Match date opacity (Unified 40%)
+            ctx.beginPath();
+            // Horizontal line: Same Y, X extends by padding
+            ctx.moveTo(x - textWidth / 2 - padding, lineY);
+            ctx.lineTo(x + textWidth / 2 + padding, lineY);
+            ctx.stroke();
+            ctx.restore();
+        }
     }
-
-    ctx.fillText(String(d), x, y);
-    ctx.restore(); // Restore context (opacity 1.0, fillStyle)
-
-    // 3. Draw horizontal strikethrough OVER text (if past and enabled)
-    if (showStrikethrough && d < todayDay) {
-        const textWidth = ctx.measureText(String(d)).width;
-        // Visual middle of the text - typically 40% up from baseline for digits
-        const lineY = y - labelDaySize * 0.35;
-
-        // Fixed padding (10% of font size)
-        const padding = labelDaySize * 0.1;
-
-        ctx.save();
-        ctx.strokeStyle = textColor;
-        ctx.lineWidth = Math.max(2, labelDaySize * 0.12); // Thick line
-        ctx.lineCap = "round"; // Smooth ends
-        ctx.globalAlpha = 0.4; // Match date opacity (Unified 40%)
-        ctx.beginPath();
-        // Horizontal line: Same Y, X extends by padding
-        ctx.moveTo(x - textWidth / 2 - padding, lineY);
-        ctx.lineTo(x + textWidth / 2 + padding, lineY);
-        ctx.stroke();
-        ctx.restore();
-    }
-  }
 }
 
 function drawTextOverlay(
-  ctx: NodeCanvasRenderingContext2D,
-  config: WallpaperConfig,
-  width: number,
-  height: number
+    ctx: NodeCanvasRenderingContext2D,
+    config: WallpaperConfig,
+    width: number,
+    height: number,
 ): void {
-  if (!config.textOverlay?.enabled || !config.textOverlay.content) return;
-  
-  const { content, position = "center", fontSize, font, useTypographyFont } = config.textOverlay;
-  const scale = config.calendarScale;
-  
-  ctx.globalAlpha = 1;
-  const overlayFontSize = Math.round(height * 0.04 * fontSize * scale);
+    if (!config.textOverlay?.enabled || !config.textOverlay.content) return;
 
-  let overlayFamily = useTypographyFont ? sanitizeFamily(config.fontFamily) : sanitizeFamily(font);
-  const weight = getFontWeight(overlayFamily);
+    const {
+        content,
+        position = "center",
+        fontSize,
+        font,
+        useTypographyFont,
+    } = config.textOverlay;
+    const scale = config.calendarScale;
 
-  ctx.font = `${weight} ${overlayFontSize}px "${overlayFamily}"`;
-  ctx.fillStyle = config.textColor;
-  ctx.shadowColor = "rgba(0,0,0,0.5)";
-  ctx.shadowBlur = Math.max(2, Math.round(height * 0.008));
+    ctx.globalAlpha = 1;
+    const overlayFontSize = Math.round(height * 0.04 * fontSize * scale);
 
-  const paddingX = width * 0.05;
-  const paddingY = height * 0.05;
-  
-  let x: number;
-  let maxTextWidth: number;
+    let overlayFamily = useTypographyFont
+        ? sanitizeFamily(config.fontFamily)
+        : sanitizeFamily(font);
+    const weight = getFontWeight(overlayFamily);
 
-  if (position.includes("left")) {
-    ctx.textAlign = "left";
-    x = paddingX;
-    maxTextWidth = width - 2 * paddingX;
-  } else if (position.includes("right")) {
-    ctx.textAlign = "right";
-    x = width - paddingX;
-    maxTextWidth = width - 2 * paddingX;
-  } else {
-    ctx.textAlign = "center";
-    x = width / 2;
-    maxTextWidth = width - 2 * paddingX;
-  }
+    ctx.font = `${weight} ${overlayFontSize}px "${overlayFamily}"`;
+    ctx.fillStyle = config.textColor;
+    ctx.shadowColor = "rgba(0,0,0,0.5)";
+    ctx.shadowBlur = Math.max(2, Math.round(height * 0.008));
 
-  const paragraphs = content.split("\n");
-  const lines: string[] = [];
+    const paddingX = width * 0.05;
+    const paddingY = height * 0.05;
 
-  for (const paragraph of paragraphs) {
-    if (!paragraph.trim()) {
-      lines.push("");
-      continue;
+    let x: number;
+    let maxTextWidth: number;
+
+    if (position.includes("left")) {
+        ctx.textAlign = "left";
+        x = paddingX;
+        maxTextWidth = width - 2 * paddingX;
+    } else if (position.includes("right")) {
+        ctx.textAlign = "right";
+        x = width - paddingX;
+        maxTextWidth = width - 2 * paddingX;
+    } else {
+        ctx.textAlign = "center";
+        x = width / 2;
+        maxTextWidth = width - 2 * paddingX;
     }
-    const words = paragraph.split(" ");
-    let currentLine = "";
-    for (let i = 0; i < words.length; i++) {
-      const word = words[i];
-      const testLine = currentLine ? `${currentLine} ${word}` : word;
-      const metrics = ctx.measureText(testLine);
-      if (metrics.width > maxTextWidth && currentLine) {
-        lines.push(currentLine);
-        currentLine = word;
-      } else {
-        currentLine = testLine;
-      }
+
+    const paragraphs = content.split("\n");
+    const lines: string[] = [];
+
+    for (const paragraph of paragraphs) {
+        if (!paragraph.trim()) {
+            lines.push("");
+            continue;
+        }
+        const words = paragraph.split(" ");
+        let currentLine = "";
+        for (let i = 0; i < words.length; i++) {
+            const word = words[i];
+            const testLine = currentLine ? `${currentLine} ${word}` : word;
+            const metrics = ctx.measureText(testLine);
+            if (metrics.width > maxTextWidth && currentLine) {
+                lines.push(currentLine);
+                currentLine = word;
+            } else {
+                currentLine = testLine;
+            }
+        }
+        if (currentLine) lines.push(currentLine);
     }
-    if (currentLine) lines.push(currentLine);
-  }
 
-  const lineHeight = overlayFontSize * 1.2;
-  const totalHeight = lines.length * lineHeight;
+    const lineHeight = overlayFontSize * 1.2;
+    const totalHeight = lines.length * lineHeight;
 
-  ctx.textBaseline = "top";
-  let startY: number;
-  
-  if (position.startsWith("top-")) {
-    startY = paddingY;
-  } else if (position.startsWith("bottom-")) {
-    startY = height - paddingY - totalHeight;
-  } else {
-    startY = (height - totalHeight) / 2;
-  }
+    ctx.textBaseline = "top";
+    let startY: number;
 
-  lines.forEach((line, index) => {
-    ctx.fillText(line, x, startY + index * lineHeight);
-  });
-  
-  ctx.shadowColor = "rgba(0,0,0,0.25)";
-  ctx.shadowBlur = Math.max(1, Math.round(height * 0.004));
+    if (position.startsWith("top-")) {
+        startY = paddingY;
+    } else if (position.startsWith("bottom-")) {
+        startY = height - paddingY - totalHeight;
+    } else {
+        startY = (height - totalHeight) / 2;
+    }
+
+    lines.forEach((line, index) => {
+        ctx.fillText(line, x, startY + index * lineHeight);
+    });
+
+    ctx.shadowColor = "rgba(0,0,0,0.25)";
+    ctx.shadowBlur = Math.max(1, Math.round(height * 0.004));
 }
 
 function drawWallpaperCalendar(
-  ctx: NodeCanvasRenderingContext2D,
-  width: number,
-  height: number,
-  config: WallpaperConfig
+    ctx: NodeCanvasRenderingContext2D,
+    width: number,
+    height: number,
+    config: WallpaperConfig,
 ): void {
-  const { offsetX = 0, offsetY = 0, viewMode = "desktop", calendarScale = 1 } = config;
+    const {
+        offsetX = 0,
+        offsetY = 0,
+        viewMode = "desktop",
+        calendarScale = 1,
+    } = config;
 
-  ctx.textAlign = "center";
-  ctx.textBaseline = "alphabetic";
-  ctx.fillStyle = config.textColor;
-  ctx.imageSmoothingEnabled = true;
-  // Type assertion used here because imageSmoothingQuality is supported at runtime
-  // by node-canvas but is missing from its Type Definitions
-  (ctx as any).imageSmoothingQuality = "high";
-  
-  ctx.shadowBlur = Math.max(1, Math.round(height * 0.004));
-  ctx.shadowOffsetX = 0;
-  ctx.shadowOffsetY = 0;
-  ctx.shadowColor = "rgba(0,0,0,0.25)";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "alphabetic";
+    ctx.fillStyle = config.textColor;
+    ctx.imageSmoothingEnabled = true;
+    // Type assertion used here because imageSmoothingQuality is supported at runtime
+    // by node-canvas but is missing from its Type Definitions
+    (ctx as any).imageSmoothingQuality = "high";
 
-  const layout = calculateLayout(width, height, config);
-  const { isMobile, calW } = layout;
-  
-  const normX = Math.max(-1, Math.min(1, offsetX));
-  let normY = Math.max(-1, Math.min(1, offsetY));
-  
-  const verticalScaleAdjustment = (calendarScale - 1) * -0.5;
-  normY += verticalScaleAdjustment;
-  normY = Math.max(-1, Math.min(1, normY));
+    ctx.shadowBlur = Math.max(1, Math.round(height * 0.004));
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    ctx.shadowColor = "rgba(0,0,0,0.25)";
 
-  const startX = width / 2;
-  const startY = height * (isMobile ? 0.4 : 0.34);
-  
-  const shiftX = normX * ((width - calW) / 2);
-  const shiftY = normY * (height * 0.3);
+    const layout = calculateLayout(width, height, config);
+    const { isMobile, calW } = layout;
 
-  ctx.save();
-  ctx.translate(startX + shiftX, startY + shiftY);
-  
-  let currentY = 0;
-  
-  currentY = drawMonthHeader(ctx, config, calW, height, currentY);
-  currentY = drawDayLabels(ctx, config, calW, height, currentY, config.weekStart);
-  drawDateGrid(ctx, config, calW, height, currentY);
-  
-  ctx.restore();
+    const normX = Math.max(-1, Math.min(1, offsetX));
+    let normY = Math.max(-1, Math.min(1, offsetY));
 
-  drawTextOverlay(ctx, config, width, height);
+    const verticalScaleAdjustment = (calendarScale - 1) * -0.5;
+    normY += verticalScaleAdjustment;
+    normY = Math.max(-1, Math.min(1, normY));
+
+    const startX = width / 2;
+    const startY = height * (isMobile ? 0.4 : 0.34);
+
+    const shiftX = normX * ((width - calW) / 2);
+    const shiftY = normY * (height * 0.3);
+
+    ctx.save();
+    ctx.translate(startX + shiftX, startY + shiftY);
+
+    let currentY = 0;
+
+    currentY = drawMonthHeader(ctx, config, calW, height, currentY);
+    currentY = drawDayLabels(
+        ctx,
+        config,
+        calW,
+        height,
+        currentY,
+        config.weekStart,
+    );
+    drawDateGrid(ctx, config, calW, height, currentY);
+
+    ctx.restore();
+
+    drawTextOverlay(ctx, config, width, height);
 }
 
 export async function generateWallpaper(
-  imageBuffer: Buffer,
-  config: WallpaperConfig
+    imageBuffer: Buffer,
+    config: WallpaperConfig,
 ): Promise<Buffer> {
-  try {
-    const dimensions = imageSize(imageBuffer);
-    if (!dimensions.width || !dimensions.height) {
-      throw new ImageValidationError("Could not determine image dimensions");
+    try {
+        const dimensions = imageSize(imageBuffer);
+        if (!dimensions.width || !dimensions.height) {
+            throw new ImageValidationError(
+                "Could not determine image dimensions",
+            );
+        }
+
+        if (dimensions.width > MAX_WIDTH || dimensions.height > MAX_HEIGHT) {
+            throw new ImageValidationError(
+                `Image dimensions exceed maximum limits (${MAX_WIDTH}x${MAX_HEIGHT})`,
+            );
+        }
+
+        if (dimensions.width * dimensions.height > MAX_PIXELS) {
+            throw new ImageValidationError(
+                `Image resolution exceeds maximum limit (${MAX_PIXELS} pixels)`,
+            );
+        }
+    } catch (e) {
+        if (e instanceof ImageValidationError) throw e;
+        throw new ImageValidationError("Invalid image data");
     }
 
-    if (dimensions.width > MAX_WIDTH || dimensions.height > MAX_HEIGHT) {
-      throw new ImageValidationError(`Image dimensions exceed maximum limits (${MAX_WIDTH}x${MAX_HEIGHT})`);
-    }
+    const image = await loadImage(imageBuffer);
 
-    if (dimensions.width * dimensions.height > MAX_PIXELS) {
-      throw new ImageValidationError(`Image resolution exceeds maximum limit (${MAX_PIXELS} pixels)`);
-    }
-  } catch (e) {
-    if (e instanceof ImageValidationError) throw e;
-    throw new ImageValidationError("Invalid image data");
-  }
+    const width = image.width;
+    const height = image.height;
 
-  const image = await loadImage(imageBuffer);
-  
-  const width = image.width;
-  const height = image.height;
+    const canvas = createCanvas(width, height);
+    const ctx = canvas.getContext("2d");
 
-  const canvas = createCanvas(width, height);
-  const ctx = canvas.getContext("2d");
+    drawBackground(ctx, width, height, image);
+    drawWallpaperCalendar(ctx, width, height, config);
 
-  drawBackground(ctx, width, height, image);
-  drawWallpaperCalendar(ctx, width, height, config);
-
-  return canvas.toBuffer("image/png");
+    return canvas.toBuffer("image/png");
 }
