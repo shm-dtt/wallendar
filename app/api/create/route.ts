@@ -52,6 +52,8 @@ export async function POST(req: NextRequest) {
       ...DEFAULT_CONFIG,
       month: now.getMonth(),
       year: now.getFullYear(),
+      // New date effect defaults are already in DEFAULT_CONFIG (false/false)
+      // date: undefined (implied, will trigger auto-detect in server-canvas if not overridden)
     };
 
     let userConfig = {};
