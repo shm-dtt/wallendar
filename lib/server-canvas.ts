@@ -90,6 +90,10 @@ export type WallpaperConfig = {
     useTypographyFont: boolean;
     position: string;
   };
+  // Date effects
+  showStrikethrough: boolean;
+  showHighlight: boolean;
+  date?: number; // 1-31, optional. If omitted, defaults to current date.
 };
 
 export const VALID_HEADER_FORMATS: HeaderFormat[] = [
@@ -128,6 +132,21 @@ function getFontWeight(family: string) {
   if (family.includes("Montserrat")) return "500";
   if (family.includes("Doto")) return "700";
   return "400";
+}
+
+// Helper to get contrasting circle color from text color
+function getCircleColorFromTextColor(textColor: string): string {
+  // Parse hex color to RGB
+  const hex = textColor.replace("#", "");
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+
+  // Calculate relative luminance (simplified formula)
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+  // High opacity for visibility on dark backgrounds - 60%
+  return luminance > 0.5 ? "rgba(0, 0, 0, 0.6)" : "rgba(255, 255, 255, 0.6)";
 }
 
 function drawBackground(ctx: NodeCanvasRenderingContext2D, width: number, height: number, img: any): void {
@@ -274,7 +293,7 @@ function drawDateGrid(
   calH: number,
   yPos: number
 ): void {
-  const { month, year, weekStart, textColor, fontFamily } = config;
+  const { month, year, weekStart, textColor, fontFamily, showHighlight, showStrikethrough, date } = config;
   const isMobile = config.viewMode === "mobile";
   const scale = config.calendarScale;
 
@@ -295,13 +314,86 @@ function drawDateGrid(
   
   const startX = -calW / 2 + colW / 2;
 
+  // Determine today's date
+  let todayDay = date;
+  if (todayDay === undefined) {
+    const now = new Date();
+    // Only default to today if month/year match current date
+    if (now.getMonth() === month && now.getFullYear() === year) {
+        todayDay = now.getDate();
+    } else {
+        // If config.date is missing and not current month, we effectively disable "today" effects
+        todayDay = -1; 
+    }
+  }
+
   for (let d = 1; d <= totalDays; d++) {
     const idx = offset + (d - 1);
     const col = idx % 7;
     const row = Math.floor(idx / 7);
     const x = startX + col * colW;
     const y = rowsTop + row * rowH;
+
+    const isToday = d === todayDay;
+
+    // 1. Draw highlight circle UNDER text (if today and enabled)
+    if (showHighlight && isToday) {
+      const circleCenterY = y - labelDaySize * 0.35; // Visual center adjustment
+      const circleRadius = labelDaySize * 0.7; // Slightly larger for "solid" look
+
+      // Use text color for the circle (Solid 100%) to ensure visibility against background
+      const circleColor = textColor;
+
+      ctx.save();
+      ctx.fillStyle = circleColor;
+      ctx.beginPath();
+      ctx.arc(x, circleCenterY, circleRadius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // 2. Draw date number
+    ctx.save(); // Save before changing fillStyle
+
+    // Determine text color
+    if (d < todayDay && showStrikethrough) {
+      // Past date: Unified 40% opacity
+      ctx.globalAlpha = 0.4;
+      ctx.fillStyle = textColor;
+    } else if (isToday && showHighlight) {
+      // Current date: Use contrasting color against the highlight circle
+      ctx.fillStyle = getCircleColorFromTextColor(textColor).includes("0, 0, 0")
+        ? "black"
+        : "white";
+    } else {
+      // Normal date
+      ctx.fillStyle = textColor;
+    }
+
     ctx.fillText(String(d), x, y);
+    ctx.restore(); // Restore context (opacity 1.0, fillStyle)
+
+    // 3. Draw horizontal strikethrough OVER text (if past and enabled)
+    if (showStrikethrough && d < todayDay) {
+        const textWidth = ctx.measureText(String(d)).width;
+        // Visual middle of the text - typically 40% up from baseline for digits
+        const lineY = y - labelDaySize * 0.35;
+
+        // Fixed padding (10% of font size)
+        const padding = labelDaySize * 0.1;
+
+        ctx.save();
+        ctx.strokeStyle = textColor;
+        ctx.lineWidth = Math.max(2, labelDaySize * 0.12); // Thick line
+        ctx.lineCap = "round"; // Smooth ends
+        ctx.globalAlpha = 0.4; // Match date opacity (Unified 40%)
+        ctx.beginPath();
+        // Horizontal line: Same Y, X extends by padding
+        ctx.moveTo(x - textWidth / 2 - padding, lineY);
+        ctx.lineTo(x + textWidth / 2 + padding, lineY);
+        ctx.stroke();
+        ctx.restore();
+    }
   }
 }
 
