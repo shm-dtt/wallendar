@@ -33,6 +33,9 @@ The `config` JSON object supports the following properties:
   "offsetY": 0,              // Vertical offset (-1 to 1). Default: 0
   "viewMode": "desktop",     // "desktop" or "mobile". Default: "desktop"
   "calendarScale": 1,        // Scale factor (0.5 to 1.5). Default: 1
+  "date": null,              // 1-31, optional reference date. Default: current date
+  "showHighlight": false,    // Draw circle around reference date. Default: false
+  "showStrikethrough": false, // Strike through past dates. Default: false
   "textOverlay": {
     "enabled": true,
     "content": "Your text here",
@@ -40,8 +43,8 @@ The `config` JSON object supports the following properties:
     "font": "Product Sans",
     "useTypographyFont": true, // If true, uses same font as calendar
     "position": "center"     // "center", "top-left", "bottom-right", etc.
-  }
-}
+   }
+ }
 ```
 
 ## Supported Fonts
@@ -104,12 +107,29 @@ curl -X POST https://wallendar.shop/api/create \
   --output motivational.png
 ```
 
+### 4. Date Effects
+
+Highlight and strikethrough dates.
+
+```bash
+curl -X POST https://wallendar.shop/api/create \
+  -F "image=https://example.com/bg.jpg" \
+  -F 'config={
+    "month": 0,
+    "year": 2025,
+    "date": 15,
+    "showHighlight": true,
+    "showStrikethrough": true
+  }' \
+  --output january-with-effects.png
+```
+
 ## Limits
 
 | Constraint | Value |
 |------------|-------|
 | Rate Limit | 5 requests per minute per IP |
-| Max Image Size | 5MB |
+| Max Image Size | 50 MB |
 | Request Timeout | 8 seconds (for URL fetches) |
 
 > **Note on Rate Limiting**: Ensure `TRUST_PROXY=true` is set in your environment variables if deploying behind a proxy (like Vercel) to enable correct IP detection.
@@ -126,6 +146,6 @@ Errors return JSON with an `error` field:
 
 | Status | Meaning |
 |--------|---------|
-| 400 | Bad request (missing image, invalid URL, file too large) |
+| 400 | Bad request (missing image, invalid URL, file too large, invalid date) |
 | 429 | Rate limit exceeded |
 | 500 | Server error during generation |
