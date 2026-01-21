@@ -8,6 +8,14 @@ Wallendar provides a REST API to programmatically generate calendar wallpapers.
 
 Generates a PNG wallpaper with a calendar overlay and optional text based on the provided configuration.
 
+## OpenAPI / Swagger Specification
+
+For the best developer experience, we provide an OpenAPI specification file.
+
+- **[Download openapi.yaml](./openapi.yaml)**
+
+You can import this file directly into tools like **Postman**, **Insomnia**, or **VS Code REST Client** to get pre-configured requests, schema validation, and auto-generated code snippets.
+
 ## Request Format
 
 The endpoint accepts `multipart/form-data` with the following fields:
@@ -64,11 +72,11 @@ The API supports the following fonts (must match exactly):
 
 ### 1. Basic Usage (Image URL + Defaults)
 
-Generates a calendar for the current month using an image URL.
+Generates a calendar for the current month using a live sample image.
 
 ```bash
 curl -X POST https://wallendar.shop/api/create \
-  -F "image=https://example.com/wallpaper.jpg" \
+  -F "image=https://www.wallendar.shop/samples/sample-bg2.jpg" \
   --output wallpaper.png
 ```
 
@@ -95,11 +103,11 @@ Adds custom text to the wallpaper.
 
 ```bash
 curl -X POST https://wallendar.shop/api/create \
-  -F "image=https://example.com/bg.jpg" \
+  -F "image=https://www.wallendar.shop/samples/sample-bg5.jpg" \
   -F 'config={
     "textOverlay": {
       "enabled": true,
-      "content": "Stay Hard\nDon't give up",
+      "content": "Stay Hard\nDon'\''t give up",
       "position": "bottom-right",
       "fontSize": 1.2
     }
@@ -113,7 +121,7 @@ Highlight and strikethrough dates.
 
 ```bash
 curl -X POST https://wallendar.shop/api/create \
-  -F "image=https://example.com/bg.jpg" \
+  -F "image=https://www.wallendar.shop/samples/sample-bg3.jpg" \
   -F 'config={
     "month": 0,
     "year": 2025,
@@ -123,6 +131,26 @@ curl -X POST https://wallendar.shop/api/create \
   }' \
   --output january-with-effects.png
 ```
+
+## Using with Postman / GUI Tools
+
+Since the API requires `multipart/form-data` with a **JSON string** for the `config` field, using GUI tools requires a specific setup.
+
+**The easiest way:**
+1. Download the [`openapi.yaml`](./openapi.yaml) file.
+2. Import it into Postman (File > Import).
+3. Select the "Generate a calendar wallpaper" request.
+4. The body will be pre-filled. Just edit the values!
+
+**Manual Setup:**
+If setting it up manually in Postman:
+1. Method: `POST`
+2. URL: `https://wallendar.shop/api/create`
+3. Body Tab: Select `form-data`
+4. Key: `image` -> Select type "File" (upload image) OR "Text" (paste URL)
+5. Key: `config` -> Type "Text"
+   - Value: `{"month": 10, "year": 2025, "textColor": "#ffffff"}`
+   - *Note: You must write valid JSON here. No trailing commas!*
 
 ## Limits
 
