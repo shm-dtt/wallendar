@@ -6,6 +6,7 @@ info:
   contact:
     name: Wallendar Support
     url: https://github.com/shm-dtt/wallendar/issues
+security: []
 servers:
   - url: https://wallendar.shop
     description: Production server
