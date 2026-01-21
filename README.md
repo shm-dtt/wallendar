@@ -4,7 +4,7 @@
 
 # Wallendar
 
-Transform your images into calendar desktop wallpapers. [Check it out.](https://wallendar.shop/)
+Transform your images into calendar wallpapers. [Check it out.](https://wallendar.shop/)
 
 ![Wallpaper example 5](public/images/wallpaper1.webp)
 
@@ -20,17 +20,19 @@ Transform your images into calendar desktop wallpapers. [Check it out.](https://
 
 ## API Documentation
 
-Wallendar exposes a REST API to generate wallpapers server-side. You can upload an image or provide a URL, along with a configuration object to customize the calendar.
+Wallendar exposes a REST API to generate wallpapers programmatically. You can upload an image or provide a URL, along with a configuration object to customize the calendar.
 
 **Endpoint**: `POST /api/create`
 
-See [API_REFERENCE.md](API_REFERENCE.md) for full documentation, including all configuration options and examples.
+We provide an **OpenAPI specification** for easy integration with tools like **Postman** or **Insomnia**.
+
+See [API_REFERENCE.md](API_REFERENCE.md) for full documentation, the OpenAPI spec download, and detailed usage guides.
 
 ### Quick Example
 
 ```bash
 curl -X POST https://wallendar.shop/api/create \
-  -F "image=https://github.com/shm-dtt/wallendar/raw/main/public/samples/sample-bg1.jpg" \
+  -F "image=https://www.wallendar.shop/samples/sample-bg2.jpg" \
   --output wallpaper.png
 ```
 
