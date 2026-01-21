@@ -1,0 +1,193 @@
+openapi: 3.0.3
+info:
+  title: Wallendar API
+  description: API for programmatically generating calendar wallpapers.
+  version: 1.0.0
+  contact:
+    name: Wallendar Support
+    url: https://github.com/shm-dtt/wallendar/issues
+servers:
+  - url: https://wallendar.shop
+    description: Production server
+  - url: http://localhost:3000
+    description: Local development server
+paths:
+  /api/create:
+    post:
+      summary: Generate a calendar wallpaper
+      description: |
+        Generates a PNG wallpaper with a calendar overlay based on the provided configuration.
+        The request must be `multipart/form-data`.
+      operationId: createWallpaper
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - image
+              properties:
+                image:
+                  type: string
+                  format: binary
+                  description: |
+                    The background image. Can be a file upload OR a direct URL string.
+                    If providing a URL, pass it as a string value (not as a file).
+                config:
+                  type: string
+                  description: |
+                    A JSON string containing the configuration object.
+                    Example: `{"month": 10, "year": 2025, "textColor": "#ffffff"}`
+                  example: '{"month": 10, "year": 2025, "weekStart": "sunday", "textColor": "#ffffff", "fontFamily": "Product Sans"}'
+      responses:
+        '200':
+          description: Successful generation
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Bad request (invalid config, missing image, etc.)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+
+    # This schema is for documentation purposes to describe the JSON structure
+    # expected inside the 'config' string field.
+    WallpaperConfig:
+      type: object
+      properties:
+        month:
+          type: integer
+          minimum: 0
+          maximum: 11
+          description: Month index (0-11, where 0 is January).
+          default: Current month
+        year:
+          type: integer
+          minimum: 1000
+          maximum: 9999
+          description: Year (e.g., 2025).
+          default: Current year
+        weekStart:
+          type: string
+          enum: [sunday, monday]
+          default: sunday
+        headerFormat:
+          type: string
+          enum: [full, short, numeric, numeric-full-year, numeric-short-year, short-short-year, short-full-year]
+          default: full
+          description: Format of the month/year header.
+        textColor:
+          type: string
+          pattern: '^#[0-9a-fA-F]{6}$'
+          default: '#ffffff'
+          description: Hex color code for text.
+        fontFamily:
+          type: string
+          enum:
+            - Product Sans
+            - Montserrat
+            - Doto
+            - Crafty Girls
+            - Freckle Face
+            - Playwrite CA
+            - Segoe Script
+            - Instrument Serif
+            - Ultra
+          default: Product Sans
+        offsetX:
+          type: number
+          minimum: -1
+          maximum: 1
+          default: 0
+          description: Horizontal offset (-1 to 1).
+        offsetY:
+          type: number
+          minimum: -1
+          maximum: 1
+          default: 0
+          description: Vertical offset (-1 to 1).
+        viewMode:
+          type: string
+          enum: [desktop, mobile]
+          default: desktop
+        calendarScale:
+          type: number
+          minimum: 0.5
+          maximum: 1.5
+          default: 1
+        date:
+          type: integer
+          minimum: 1
+          maximum: 31
+          nullable: true
+          description: Optional reference date to highlight.
+        showHighlight:
+          type: boolean
+          default: false
+          description: Draw circle around reference date.
+        showStrikethrough:
+          type: boolean
+          default: false
+          description: Strike through past dates.
+        textOverlay:
+          type: object
+          properties:
+            enabled:
+              type: boolean
+            content:
+              type: string
+            fontSize:
+              type: number
+              description: Relative size multiplier.
+            font:
+              type: string
+              enum:
+                - Product Sans
+                - Montserrat
+                - Doto
+                - Crafty Girls
+                - Freckle Face
+                - Playwrite CA
+                - Segoe Script
+                - Instrument Serif
+                - Ultra
+            useTypographyFont:
+              type: boolean
+            position:
+              type: string
+              enum:
+                - top-left
+                - top-center
+                - top-right
+                - middle-left
+                - center
+                - middle-right
+                - bottom-left
+                - bottom-center
+                - bottom-right
