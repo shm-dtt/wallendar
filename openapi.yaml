@@ -29,8 +29,12 @@ paths:
                 - image
               properties:
                 image:
-                  type: string
-                  format: binary
+                  oneOf:
+                    - type: string
+                      format: binary
+                      description: Image file upload
+                    - type: string
+                      description: Direct URL to image
                   description: |
                     The background image. Can be a file upload OR a direct URL string.
                     If providing a URL, pass it as a string value (not as a file).
@@ -38,8 +42,8 @@ paths:
                   type: string
                   description: |
                     A JSON string containing the configuration object.
-                    Example: `{"month": 10, "year": 2025, "textColor": "#ffffff"}`
-                  example: '{"month": 10, "year": 2025, "weekStart": "sunday", "textColor": "#ffffff", "fontFamily": "Product Sans"}'
+                    Example: `{"month": 10, "year": 2026, "textColor": "#ffffff"}`
+                  example: '{"month": 10, "year": 2026, "weekStart": "sunday", "textColor": "#ffffff", "fontFamily": "Product Sans"}'
       responses:
         '200':
           description: Successful generation
@@ -86,13 +90,13 @@ components:
           minimum: 0
           maximum: 11
           description: Month index (0-11, where 0 is January).
-          default: Current month
+          default: 0
         year:
           type: integer
           minimum: 1000
           maximum: 9999
-          description: Year (e.g., 2025).
-          default: Current year
+          description: Year (e.g., 2026).
+          default: 2026
         weekStart:
           type: string
           enum: [sunday, monday]
