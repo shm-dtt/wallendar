@@ -100,32 +100,51 @@ export async function POST(req: NextRequest) {
       imageBuffer = Buffer.from(arrayBuffer);
     } else if (typeof imageEntry === "string") {
       // URL Handling with Secure Fetch (SSRF Protection + SNI support)
+      let totalSize = 0; 
+
       try {
         const res = await fetchSafeImage(imageEntry);
 
-        const contentType = res.headers["content-type"];
-        if (!contentType || !contentType.startsWith("image/")) {
+        // Safely extract content-type, handling potential array values
+        const rawContentType = res.headers["content-type"];
+        const contentType = Array.isArray(rawContentType) ? rawContentType[0] : rawContentType;
+
+        // Case-insensitive check for MIME type per RFC 2045
+        if (!contentType || !contentType.toLowerCase().startsWith("image/")) {
+          res.destroy(); // Fix leak
           logger.warn("Invalid upstream content type", { requestId, contentType });
           throw new Error("URL must point to a valid image file");
         }
 
-        const contentLength = res.headers["content-length"];
-        if (contentLength && parseInt(contentLength) > MAX_FILE_SIZE) {
-          logger.warn("Upstream image too large (header)", { requestId, contentLength });
-          return NextResponse.json(
-            { error: `Image too large (max ${MAX_FILE_SIZE / 1024 / 1024}MB)` },
-            { status: 400 }
-          );
+        // Safely extract and parse content-length
+        const rawContentLength = res.headers["content-length"];
+        const contentLengthStr = Array.isArray(rawContentLength) ? rawContentLength[0] : rawContentLength;
+        
+        if (contentLengthStr) {
+          const contentLength = parseInt(contentLengthStr, 10);
+          if (!isNaN(contentLength) && contentLength > MAX_FILE_SIZE) {
+            res.destroy(); // Fix leak
+            logger.warn("Upstream image too large (header)", { requestId, contentLength });
+            return NextResponse.json(
+              { error: `Image too large (max ${MAX_FILE_SIZE / 1024 / 1024}MB)` },
+              { status: 400 }
+            );
+          }
         }
         
         // Read the stream
         const chunks: Buffer[] = [];
-        let totalSize = 0;
 
         await new Promise<void>((resolve, reject) => {
+          let rejected = false;
+          let resolved = false;
+
           res.on('data', (chunk: Buffer) => {
+            if (resolved || rejected) return;
+            
             totalSize += chunk.length;
             if (totalSize > MAX_FILE_SIZE) {
+              rejected = true;
               res.destroy(); // Stop stream
               reject(new Error("Image too large"));
               return;
@@ -133,23 +152,41 @@ export async function POST(req: NextRequest) {
             chunks.push(chunk);
           });
           
-          res.on('end', () => resolve());
-          res.on('error', (err) => reject(err));
+          res.on('end', () => {
+            if (resolved || rejected) return;
+            resolved = true;
+            resolve();
+          });
+
+          res.on('error', (err) => {
+            if (resolved || rejected) return;
+            rejected = true;
+            reject(err);
+          });
+          
+          // Handle unexpected connection closure
+          res.on('close', () => {
+            if (!resolved && !rejected) {
+              rejected = true;
+              reject(new Error("Connection closed prematurely"));
+            }
+          });
         });
 
         imageBuffer = Buffer.concat(chunks);
 
       } catch (e: any) {
         // Handle explicit size error
-        if (e.message === "Image too large") {
-           logger.warn("Upstream image too large (stream)", { requestId, totalSize: MAX_FILE_SIZE + 1 });
+        if (e.message === "Image too large" || totalSize > MAX_FILE_SIZE) {
+           logger.warn("Upstream image too large (stream)", { requestId, totalSize, limit: MAX_FILE_SIZE });
            return NextResponse.json(
              { error: `Image too large (max ${MAX_FILE_SIZE / 1024 / 1024}MB)` },
              { status: 400 }
            );
         }
 
-        if (e instanceof Response || (typeof e === 'object' && e !== null && 'status' in e)) {
+        // Only rethrow if it has a status property (likely a proxied upstream error response object)
+        if (typeof e === 'object' && e !== null && 'status' in e) {
              throw e; 
         }
 

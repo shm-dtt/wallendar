@@ -9,8 +9,9 @@ import { resolveSafeIp } from "@/lib/ip-utils";
  */
 export async function fetchSafeImage(initialUrl: string, maxRedirects = 5): Promise<IncomingMessage> {
   let currentUrl = initialUrl;
+  let redirectCount = 0;
   
-  for (let i = 0; i < maxRedirects; i++) {
+  while (true) {
     const parsed = new URL(currentUrl);
     if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error('Invalid protocol');
 
@@ -19,6 +20,10 @@ export async function fetchSafeImage(initialUrl: string, maxRedirects = 5): Prom
 
     // Promisify the request
     const response = await new Promise<IncomingMessage>((resolve, reject) => {
+      // Hard deadline for the entire request duration
+      const controller = new AbortController();
+      const totalTimeout = setTimeout(() => controller.abort(), 8000);
+
       const options = {
         method: 'GET',
         headers: {
@@ -30,23 +35,48 @@ export async function fetchSafeImage(initialUrl: string, maxRedirects = 5): Prom
             const family = net.isIPv6(ip) ? 6 : 4;
             cb(null, ip, family);
         },
-        timeout: 8000
+        // Socket idle timeout (separate from total request timeout)
+        timeout: 8000,
+        signal: controller.signal
       };
       
       const req = (parsed.protocol === 'https:' ? https : http).request(currentUrl, options, (res) => {
+        clearTimeout(totalTimeout);
         resolve(res);
       });
       
-      req.on('error', reject);
-      req.on('timeout', () => { req.destroy(); reject(new Error('Timeout')); });
+      req.on('error', (err) => {
+        clearTimeout(totalTimeout);
+        reject(err);
+      });
+      
+      req.on('timeout', () => {
+        clearTimeout(totalTimeout);
+        req.destroy();
+        reject(new Error('Timeout'));
+      });
+      
       req.end();
     });
 
     // Handle Redirects
     if (response.statusCode && response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
+        if (redirectCount >= maxRedirects) {
+          response.resume();
+          throw new Error('Too many redirects');
+        }
+
         response.resume(); // Discard body
-        // Resolve relative URLs if necessary
-        currentUrl = new URL(response.headers.location, currentUrl).toString();
+        
+        const nextUrl = new URL(response.headers.location, currentUrl);
+        
+        // Prevent HTTPS -> HTTP downgrade (OWASP security guideline)
+        if (parsed.protocol === 'https:' && nextUrl.protocol === 'http:') {
+            throw new Error('Refusing to downgrade from HTTPS to HTTP');
+        }
+
+        currentUrl = nextUrl.toString();
+        redirectCount++;
         continue;
     }
 
@@ -57,5 +87,4 @@ export async function fetchSafeImage(initialUrl: string, maxRedirects = 5): Prom
 
     return response;
   }
-  throw new Error('Too many redirects');
 }
