@@ -2,16 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { generateWallpaper, ImageValidationError } from "@/lib/server-canvas";
 import { incrementCount } from "@/lib/redis";
 import { ratelimit, getClientIp } from "@/lib/rate-limit";
-import { resolveSafeIp } from "@/lib/ip-utils";
 import { validateConfig, DEFAULT_CONFIG, MAX_FILE_SIZE } from "@/lib/api-validation";
 import { logger } from "@/lib/logger";
 import { randomUUID } from "crypto";
+import { fetchSafeImage } from "@/lib/fetch-safe";
 
 export async function POST(req: NextRequest) {
   const requestId = randomUUID();
   const startTime = Date.now();
   
-  // Basic request logging (no sensitive data)
   logger.info("Wallpaper generation request started", { 
     requestId,
     method: req.method,
@@ -52,8 +51,6 @@ export async function POST(req: NextRequest) {
       ...DEFAULT_CONFIG,
       month: now.getMonth(),
       year: now.getFullYear(),
-      // New date effect defaults are already in DEFAULT_CONFIG (false/false)
-      // date: undefined (implied, will trigger auto-detect in server-canvas if not overridden)
     };
 
     let userConfig = {};
@@ -102,52 +99,17 @@ export async function POST(req: NextRequest) {
       const arrayBuffer = await imageEntry.arrayBuffer();
       imageBuffer = Buffer.from(arrayBuffer);
     } else if (typeof imageEntry === "string") {
-      // URL Handling with TOCTOU protection
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
-
+      // URL Handling with Secure Fetch (SSRF Protection + SNI support)
       try {
-        const parsedUrl = new URL(imageEntry);
-        
-        if (!["http:", "https:"].includes(parsedUrl.protocol)) {
-           logger.warn("Invalid image URL protocol", { requestId, protocol: parsedUrl.protocol });
-           return NextResponse.json({ error: "Invalid protocol" }, { status: 400 });
-        }
+        const res = await fetchSafeImage(imageEntry);
 
-        const safeIp = await resolveSafeIp(parsedUrl.hostname);
-        
-        if (!safeIp) {
-           logger.warn("Invalid or inaccessible host", { requestId, hostname: parsedUrl.hostname });
-           return NextResponse.json(
-             { error: "Invalid or inaccessible host" }, 
-             { status: 400 }
-           );
-        }
-
-        const targetUrl = new URL(imageEntry);
-        targetUrl.hostname = safeIp;
-
-        const res = await fetch(targetUrl.toString(), {
-          signal: controller.signal,
-          headers: {
-            "Host": parsedUrl.hostname
-          }
-        });
-        
-        clearTimeout(timeoutId);
-
-        if (!res.ok) {
-          logger.warn("Upstream image fetch failed", { requestId, status: res.status, url: imageEntry });
-          throw new Error("Failed to fetch image from remote server");
-        }
-
-        const contentType = res.headers.get("content-type");
+        const contentType = res.headers["content-type"];
         if (!contentType || !contentType.startsWith("image/")) {
           logger.warn("Invalid upstream content type", { requestId, contentType });
           throw new Error("URL must point to a valid image file");
         }
 
-        const contentLength = res.headers.get("content-length");
+        const contentLength = res.headers["content-length"];
         if (contentLength && parseInt(contentLength) > MAX_FILE_SIZE) {
           logger.warn("Upstream image too large (header)", { requestId, contentLength });
           return NextResponse.json(
@@ -155,38 +117,38 @@ export async function POST(req: NextRequest) {
             { status: 400 }
           );
         }
-
-        if (!res.body) throw new Error("No response body");
         
-        const chunks: Uint8Array[] = [];
+        // Read the stream
+        const chunks: Buffer[] = [];
         let totalSize = 0;
-        const reader = res.body.getReader();
 
-        try {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            
-            if (value) {
-              totalSize += value.length;
-              if (totalSize > MAX_FILE_SIZE) {
-                await reader.cancel();
-                logger.warn("Upstream image too large (stream)", { requestId, totalSize });
-                return NextResponse.json(
-                  { error: `Image too large (max ${MAX_FILE_SIZE / 1024 / 1024}MB)` },
-                  { status: 400 }
-                );
-              }
-              chunks.push(value);
+        await new Promise<void>((resolve, reject) => {
+          res.on('data', (chunk: Buffer) => {
+            totalSize += chunk.length;
+            if (totalSize > MAX_FILE_SIZE) {
+              res.destroy(); // Stop stream
+              reject(new Error("Image too large"));
+              return;
             }
-          }
-        } catch (streamError) {
-          throw streamError;
-        }
+            chunks.push(chunk);
+          });
+          
+          res.on('end', () => resolve());
+          res.on('error', (err) => reject(err));
+        });
 
         imageBuffer = Buffer.concat(chunks);
 
-      } catch (e) {
+      } catch (e: any) {
+        // Handle explicit size error
+        if (e.message === "Image too large") {
+           logger.warn("Upstream image too large (stream)", { requestId, totalSize: MAX_FILE_SIZE + 1 });
+           return NextResponse.json(
+             { error: `Image too large (max ${MAX_FILE_SIZE / 1024 / 1024}MB)` },
+             { status: 400 }
+           );
+        }
+
         if (e instanceof Response || (typeof e === 'object' && e !== null && 'status' in e)) {
              throw e; 
         }
@@ -196,8 +158,6 @@ export async function POST(req: NextRequest) {
           { error: "Failed to load image from the provided URL. Please ensure the URL is valid and accessible." },
           { status: 400 }
         );
-      } finally {
-        clearTimeout(timeoutId);
       }
     } else {
       logger.warn("Invalid image format", { requestId });
@@ -234,7 +194,6 @@ export async function POST(req: NextRequest) {
       message = error.message;
       logger.warn("Image validation error", { requestId, error: message, durationMs: duration });
     } else if (error instanceof Error) {
-      // Log full stack trace for internal errors
       logger.error("Internal server error", { requestId, error: error.message, stack: error.stack, durationMs: duration });
       
       message = process.env.NODE_ENV === 'production' 
