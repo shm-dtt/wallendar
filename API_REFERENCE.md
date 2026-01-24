@@ -75,7 +75,7 @@ The API supports the following fonts (must match exactly):
 Generates a calendar for the current month using a live sample image.
 
 ```bash
-curl -X POST https://wallendar.shop/api/create \
+curl -X POST https://www.wallendar.shop/api/create \
   -F "image=https://www.wallendar.shop/samples/sample-bg2.jpg" \
   --output wallpaper.png
 ```
@@ -85,7 +85,7 @@ curl -X POST https://wallendar.shop/api/create \
 Generates a specific month/year with custom styling.
 
 ```bash
-curl -X POST https://wallendar.shop/api/create \
+curl -X POST https://www.wallendar.shop/api/create \
   -F "image=@/path/to/local/image.jpg" \
   -F 'config={
     "month": 11,
@@ -102,7 +102,7 @@ curl -X POST https://wallendar.shop/api/create \
 Adds custom text to the wallpaper.
 
 ```bash
-curl -X POST https://wallendar.shop/api/create \
+curl -X POST https://www.wallendar.shop/api/create \
   -F "image=https://www.wallendar.shop/samples/sample-bg5.jpg" \
   -F 'config={
     "textOverlay": {
@@ -120,7 +120,7 @@ curl -X POST https://wallendar.shop/api/create \
 Highlight and strikethrough dates.
 
 ```bash
-curl -X POST https://wallendar.shop/api/create \
+curl -X POST https://www.wallendar.shop/api/create \
   -F "image=https://www.wallendar.shop/samples/sample-bg3.jpg" \
   -F 'config={
     "month": 0,
@@ -145,7 +145,7 @@ Since the API requires `multipart/form-data` with a **JSON string** for the `con
 **Manual Setup:**
 If setting it up manually in Postman:
 1. Method: `POST`
-2. URL: `https://wallendar.shop/api/create`
+2. URL: `https://www.wallendar.shop/api/create`
 3. Body Tab: Select `form-data`
 4. Key: `image` -> Select type "File" (upload image) OR "Text" (paste URL)
 5. Key: `config` -> Type "Text"

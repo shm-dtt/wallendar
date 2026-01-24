@@ -8,7 +8,7 @@ info:
     url: https://github.com/shm-dtt/wallendar/issues
 security: []
 servers:
-  - url: https://wallendar.shop
+  - url: https://www.wallendar.shop
     description: Production server
   - url: http://localhost:3000
     description: Local development server
