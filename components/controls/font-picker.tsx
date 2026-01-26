@@ -115,6 +115,7 @@ export function FontPicker({
             const loadedFont = await fontFace.load();
 
             document.fonts.add(loadedFont);
+            await document.fonts.ready; // Wait for browser to acknowledge
 
             const newFont = { name: uniqueName, displayName: fileName };
             addUploadedFont(newFont);
