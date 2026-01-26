@@ -149,8 +149,16 @@ export async function POST(req: Request) {
         });
     } catch (error) {
         console.error('[API] Error in completion endpoint:', error);
+        // @ts-ignore
+        if (error.cause) console.error('[API] Error cause:', error.cause);
+        // @ts-ignore
+        if (error.stack) console.error('[API] Error stack:', error.stack);
+
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        return new Response(JSON.stringify({ error: errorMessage }), {
+        return new Response(JSON.stringify({
+            error: errorMessage,
+            details: error instanceof Error ? error.toString() : String(error)
+        }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' },
         });

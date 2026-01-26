@@ -74,25 +74,32 @@ export const CalendarPreview = forwardRef<
   const textOverlay = useCalendarStore((state) => state.textOverlay);
   const showStrikethrough = useCalendarStore((state) => state.showStrikethrough);
   const showHighlight = useCalendarStore((state) => state.showHighlight);
-  
+
   // Custom Date props
   const useCustomDate = useCalendarStore((state) => state.useCustomDate);
   const customDay = useCalendarStore((state) => state.customDay);
 
   const effectiveFont = useMemo(() => {
+    // If it's in the map, use the mapped stack. Otherwise use the raw value (Google/Custom)
     const baseFont =
       fontFamilyMap[fontFamily as keyof typeof fontFamilyMap] ||
-      fontFamilyMap["Product Sans"];
-    return customFontName ? `"${customFontName}", ${baseFont}` : baseFont;
+      fontFamily;
+
+    // If it was a custom uploaded font name, ensure quotes
+    return customFontName && customFontName !== fontFamily
+      ? `"${customFontName}", ${baseFont}`
+      : baseFont;
   }, [customFontName, fontFamily]);
 
   const monthOnlyFont = useMemo(() => {
     const selected =
       fontFamilyMap[fontFamily as keyof typeof fontFamilyMap] ||
-      fontFamilyMap["Product Sans"];
-    const withCustom = customFontName
+      fontFamily;
+
+    const withCustom = customFontName && customFontName !== fontFamily
       ? `"${customFontName}", ${selected}`
       : selected;
+
     const productSansOnly = fontFamilyMap["Product Sans"];
     return { monthFont: withCustom, bodyFont: productSansOnly };
   }, [customFontName, fontFamily]);
