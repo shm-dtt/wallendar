@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useGoogleFonts } from "@/hooks/use-google-fonts";
 import { useCalendarStore } from "@/lib/calendar-store";
 import { localFonts } from "@/lib/calendar-utils";
 import { X } from "lucide-react";
@@ -37,6 +38,15 @@ export function FontPicker({
     const uploadedFonts = useCalendarStore((state) => state.uploadedFonts);
     const addUploadedFont = useCalendarStore((state) => state.addUploadedFont);
     const removeUploadedFont = useCalendarStore((state) => state.removeUploadedFont);
+
+    const {
+        filteredFonts: googleFonts,
+        searchQuery,
+        setSearchQuery,
+        isLoading: isLoadingGoogleFonts,
+        loadFont,
+        isLoadingFont
+    } = useGoogleFonts();
 
     useEffect(() => {
         const fonts = localFonts;
@@ -148,18 +158,38 @@ export function FontPicker({
             {showSelect && (
                 <Select
                     value={value || "Product Sans"}
-                    onValueChange={onChange}
+                    onValueChange={async (val) => {
+                        // Check if it's a Google Font
+                        const googleFont = googleFonts.find(f => f.family === val);
+                        if (googleFont) {
+                            try {
+                                await loadFont(googleFont);
+                            } catch (e) {
+                                console.error("Failed to load google font", e);
+                            }
+                        }
+                        onChange(val);
+                    }}
                     disabled={disabled}
                 >
                     <SelectTrigger className={`w-full ${disabled ? 'opacity-50 pointer-events-none' : ''}`}>
                         <SelectValue placeholder={placeholder} />
                     </SelectTrigger>
                     <SelectContent>
+                        <div className="p-2 border-b sticky top-0 bg-popover z-10">
+                            <Input
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Search fonts..."
+                                className="h-8 text-xs"
+                                onKeyDown={(e) => e.stopPropagation()}
+                            />
+                        </div>
                         <SelectGroup>
                             <SelectLabel>Default Fonts</SelectLabel>
                             {installedFonts.map((font) => (
                                 <SelectItem key={font.name} value={font.name}>
-                                    {font.displayName}
+                                    <span style={{ fontFamily: font.name }}>{font.displayName}</span>
                                 </SelectItem>
                             ))}
                         </SelectGroup>
@@ -169,11 +199,36 @@ export function FontPicker({
                                 <SelectLabel>Custom Fonts</SelectLabel>
                                 {uploadedFonts.map((font) => (
                                     <SelectItem key={font.name} value={font.name}>
-                                        {font.displayName}
+                                        <span style={{ fontFamily: font.name }}>{font.displayName}</span>
                                     </SelectItem>
                                 ))}
                             </SelectGroup>
                         )}
+
+                        <SelectGroup>
+                            <SelectLabel>Google Fonts</SelectLabel>
+                            {isLoadingGoogleFonts ? (
+                                <div className="px-2 py-2 text-xs text-muted-foreground flex items-center gap-2">
+                                    <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                                    Loading...
+                                </div>
+                            ) : googleFonts.length > 0 ? (
+                                googleFonts.map((font) => (
+                                    <SelectItem key={font.family} value={font.family} disabled={isLoadingFont(font.family)}>
+                                        <div className="flex items-center justify-between w-full gap-2">
+                                            <span style={{ fontFamily: font.family }}>{font.family}</span>
+                                            {isLoadingFont(font.family) && (
+                                                <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                                            )}
+                                        </div>
+                                    </SelectItem>
+                                ))
+                            ) : (
+                                <div className="px-2 py-2 text-xs text-muted-foreground">
+                                    No fonts found
+                                </div>
+                            )}
+                        </SelectGroup>
                     </SelectContent>
                 </Select>
             )}
