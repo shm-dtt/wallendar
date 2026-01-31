@@ -4,7 +4,7 @@
 
 # Wallendar
 
-Transform your images into calendar wallpapers. [Check it out.](https://wallendar.shop/)
+Transform your images into calendar wallpapers. [Check it out.](https://www.wallendar.shop/)
 
 ![Wallpaper example 5](public/images/wallpaper1.webp)
 
@@ -31,7 +31,7 @@ See [API_REFERENCE.md](API_REFERENCE.md) for full documentation, the OpenAPI spe
 ### Quick Example
 
 ```bash
-curl -X POST https://wallendar.shop/api/create \
+curl -X POST https://www.wallendar.shop/api/create \
   -F "image=https://www.wallendar.shop/samples/sample-bg2.jpg" \
   --output wallpaper.png
 ```
